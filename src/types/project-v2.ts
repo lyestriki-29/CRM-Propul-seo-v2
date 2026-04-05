@@ -41,6 +41,8 @@ export interface ProjectV2 {
   last_activity_at: string | null
   completed_at: string | null
   is_archived: boolean
+  next_action_label: string | null
+  next_action_due: string | null
   created_at: string
   updated_at: string
 }
