@@ -67,6 +67,18 @@ export function useDashboardData() {
     [projects]
   )
 
+  const activeProjectsList = useMemo(() =>
+    projects
+      .filter(p => p.status !== 'closed' && !p.is_archived)
+      .sort((a, b) => {
+        const aDate = a.last_activity_at ?? a.updated_at
+        const bDate = b.last_activity_at ?? b.updated_at
+        return bDate.localeCompare(aDate)
+      })
+      .slice(0, 8),
+    [projects]
+  )
+
   const todayTasksList = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10)
     return (tasks ?? [])
@@ -139,6 +151,7 @@ export function useDashboardData() {
     loading,
     kpis,
     aiProjects,
+    activeProjectsList,
     todayTasksList,
     priorityActions,
     revenueChartData,

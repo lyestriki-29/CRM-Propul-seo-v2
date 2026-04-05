@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Zap } from 'lucide-react'
+import { useStore } from '../../store/useStore'
 import { BentoGrid } from './components/BentoGrid'
 import { KpiStatsWidget } from './components/right/KpiStatsWidget'
 import { UpcomingMeetingsWidget } from './components/right/UpcomingMeetingsWidget'
@@ -10,10 +11,12 @@ import { QuickTasksWidget } from './components/right/QuickTasksWidget'
 import { AiSummariesWidget } from './components/left/AiSummariesWidget'
 import { PriorityActionsWidget } from './components/left/PriorityActionsWidget'
 import { RevenueChartWidget } from './components/left/RevenueChartWidget'
+import { ActiveProjectsWidget } from './components/left/ActiveProjectsWidget'
 import { useDashboardData } from './hooks/useDashboardData'
 import { useDashboardRealtime } from './hooks/useDashboardRealtime'
 
 export function DashboardV2() {
+  const { navigateWithContext } = useStore()
   const data = useDashboardData()
 
   // useDashboardRealtime déclenche un refresh quand une table change.
@@ -24,6 +27,11 @@ export function DashboardV2() {
 
   const { isConnected, lastUpdatedAt } = useDashboardRealtime(onRefresh)
 
+  const handleNavigateToAllProjects = useCallback(
+    () => navigateWithContext('projects-v2', {}),
+    [navigateWithContext]
+  )
+
   const leftColumn = (
     <>
       <PriorityActionsWidget
@@ -31,6 +39,12 @@ export function DashboardV2() {
         loading={data.loading}
         onNavigateToProject={data.handleNavigateToProject}
         onNavigateToLead={data.handleNavigateToLead}
+      />
+      <ActiveProjectsWidget
+        projects={data.activeProjectsList}
+        loading={data.loading}
+        onNavigateToProject={data.handleNavigateToProject}
+        onNavigateToAllProjects={handleNavigateToAllProjects}
       />
       <AiSummariesWidget
         projects={data.aiProjects}
