@@ -1,6 +1,6 @@
 import { User, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { CRMERPLead, CRMERPStatus } from '../types'
+import type { CRMERPLead } from '../types'
 import { CRMERP_STATUS_LABELS, CRMERP_STATUS_COLORS, CRMERP_STATUSES } from '../types'
 
 interface TeamUser { id: string; name: string; email: string }
@@ -26,7 +26,7 @@ function RightSection({ title, action, children }: {
   )
 }
 
-export function LeadRightSidebar({ lead, users }: Props) {
+export function LeadRightSidebar({ lead }: Props) {
   const assignee = lead.assignee
 
   return (
