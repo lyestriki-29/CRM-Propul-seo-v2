@@ -53,7 +53,7 @@ export async function triggerStatusAutomations(
 
   for (const rule of matchingRules) {
     for (const task of rule.tasks) {
-      await supabase.from('checklist_items_v2').insert({
+      const { error: taskErr } = await supabase.from('checklist_items_v2').insert({
         project_id: projectId,
         title: task.title,
         phase: task.phase,
@@ -62,11 +62,12 @@ export async function triggerStatusAutomations(
         parent_task_id: null,
         sort_order: 9999,
       })
+      if (taskErr) console.error('[automation] checklist insert failed:', taskErr.message)
       actionsExecuted.push({ type: 'checklist_task', title: task.title })
     }
 
     for (const entry of rule.journal) {
-      await supabase.from('project_activities_v2').insert({
+      const { error: actErr } = await supabase.from('project_activities_v2').insert({
         project_id: projectId,
         type: 'status',
         content: entry.content,
@@ -77,6 +78,7 @@ export async function triggerStatusAutomations(
           to: toStatus,
         },
       })
+      if (actErr) console.error('[automation] activity insert failed:', actErr.message)
       actionsExecuted.push({ type: 'journal_entry', content: entry.content })
     }
   }
