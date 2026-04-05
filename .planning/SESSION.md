@@ -1,30 +1,28 @@
-# Session State — 2026-04-05 23:59
+# Session State — 2026-04-05 02:30
 
 ## Branch
 main
 
 ## Completed This Session
-- Sprint 3 Feature 1 : Résumé IA automatique de la fiche client (6 tasks)
-- Migration : ai_summary (JSONB) + ai_summary_generated_at (TIMESTAMPTZ) sur projects_v2
-- Edge Function generate-ai-summary : collecte données, Claude Sonnet 4.6, persiste JSONB
-- Hook useAiSummary + composant AiSummaryCard (3 blocs, skeleton, regen, badge âge)
-- Intégration dans ProjectOverview via ProjectDetailsTabsV2.refetch
+- Sprint 4 Feature 3 : Mini-portail client lecture seule (6 tâches)
+- Migration SQL : portal_token (UUID) + portal_enabled (BOOLEAN) + RLS anon sur projects_v2, checklist_items_v2, project_invoices_v2
+- Types : ProjectV2 mis à jour avec portal_token + portal_enabled
+- App.tsx : détection /portal/:token avant le Layout authentifié (lazy load)
+- Hook useClientPortal : fetchPortalData (anon), generateToken, revokeToken
+- ClientPortalPage : page publique light mode — statut, progression, checklist, factures
+- SharePortalButton : bouton dans ProjectOverview — génère, copie, révoque
 
 ## Next Task
-Sprint 4 — Feature 3 (Mini-portail client lecture seule)
-- Lire ROADMAP_V3.md section Sprint 4 avant de planifier
-- Bouton "Partager avec le client" → token UUID
-- URL publique /portal/[token] (sans auth)
-- RLS Supabase avec portal_token + portal_enabled
-- Contenu : statut, score, prochaine action, checklist simplifiée, factures
+Sprint 5 — à définir (relire ROADMAP_V3.md)
+- La migration SQL (portal_token) doit être appliquée manuellement via Supabase Dashboard (SQL Editor)
+- Tester end-to-end : générer un token → copier l'URL → ouvrir en navigation privée
 
 ## Blockers
-- PAPPERS_API_KEY non encore configurée dans Supabase env (Sprint 2, toujours en attente)
-- Edge Function generate-ai-summary déployée via CLI impossible (403 permissions) — déployer via dashboard Supabase
+- Migration 20260406_add_portal_token.sql non encore appliquée en base (à faire manuellement via dashboard)
+- PAPPERS_API_KEY toujours en attente (Sprint 2)
 
 ## Key Context
+- Commits Sprint 4 : ef78639 → 3840563 (8 commits)
+- `LinkOff` n'existe pas dans lucide-react installé → utiliser `Link2Off`
+- Supabase anon client : utiliser isDemoMode depuis @/lib/supabase pour guard les env vars
 - Repo GitHub : https://github.com/lyestriki-29/CRM-Propul-seo-v2.git (branch main)
-- Projet Supabase : wftozvnvstxzvfplveyz
-- Commits Sprint 3 : fbecd3a → d70a64b (8 commits)
-- ANTHROPIC_API_KEY déjà présente côté Supabase
-- Erreurs TS pré-existantes dans le projet (ActivityCard, UserSelector) — ne pas confondre avec les nôtres
