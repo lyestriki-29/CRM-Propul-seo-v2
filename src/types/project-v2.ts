@@ -49,6 +49,9 @@ export interface ProjectV2 {
   // === RÉSUMÉ IA ===
   ai_summary: { situation: string; action: string; milestone: string } | null
   ai_summary_generated_at: string | null
+  // === PORTAIL CLIENT ===
+  portal_token: string | null
+  portal_enabled: boolean
   created_at: string
   updated_at: string
 }
