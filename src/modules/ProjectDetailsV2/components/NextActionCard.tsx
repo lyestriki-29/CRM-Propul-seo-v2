@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CalendarClock, Pencil, Check, X } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -16,6 +16,13 @@ export function NextActionCard({ project, onUpdate }: NextActionCardProps) {
   const [label, setLabel] = useState(project.next_action_label ?? '')
   const [due, setDue] = useState(project.next_action_due ?? '')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (!editing) {
+      setLabel(project.next_action_label ?? '')
+      setDue(project.next_action_due ?? '')
+    }
+  }, [project.next_action_label, project.next_action_due, editing])
 
   const handleSave = async () => {
     setSaving(true)
