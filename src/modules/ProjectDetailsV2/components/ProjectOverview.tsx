@@ -1,4 +1,4 @@
-import { Euro, User, Calendar, TrendingUp, CheckSquare, Key, FileText } from 'lucide-react'
+import { Euro, User, Calendar, TrendingUp, CheckSquare } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -6,6 +6,8 @@ import { ProjectStatusBadge } from '../../ProjectsManagerV2/components/ProjectSt
 import { PrestaList } from '../../ProjectsManagerV2/components/PrestaBadge'
 import { CompletionScore } from '../../ProjectsManagerV2/components/CompletionScore'
 import { DeadlineBadge } from '../../ProjectsManagerV2/components/DeadlineBadge'
+import { NextActionCard } from './NextActionCard'
+import { useProjectsV2Context } from '../../ProjectsManagerV2/context/ProjectsV2Context'
 import type { ProjectV2 } from '../../../types/project-v2'
 
 interface ProjectOverviewProps {
@@ -31,8 +33,17 @@ function MetricCard({ icon: Icon, label, value, sub }: {
 }
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
+  const { updateProject } = useProjectsV2Context()
+
   const formatDate = (d: string | null) =>
     d ? format(parseISO(d), 'd MMM yyyy', { locale: fr }) : '—'
+
+  const handleNextActionUpdate = async (updates: {
+    next_action_label: string | null
+    next_action_due: string | null
+  }) => {
+    await updateProject(project.id, updates)
+  }
 
   return (
     <div className="space-y-4">
@@ -137,15 +148,8 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
         </Card>
       </div>
 
-      {/* Prochaines étapes placeholder */}
-      <Card className="bg-surface-2 border-border border-dashed">
-        <CardContent className="py-6 text-center">
-          <div className="flex flex-col items-center gap-2 text-muted-foreground">
-            <FileText className="h-8 w-8 opacity-40" />
-            <p className="text-sm">Brief, accès, documents et facturation dans les onglets dédiés</p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Prochaine action */}
+      <NextActionCard project={project} onUpdate={handleNextActionUpdate} />
     </div>
   )
 }

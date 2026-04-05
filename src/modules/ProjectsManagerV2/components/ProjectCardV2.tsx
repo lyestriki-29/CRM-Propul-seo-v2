@@ -1,11 +1,12 @@
 import { memo } from 'react'
 import { GripVertical, Euro, User, Eye, Edit, Trash2 } from 'lucide-react'
-import { formatDistanceToNow, parseISO } from 'date-fns'
+import { formatDistanceToNow, parseISO, format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { ProjectV2 } from '../../../types/project-v2'
 import { DeadlineBadge } from './DeadlineBadge'
 import { PrestaList } from './PrestaBadge'
 import { CompletionScore } from './CompletionScore'
+import { getActionDueColor } from '../../../utils/nextAction'
 
 interface ProjectCardV2Props {
   project: ProjectV2
@@ -21,6 +22,8 @@ export const ProjectCardV2 = memo(function ProjectCardV2({
   const lastActivity = project.last_activity_at
     ? formatDistanceToNow(parseISO(project.last_activity_at), { addSuffix: true, locale: fr })
     : null
+
+  const actionDueColor = getActionDueColor(project.next_action_due)
 
   return (
     <div className={`bg-surface-2 border border-border rounded-lg p-3 cursor-grab active:cursor-grabbing transition-all duration-200 group
@@ -53,7 +56,23 @@ export const ProjectCardV2 = memo(function ProjectCardV2({
 
       {lastActivity && <p className="text-[10px] text-muted-foreground/60 mb-2 truncate">Activité {lastActivity}</p>}
 
-      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Prochaine action */}
+      <div className="border-t border-border/40 pt-1.5 mt-1">
+        {project.next_action_label ? (
+          <div className="flex items-center justify-between gap-1">
+            <p className="text-[10px] text-muted-foreground truncate flex-1">{project.next_action_label}</p>
+            {project.next_action_due && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${actionDueColor}`}>
+                {format(parseISO(project.next_action_due), 'd MMM', { locale: fr })}
+              </span>
+            )}
+          </div>
+        ) : (
+          <p className="text-[10px] text-muted-foreground/40">— Aucune action</p>
+        )}
+      </div>
+
+      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity mt-2">
         {onView && (
           <button onClick={(e) => { e.stopPropagation(); onView(project) }}
             className="flex-1 flex items-center justify-center gap-1 text-xs py-1 rounded bg-surface-3 hover:bg-primary/20 hover:text-primary text-muted-foreground transition-colors">
