@@ -1,13 +1,13 @@
 // src/modules/ClientPortal/useClientPortal.ts
 import { useState, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase, isDemoMode } from '@/lib/supabase'
 import type { ProjectV2, ChecklistItemV2 } from '@/types/project-v2'
 
 // Client anon explicite — pas de session utilisateur
 const supabaseAnon = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  isDemoMode ? 'https://demo.supabase.co' : import.meta.env.VITE_SUPABASE_URL,
+  isDemoMode ? 'demo-key' : import.meta.env.VITE_SUPABASE_ANON_KEY
 )
 
 export interface PortalInvoice {
@@ -47,6 +47,7 @@ export function useClientPortal() {
   const fetchPortalData = useCallback(async (token: string) => {
     setLoading(true)
     setError(null)
+    setData(null)
 
     // 1. Récupérer le projet par token
     const { data: project, error: projectError } = await supabaseAnon
