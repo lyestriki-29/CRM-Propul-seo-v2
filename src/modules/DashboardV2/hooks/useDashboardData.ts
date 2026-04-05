@@ -25,7 +25,7 @@ export function useDashboardData() {
   const { navigateWithContext, currentUser } = useStore()
   const { projects, loading: projectsLoading } = useProjectsV2()
   const { data: tasks, loading: tasksLoading } = useSupabaseTasks()
-  const { count: leadsCount, loading: leadsLoading } = useSupabaseLeads()
+  const { data: leadsData, loading: leadsLoading } = useSupabaseLeads()
   const { data: accountingEntries, loading: accountingLoading } = useSupabaseAccountingEntries()
 
   const loading = projectsLoading || tasksLoading || leadsLoading || accountingLoading
@@ -47,13 +47,18 @@ export function useDashboardData() {
       .filter(e => e.entry_date?.slice(0, 7) === currentMonthKey && e.type === 'revenue')
       .reduce((sum, e) => sum + Number(e.amount ?? 0), 0)
 
+    // Filtrer sur les statuts actifs (prospect + devis) — pas les leads fermés/perdus
+    const activeLeads = (leadsData ?? []).filter(
+      l => !['closed', 'signe', 'livre', 'perdu'].includes((l as any).status ?? '')
+    ).length
+
     return {
       activeProjects,
-      activeLeads: leadsCount ?? 0,
+      activeLeads,
       todayTasks,
       monthRevenue,
     }
-  }, [projects, tasks, leadsCount, accountingEntries])
+  }, [projects, tasks, leadsData, accountingEntries])
 
   const aiProjects = useMemo(() =>
     projects

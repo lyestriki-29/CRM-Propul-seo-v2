@@ -27,7 +27,10 @@ export function useDashboardRealtime(onRefresh: () => void) {
         setLastUpdatedAt(new Date())
       })
       .subscribe(status => {
-        setIsConnected(status === 'SUBSCRIBED')
+        const connected = status === 'SUBSCRIBED'
+        setIsConnected(connected)
+        // Masquer le bandeau dès que la connexion est rétablie
+        if (connected) setLastUpdatedAt(null)
       })
 
     return () => {

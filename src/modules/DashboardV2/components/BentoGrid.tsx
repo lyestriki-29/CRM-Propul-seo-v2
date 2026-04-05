@@ -9,12 +9,10 @@ interface BentoGridProps {
 export function BentoGrid({ left, right }: BentoGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 h-full">
-      {/* Mobile : colonne droite (KPIs + agenda) en premier */}
-      <div className="md:hidden flex flex-col gap-4">{right}</div>
-      {/* Colonne gauche — actions + IA + graphique */}
-      <div className="flex flex-col gap-4">{left}</div>
-      {/* Colonne droite — KPIs + agenda + tâches (cachée mobile, déjà au-dessus) */}
-      <div className="hidden md:flex flex-col gap-4">{right}</div>
+      {/* order-2 mobile → apparaît après right ; order-1 desktop → première colonne */}
+      <div className="flex flex-col gap-4 order-2 md:order-1">{left}</div>
+      {/* order-1 mobile → apparaît en premier ; order-2 desktop → deuxième colonne */}
+      <div className="flex flex-col gap-4 order-1 md:order-2">{right}</div>
     </div>
   )
 }
