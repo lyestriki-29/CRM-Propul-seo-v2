@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { cn } from '../../../lib/utils'
 import { supabase } from '../../../lib/supabase'
 import type { ProjectV2, ProjectStatusV2, PrestaType } from '../../../types/project-v2'
@@ -41,7 +42,7 @@ export function EditProjectModal({ project, onSave, onClose }: EditProjectModalP
   const handleEnrich = async () => {
     const cleanSiret = form.siret.replace(/\s/g, '')
     if (!/^\d{14}$/.test(cleanSiret)) {
-      alert('SIRET invalide — 14 chiffres requis')
+      toast.error('SIRET invalide — 14 chiffres requis')
       return
     }
     setEnriching(true)
@@ -51,9 +52,10 @@ export function EditProjectModal({ project, onSave, onClose }: EditProjectModalP
       })
       if (error) throw error
       setEnrichedName(data.company_name ?? null)
-      onSave({ siret: cleanSiret })
+      setForm(prev => ({ ...prev, siret: cleanSiret }))
+      toast.success(`Données enrichies via Pappers${data.company_name ? ` — ${data.company_name}` : ''}`)
     } catch (err) {
-      alert('Erreur enrichissement Pappers')
+      toast.error('Erreur lors de l\'enrichissement Pappers')
       console.error('[enrich-siret]', err)
     } finally {
       setEnriching(false)
@@ -214,7 +216,7 @@ export function EditProjectModal({ project, onSave, onClose }: EditProjectModalP
                 value={form.siret}
                 onChange={e => setForm({ ...form, siret: e.target.value })}
                 placeholder="12345678901234"
-                maxLength={14}
+                maxLength={20}
                 className="flex-1 p-2 border border-border rounded-md bg-surface-2 text-foreground text-sm font-mono"
               />
               <button
@@ -223,7 +225,7 @@ export function EditProjectModal({ project, onSave, onClose }: EditProjectModalP
                 disabled={enriching || form.siret.replace(/\s/g, '').length !== 14}
                 className="px-3 py-2 text-xs rounded-md border border-primary text-primary hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {enriching ? '...' : 'Enrichir'}
+                {enriching ? 'En cours...' : 'Enrichir'}
               </button>
             </div>
             {enrichedName && (
