@@ -34,10 +34,10 @@ serve(async (req) => {
       )
     }
 
-    const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
-    if (!anthropicKey) {
+    const groqKey = Deno.env.get('GROQ_API_KEY')
+    if (!groqKey) {
       return new Response(
-        JSON.stringify({ error: 'ANTHROPIC_API_KEY non configurée' }),
+        JSON.stringify({ error: 'GROQ_API_KEY non configurée' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -115,32 +115,33 @@ Réponds UNIQUEMENT en JSON strict, sans texte avant ni après :
   "milestone": "Le prochain jalon clé à atteindre et sa date si disponible."
 }`
 
-    // 5. Appel Claude API
-    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+    // 5. Appel Groq API
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': anthropicKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Authorization': `Bearer ${groqKey}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 512,
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
         messages: [{ role: 'user', content: prompt }],
       }),
     })
 
-    if (!claudeRes.ok) {
-      const errBody = await claudeRes.text()
-      console.error('[generate-ai-summary] Erreur Claude:', errBody)
+    if (!groqRes.ok) {
+      const errBody = await groqRes.text()
+      console.error('[generate-ai-summary] Erreur Groq:', errBody)
       return new Response(
-        JSON.stringify({ error: `Erreur API Claude ${claudeRes.status}` }),
+        JSON.stringify({ error: `Erreur API Groq ${groqRes.status}` }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const claudeData = await claudeRes.json()
-    const rawText: string = claudeData.content?.[0]?.text ?? ''
+    const groqData = await groqRes.json()
+    const rawText: string = groqData.choices?.[0]?.message?.content ?? ''
 
     let summary: { situation: string; action: string; milestone: string }
     try {
@@ -148,15 +149,15 @@ Réponds UNIQUEMENT en JSON strict, sans texte avant ni après :
     } catch {
       console.error('[generate-ai-summary] JSON invalide:', rawText)
       return new Response(
-        JSON.stringify({ error: 'Réponse Claude non parseable' }),
+        JSON.stringify({ error: 'Réponse Groq non parseable' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     if (!summary.situation || !summary.action || !summary.milestone) {
-      console.error('[generate-ai-summary] Structure JSON Claude incomplète:', summary)
+      console.error('[generate-ai-summary] Structure JSON Groq incomplète:', summary)
       return new Response(
-        JSON.stringify({ error: 'Structure JSON Claude incomplète' }),
+        JSON.stringify({ error: 'Structure JSON incomplète' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
