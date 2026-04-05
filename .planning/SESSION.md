@@ -1,23 +1,23 @@
-# Session State — 2026-04-05 23:30
+# Session State — 2026-04-05 23:00
 
 ## Branch
 main
 
 ## Completed This Session
-- Dashboard V2 complet : 10 tâches, subagent-driven, toutes approuvées spec + qualité
-- ActiveProjectsWidget : liste projets en cours avec barre completion_score + accès direct
-- Emails Gmail non répondus dans PriorityActionsWidget : useUnreadEmails + markAsReplied inline
+- Fix CORS gmail-sync : ajout CORS_HEADERS + gestion OPTIONS → edge function v15 déployée
+- Migration DB : schéma complet (49 tables V1 + 12 V2) appliqué sur nouveau projet Supabase
+- Migration données : 13 crmerp_leads migrés depuis ancienne DB (tbuqctfgjjxnevmsvucl)
+- Projet Lolett (projects_v2) conservé intact dans nouveau projet
 
 ## Next Task
-Déployer gmail-sync edge function pour activer les flags is_unread/is_replied :
-`supabase functions deploy gmail-sync`
-Puis tester visuellement le Dashboard V2 en prod.
+Tester l'app en prod : vérifier que toutes les features fonctionnent avec le nouveau schéma complet (contacts, crmerp, chat, communication, tâches). Commencer par ouvrir chaque module et vérifier qu'il charge sans erreur 404/RLS.
 
 ## Blockers
-None
+Users non migrés — les users de l'ancienne DB ne peuvent pas être copiés (auth_user_id lié à l'ancien projet Supabase). Ils devront se reconnecter sur le nouveau projet → trigger handle_new_user les crée automatiquement.
 
 ## Key Context
-- Dashboard V2 : src/modules/DashboardV2/ — module autonome, accessible via Sidebar "Dashboard V2" (section V2)
-- Emails non répondus : stockés dans project_activities_v2 (type='email', is_auto=true, metadata.is_replied=false)
-- gmail-sync modifié pour sauvegarder is_unread (labels Gmail) + is_replied:false — redéploiement requis
-- useUnreadEmails.ts utilise (supabase as any).update() car le type généré ne déclare pas metadata comme updatable
+- Nouveau projet Supabase : wftozvnvstxzvfplveyz (eu-west-1)
+- Ancienne DB source : tbuqctfgjjxnevmsvucl (compte différent, service role key dans historique de conversation)
+- gmail-sync v15 déployée avec CORS headers — l'erreur réseau était due à l'absence de Access-Control-Allow-Origin dans les réponses
+- init_new_project.sql généré dans supabase/ (à supprimer ou archiver, ne pas rejouer)
+- RLS non configurée sur les nouvelles tables V1 — à faire si besoin de sécurité multi-user

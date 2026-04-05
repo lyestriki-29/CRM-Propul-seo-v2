@@ -7,6 +7,12 @@ const GOOGLE_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET')!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
 // ─── Token refresh ─────────────────────────────────────────────────────────────
 
 async function refreshAccessToken(refreshToken: string): Promise<{ access_token: string; expiry: Date }> {
@@ -195,7 +201,11 @@ function parseMeetingSubject(subject: string): SubjectMeta | null {
 
 // ─── Main handler ──────────────────────────────────────────────────────────────
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: CORS_HEADERS })
+  }
+
   try {
     // 1. Load Gmail connection
     const { data: conn, error: connErr } = await supabase
@@ -205,7 +215,7 @@ Deno.serve(async () => {
       .maybeSingle()
 
     if (connErr || !conn) {
-      return new Response(JSON.stringify({ error: 'No Gmail connection' }), { status: 400 })
+      return new Response(JSON.stringify({ error: 'No Gmail connection' }), { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
     }
 
     // 2. Refresh token if expired
@@ -226,7 +236,7 @@ Deno.serve(async () => {
       .select('project_id, client_email')
 
     if (!rules || rules.length === 0) {
-      return new Response(JSON.stringify({ message: 'No email rules configured' }), { status: 200 })
+      return new Response(JSON.stringify({ message: 'No email rules configured' }), { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
     }
 
     // Build map: email → [project_ids]
@@ -383,14 +393,14 @@ Deno.serve(async () => {
 
     return new Response(
       JSON.stringify({ success: true, synced, skipped, total: messages.length }),
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
     )
 
   } catch (err) {
     console.error('gmail-sync error:', err)
     return new Response(
       JSON.stringify({ error: String(err) }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
     )
   }
 })
