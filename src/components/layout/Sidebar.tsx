@@ -20,6 +20,7 @@ import {
   Users,
   DollarSign,
   Sparkles,
+  LayoutDashboard,
   type LucideIcon
 } from 'lucide-react';
 import { useStore } from '../../store';
@@ -97,6 +98,7 @@ export function Sidebar() {
     section: 'v2',
     title: '✦ V2 Beta',
     items: [
+      { id: 'dashboard-v2', label: 'Dashboard V2', icon: LayoutDashboard, permission: 'can_view_dashboard' },
       { id: 'projects-v2', label: 'Projets V2', icon: Sparkles, permission: 'can_view_projects' },
       { id: 'monthly-dashboard', label: 'Mois en cours', icon: BarChart3, permission: 'can_view_projects' },
     ]

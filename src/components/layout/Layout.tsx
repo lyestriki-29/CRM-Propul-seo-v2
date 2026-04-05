@@ -27,6 +27,7 @@ const CommunicationKPI = lazy(() => import('../../modules/CommunicationKPI').the
 const PersonalTasks = lazy(() => import('../../modules/PersonalTasks').then(m => ({ default: m.PersonalTasks })));
 const CommunicationClients = lazy(() => import('../../modules/CommunicationClients').then(m => ({ default: m.CommunicationClients })));
 const ProjectsManagerV2 = lazy(() => import('../../modules/ProjectsManagerV2').then(m => ({ default: m.ProjectsManagerV2 })))
+const DashboardV2 = lazy(() => import('../../modules/DashboardV2').then(m => ({ default: m.DashboardV2 })))
 const MonthlyDashboard = lazy(() => import('../../modules/MonthlyDashboard').then(m => ({ default: m.MonthlyDashboard })));
 
 // Loading component
@@ -108,11 +109,12 @@ export function Layout() {
       'accounting': 'can_view_finance',
       'settings': 'can_view_settings',
       'monthly-dashboard': 'can_view_projects',
+      'dashboard-v2': 'can_view_dashboard',
     };
 
     // Ordre de priorité pour la redirection (même ordre que la sidebar)
     const modulePriority = [
-      'dashboard', 'crm', 'crm-bot-one', 'crm-erp',
+      'dashboard', 'dashboard-v2', 'crm', 'crm-bot-one', 'crm-erp',
       'projects', 'projects-v2', 'monthly-dashboard',
       'communication', 'communication-kpi',
       'communication-clients', 'accounting', 'settings'
@@ -151,6 +153,7 @@ export function Layout() {
       'communication-kpi': 'can_view_communication',
       'communication-clients': 'can_view_communication',
       'monthly-dashboard': 'can_view_projects',
+      'dashboard-v2': 'can_view_dashboard',
     };
 
     const permission = modulePermissions[module];
@@ -220,6 +223,8 @@ export function Layout() {
         return wrappedComponent(CommunicationClients);
       case 'projects-v2':
         return wrappedComponent(ProjectsManagerV2);
+      case 'dashboard-v2':
+        return wrappedComponent(DashboardV2);
       case 'monthly-dashboard':
         return wrappedComponent(MonthlyDashboard);
       default:
