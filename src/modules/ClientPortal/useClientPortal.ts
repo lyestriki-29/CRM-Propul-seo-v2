@@ -89,7 +89,7 @@ export function useClientPortal() {
   // Génère un token et active le portail (client authentifié)
   const generateToken = useCallback(async (projectId: string): Promise<string | null> => {
     const token = crypto.randomUUID()
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('projects_v2')
       .update({ portal_token: token, portal_enabled: true })
       .eq('id', projectId)
@@ -100,7 +100,7 @@ export function useClientPortal() {
 
   // Désactive le portail et efface le token (client authentifié)
   const revokeToken = useCallback(async (projectId: string): Promise<boolean> => {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('projects_v2')
       .update({ portal_token: null, portal_enabled: false })
       .eq('id', projectId)
