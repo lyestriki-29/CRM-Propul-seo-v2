@@ -8,6 +8,7 @@ import { CompletionScore } from '../../ProjectsManagerV2/components/CompletionSc
 import { DeadlineBadge } from '../../ProjectsManagerV2/components/DeadlineBadge'
 import { NextActionCard } from './NextActionCard'
 import { AiSummaryCard } from './AiSummaryCard'
+import { SharePortalButton } from './SharePortalButton'
 import { useProjectsV2Context } from '../../ProjectsManagerV2/context/ProjectsV2Context'
 import type { ProjectV2 } from '../../../types/project-v2'
 
@@ -155,6 +156,9 @@ export function ProjectOverview({ project, onRefresh }: ProjectOverviewProps) {
 
       {/* Résumé IA */}
       <AiSummaryCard project={project} onRefresh={onRefresh} />
+
+      {/* Portail client */}
+      <SharePortalButton project={project} onRefresh={onRefresh} />
     </div>
   )
 }
