@@ -98,6 +98,7 @@ export function Sidebar() {
     title: '✦ V2 Beta',
     items: [
       { id: 'projects-v2', label: 'Projets V2', icon: Sparkles, permission: 'can_view_projects' },
+      { id: 'monthly-dashboard', label: 'Mois en cours', icon: BarChart3, permission: 'can_view_projects' },
     ]
   };
 
