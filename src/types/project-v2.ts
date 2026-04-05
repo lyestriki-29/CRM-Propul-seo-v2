@@ -46,6 +46,9 @@ export interface ProjectV2 {
   siret: string | null
   company_data: Record<string, unknown> | null
   company_enriched_at: string | null
+  // === RÉSUMÉ IA ===
+  ai_summary: { situation: string; action: string; milestone: string } | null
+  ai_summary_generated_at: string | null
   created_at: string
   updated_at: string
 }
