@@ -1,23 +1,23 @@
-# Session State — 2026-04-05 23:00
+# Session State — 2026-04-06 17:30
 
 ## Branch
 main
 
 ## Completed This Session
-- Fix CORS gmail-sync : ajout CORS_HEADERS + gestion OPTIONS → edge function v15 déployée
-- Migration DB : schéma complet (49 tables V1 + 12 V2) appliqué sur nouveau projet Supabase
-- Migration données : 13 crmerp_leads migrés depuis ancienne DB (tbuqctfgjjxnevmsvucl)
-- Projet Lolett (projects_v2) conservé intact dans nouveau projet
+- ContactCard sidebar: `ProjectV2RightSidebar.tsx` + `useProjectClient.ts` — fiche client avec tel/email copiables
+- Activity tracker (overview): `ProjectOverview.tsx` — cartes cliquables/dépliables par type (email/appel/RDV/tâche/note)
+- Détails riches: email corps+PJ téléchargeables, RDV date/lieu/participants, appel direction+durée, tâche statut+échéance
+- Filtres par type dans l'en-tête du tracker
 
 ## Next Task
-Tester l'app en prod : vérifier que toutes les features fonctionnent avec le nouveau schéma complet (contacts, crmerp, chat, communication, tâches). Commencer par ouvrir chaque module et vérifier qu'il charge sans erreur 404/RLS.
+Aucune tâche définie — demander à l'utilisateur quoi faire ensuite sur ProjectDetailsV2 ou autre module
 
 ## Blockers
-Users non migrés — les users de l'ancienne DB ne peuvent pas être copiés (auth_user_id lié à l'ancien projet Supabase). Ils devront se reconnecter sur le nouveau projet → trigger handle_new_user les crée automatiquement.
+None
 
 ## Key Context
+- `ProjectActivity.metadata` est `Record<string, unknown>` → toujours caster avec `as` ou `!!` avant usage JSX pour éviter TS2322
+- `useActivitiesV2(project.id)` retourne `{activities, loading, addActivity}` depuis table `project_activities_v2`
+- `useProjectClient(clientId)` dans `hooks/useProjectClient.ts` — nouveau hook, requête table `clients`
+- Build passe avec `✓` malgré des erreurs TS pre-existantes dans d'autres fichiers (UserSelector, ActivityCard, etc.)
 - Nouveau projet Supabase : wftozvnvstxzvfplveyz (eu-west-1)
-- Ancienne DB source : tbuqctfgjjxnevmsvucl (compte différent, service role key dans historique de conversation)
-- gmail-sync v15 déployée avec CORS headers — l'erreur réseau était due à l'absence de Access-Control-Allow-Origin dans les réponses
-- init_new_project.sql généré dans supabase/ (à supprimer ou archiver, ne pas rejouer)
-- RLS non configurée sur les nouvelles tables V1 — à faire si besoin de sécurité multi-user

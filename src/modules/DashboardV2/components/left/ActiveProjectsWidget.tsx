@@ -1,5 +1,5 @@
 // src/modules/DashboardV2/components/left/ActiveProjectsWidget.tsx
-import { Briefcase, ChevronRight, ArrowRight } from 'lucide-react'
+import { Briefcase, ChevronRight, ArrowRight, CalendarClock, User, Zap } from 'lucide-react'
 import { Skeleton } from '../../../../components/ui/skeleton'
 import { cn } from '../../../../lib/utils'
 import type { ProjectV2, ProjectStatusV2 } from '../../../../types/project-v2'
@@ -23,18 +23,16 @@ const STATUS_CONFIG: Record<ProjectStatusV2, { label: string; color: string }> =
   closed:        { label: 'Clôturé',     color: 'bg-gray-500/20 text-gray-400 border-gray-500/20' },
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-500'
+function DeadlineBadge({ endDate }: { endDate: string | null }) {
+  if (!endDate) return null
+  const diff = Math.ceil((new Date(endDate).getTime() - Date.now()) / 86_400_000)
+  const label = diff < 0 ? `${Math.abs(diff)}j de retard` : diff === 0 ? "Aujourd'hui" : diff === 1 ? 'Demain' : `dans ${diff}j`
+  const color = diff < 0 ? 'text-red-400' : diff <= 7 ? 'text-amber-400' : 'text-muted-foreground'
   return (
-    <div className="flex items-center gap-2 mt-1">
-      <div className="flex-1 h-1 rounded-full bg-border/30">
-        <div
-          className={cn('h-1 rounded-full transition-all', color)}
-          style={{ width: `${Math.min(score, 100)}%` }}
-        />
-      </div>
-      <span className="text-[10px] text-muted-foreground shrink-0">{score}%</span>
-    </div>
+    <span className={cn('flex items-center gap-1', color)}>
+      <CalendarClock className="h-3 w-3 shrink-0" />
+      {label}
+    </span>
   )
 }
 
@@ -90,7 +88,21 @@ export function ActiveProjectsWidget({
                   {project.client_name && (
                     <p className="text-[10px] text-muted-foreground truncate mt-0.5">{project.client_name}</p>
                   )}
-                  <ScoreBar score={project.completion_score} />
+                  <div className="flex items-center gap-3 mt-1 text-[10px]">
+                    <DeadlineBadge endDate={project.end_date} />
+                    {project.assigned_name && (
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <User className="h-3 w-3 shrink-0" />
+                        <span className="truncate max-w-[70px]">{project.assigned_name}</span>
+                      </span>
+                    )}
+                  </div>
+                  {project.next_action_label && (
+                    <p className="flex items-center gap-1 text-[10px] text-violet-400 mt-1 truncate">
+                      <Zap className="h-3 w-3 shrink-0" />
+                      {project.next_action_label}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className={cn(
