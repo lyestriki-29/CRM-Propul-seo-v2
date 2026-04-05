@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import type { CRMERPLead, CRMERPStatus } from '../types'
-import { CRMERP_STATUS_LABELS, CRMERP_STATUS_COLORS, CRMERP_STATUSES } from '../types'
+import { CRMERP_STATUS_LABELS, CRMERP_STATUS_COLORS } from '../types'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -119,14 +119,14 @@ export function LeadLeftSidebar({ lead, users, onEdit, onAssign }: Props) {
           </p>
         </div>
         <Select
-          value={lead.assignee_id ?? ''}
-          onValueChange={v => onAssign(v || null)}
+          value={lead.assignee_id ?? '__none__'}
+          onValueChange={v => onAssign(v === '__none__' ? null : v)}
         >
           <SelectTrigger className="h-7 text-xs bg-[#0f0b1e] border-[rgba(139,92,246,0.25)]">
             <SelectValue placeholder="Choisir un responsable" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">— Non assigné</SelectItem>
+            <SelectItem value="__none__">— Non assigné</SelectItem>
             {users.map(u => (
               <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
             ))}
