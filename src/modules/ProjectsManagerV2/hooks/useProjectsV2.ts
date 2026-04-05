@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
+import { triggerStatusAutomations } from '../../../services/automationService'
 import type { ProjectV2, ProjectStatusV2 } from '../../../types/project-v2'
 
 interface UseProjectsV2Return {
@@ -33,6 +34,7 @@ export function useProjectsV2(): UseProjectsV2Return {
   }, [fetchProjects])
 
   const updateProjectStatus = useCallback(async (id: string, newStatus: ProjectStatusV2) => {
+    const fromStatus = projects.find(p => p.id === id)?.status
     const { data, error } = await supabase
       .from('projects_v2')
       .update({ status: newStatus })
@@ -41,8 +43,14 @@ export function useProjectsV2(): UseProjectsV2Return {
       .single()
     if (!error && data) {
       setProjects(prev => prev.map(p => p.id === id ? data as ProjectV2 : p))
+      // Déclencher les automatisations en arrière-plan (ne bloque pas l'UI)
+      if (fromStatus && fromStatus !== newStatus) {
+        triggerStatusAutomations(id, fromStatus, newStatus).catch(err =>
+          console.error('[automation] triggerStatusAutomations failed:', err)
+        )
+      }
     }
-  }, [])
+  }, [projects])
 
   const updateProject = useCallback(async (id: string, updates: Partial<ProjectV2>) => {
     const { data, error } = await supabase
