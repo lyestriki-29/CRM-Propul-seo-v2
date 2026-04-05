@@ -1,0 +1,8 @@
+export { ProjectDetailsTabs } from './ProjectDetailsTabs'
+export { ProjectOverview } from './ProjectOverview'
+export { ProjectChecklist } from './ProjectChecklist'
+export { ProjectTimeline } from './ProjectTimeline'
+export { ProjectAccesses } from './ProjectAccesses'
+export { ProjectDocuments } from './ProjectDocuments'
+export { ProjectBrief } from './ProjectBrief'
+export { ProjectBilling } from './ProjectBilling'

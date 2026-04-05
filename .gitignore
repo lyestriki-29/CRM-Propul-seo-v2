@@ -1,0 +1,62 @@
+# ===== SECURITE - FICHIERS SENSIBLES =====
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.backup
+*.backup
+*.key
+*.pem
+*.secret
+secrets/
+credentials/
+
+# Supabase
+supabase/.env
+supabase/.temp/
+
+# ===== LOGS =====
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===== BUILD =====
+node_modules
+dist
+dist-ssr
+build
+.next
+*.local
+
+# ===== IDE =====
+.vscode/*
+!.vscode/extensions.json
+.idea
+.bolt/
+.claude/
+.cursor/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== TEST =====
+coverage/
+.nyc_output/
+
+# ===== CACHE =====
+.cache/
+.parcel-cache/
+.eslintcache
+*.tsbuildinfo
+# Update
