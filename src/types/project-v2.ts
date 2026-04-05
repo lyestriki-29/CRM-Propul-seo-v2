@@ -43,6 +43,9 @@ export interface ProjectV2 {
   is_archived: boolean
   next_action_label: string | null
   next_action_due: string | null
+  siret: string | null
+  company_data: Record<string, unknown> | null
+  company_enriched_at: string | null
   created_at: string
   updated_at: string
 }
