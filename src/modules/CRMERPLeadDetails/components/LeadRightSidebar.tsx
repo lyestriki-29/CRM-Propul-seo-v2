@@ -3,11 +3,11 @@ import { cn } from '@/lib/utils'
 import type { CRMERPLead, CRMERPStatus } from '../types'
 import { CRMERP_STATUS_LABELS, CRMERP_STATUS_COLORS, CRMERP_STATUSES } from '../types'
 
-interface User { id: string; name: string; email: string }
+interface TeamUser { id: string; name: string; email: string }
 
 interface Props {
   lead: CRMERPLead
-  users: User[]
+  users: TeamUser[]
 }
 
 function RightSection({ title, action, children }: {

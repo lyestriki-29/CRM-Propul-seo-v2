@@ -80,11 +80,15 @@ function ActivityItem({
               </Button>
             </div>
           </div>
-          {expanded && activity.content && (
-            <p className="text-xs text-[#ede9fe] leading-relaxed whitespace-pre-wrap">{activity.content}</p>
-          )}
-          {activity.creator && (
-            <p className="text-[10px] text-[#9ca3af] mt-1">Par {activity.creator.name}</p>
+          {expanded && (
+            <>
+              {activity.content && (
+                <p className="text-xs text-[#ede9fe] leading-relaxed whitespace-pre-wrap">{activity.content}</p>
+              )}
+              {activity.creator && (
+                <p className="text-[10px] text-[#9ca3af] mt-1">Par {activity.creator.name}</p>
+              )}
+            </>
           )}
         </div>
       </div>

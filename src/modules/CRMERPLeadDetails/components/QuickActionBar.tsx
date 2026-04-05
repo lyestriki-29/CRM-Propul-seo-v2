@@ -53,6 +53,7 @@ export function QuickActionBar({ onAdd }: Props) {
         onClose={() => setOpen(false)}
         onSubmit={async (type, content) => { await onAdd(type, content); setOpen(false) }}
         activity={null}
+        defaultType={defaultType}
       />
     </>
   )

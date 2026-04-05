@@ -12,10 +12,11 @@ interface Props {
   onClose: () => void;
   onSubmit: (type: ActivityType, content: string) => Promise<void>;
   activity?: CRMERPActivity | null;
+  defaultType?: ActivityType;
 }
 
-export function ActivityModal({ open, onClose, onSubmit, activity }: Props) {
-  const [type, setType] = useState<ActivityType>('note');
+export function ActivityModal({ open, onClose, onSubmit, activity, defaultType }: Props) {
+  const [type, setType] = useState<ActivityType>(activity?.type ?? defaultType ?? 'note');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const isEdit = !!activity;
@@ -25,10 +26,10 @@ export function ActivityModal({ open, onClose, onSubmit, activity }: Props) {
       setType(activity.type);
       setContent(activity.content ?? '');
     } else {
-      setType('note');
+      setType(defaultType ?? 'note');
       setContent('');
     }
-  }, [activity, open]);
+  }, [activity, defaultType, open]);
 
   const handleSubmit = async () => {
     setSaving(true);
