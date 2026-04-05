@@ -1,4 +1,4 @@
-import { AlertTriangle, Briefcase, CheckCircle, FileText, ChevronRight } from 'lucide-react'
+import { AlertTriangle, Briefcase, CheckCircle, FileText, ChevronRight, Mail, CheckCheck } from 'lucide-react'
 import { Badge } from '../../../../components/ui/badge'
 import { Skeleton } from '../../../../components/ui/skeleton'
 import { cn } from '../../../../lib/utils'
@@ -9,18 +9,20 @@ interface PriorityActionsWidgetProps {
   loading: boolean
   onNavigateToProject: (id: string) => void
   onNavigateToLead: (id: string) => void
+  onMarkEmailReplied?: (activityId: string) => void
 }
 
 const SEVERITY_STYLES = {
-  red: { bar: 'bg-red-500', badge: 'bg-red-500/10 text-red-400 border-red-500/20', dot: 'bg-red-500' },
-  orange: { bar: 'bg-orange-500', badge: 'bg-orange-500/10 text-orange-400 border-orange-500/20', dot: 'bg-orange-500' },
-  yellow: { bar: 'bg-yellow-500', badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', dot: 'bg-yellow-500' },
+  red:    { bar: 'bg-red-500',    badge: 'bg-red-500/10 text-red-400 border-red-500/20' },
+  orange: { bar: 'bg-orange-500', badge: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
+  yellow: { bar: 'bg-yellow-500', badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
 }
 
 const TYPE_CONFIG = {
-  projet: { label: 'Projet', icon: Briefcase },
-  tache: { label: 'Tâche', icon: CheckCircle },
-  devis: { label: 'Devis', icon: FileText },
+  projet: { label: 'Projet',  icon: Briefcase },
+  tache:  { label: 'Tâche',   icon: CheckCircle },
+  devis:  { label: 'Devis',   icon: FileText },
+  email:  { label: 'Email',   icon: Mail },
 }
 
 export function PriorityActionsWidget({
@@ -28,10 +30,11 @@ export function PriorityActionsWidget({
   loading,
   onNavigateToProject,
   onNavigateToLead,
+  onMarkEmailReplied,
 }: PriorityActionsWidgetProps) {
   if (loading) return <Skeleton className="h-48 rounded-2xl" />
 
-  const handleAction = (item: PriorityActionItem) => {
+  const handleNavigate = (item: PriorityActionItem) => {
     if (item.projectId) onNavigateToProject(item.projectId)
     else if (item.leadId) onNavigateToLead(item.leadId)
   }
@@ -52,10 +55,11 @@ export function PriorityActionsWidget({
 
       <div className="space-y-2">
         {items.map(item => {
-          const styles = SEVERITY_STYLES[item.severity]
-          const typeConfig = TYPE_CONFIG[item.type]
-          const TypeIcon = typeConfig.icon
-          const isActionable = !!(item.projectId || item.leadId)
+          const styles    = SEVERITY_STYLES[item.severity]
+          const typeConf  = TYPE_CONFIG[item.type]
+          const TypeIcon  = typeConf.icon
+          const isEmail   = item.type === 'email'
+          const canNavigate = !!(item.projectId || item.leadId)
 
           return (
             <div
@@ -75,22 +79,43 @@ export function PriorityActionsWidget({
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-white truncate">{item.label}</p>
                 {item.subLabel && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{item.subLabel}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{item.subLabel}</p>
                 )}
               </div>
 
-              <Badge
-                variant="outline"
-                className={cn('text-[10px] shrink-0 border', styles.badge)}
-              >
-                {typeConfig.label}
+              <Badge variant="outline" className={cn('text-[10px] shrink-0 border', styles.badge)}>
+                {typeConf.label}
               </Badge>
 
-              {isActionable && (
+              {/* Email : bouton "Marquer répondu" */}
+              {isEmail && item.activityId && onMarkEmailReplied && (
                 <button
-                  onClick={() => handleAction(item)}
+                  onClick={() => onMarkEmailReplied(item.activityId!)}
+                  className="shrink-0 p-1 rounded-lg hover:bg-green-500/10 text-muted-foreground hover:text-green-400 transition-colors"
+                  aria-label="Marquer comme répondu"
+                  title="Marquer comme répondu"
+                >
+                  <CheckCheck className="h-3.5 w-3.5" />
+                </button>
+              )}
+
+              {/* Autres types : bouton navigation */}
+              {!isEmail && canNavigate && (
+                <button
+                  onClick={() => handleNavigate(item)}
                   className="shrink-0 p-1 rounded-lg hover:bg-surface-1 transition-colors"
                   aria-label={`Aller à ${item.label}`}
+                >
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              )}
+
+              {/* Email avec projet : bouton navigation également */}
+              {isEmail && canNavigate && (
+                <button
+                  onClick={() => handleNavigate(item)}
+                  className="shrink-0 p-1 rounded-lg hover:bg-surface-1 transition-colors"
+                  aria-label={`Ouvrir le projet`}
                 >
                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>

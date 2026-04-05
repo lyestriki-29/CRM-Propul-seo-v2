@@ -350,11 +350,14 @@ Deno.serve(async () => {
         }
       } else {
         // Regular email activity
+        const isUnread = Array.isArray(full.labelIds) && full.labelIds.includes('UNREAD')
         const metadata: Record<string, unknown> = {
           gmail_message_id: msg.id,
           from, date, subject,
           body:        body.substring(0, 2000),
           attachments: attachments.filter(a => !a.filename?.endsWith('.ics')),
+          is_unread:   isUnread,
+          is_replied:  false,
         }
 
         for (const projectId of matchedProjects) {

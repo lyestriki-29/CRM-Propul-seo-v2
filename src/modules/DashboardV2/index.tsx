@@ -1,5 +1,5 @@
 // src/modules/DashboardV2/index.tsx
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Zap } from 'lucide-react'
@@ -14,10 +14,12 @@ import { RevenueChartWidget } from './components/left/RevenueChartWidget'
 import { ActiveProjectsWidget } from './components/left/ActiveProjectsWidget'
 import { useDashboardData } from './hooks/useDashboardData'
 import { useDashboardRealtime } from './hooks/useDashboardRealtime'
+import { useUnreadEmails } from './hooks/useUnreadEmails'
 
 export function DashboardV2() {
   const { navigateWithContext } = useStore()
   const data = useDashboardData()
+  const { emails, markAsReplied } = useUnreadEmails()
 
   // useDashboardRealtime déclenche un refresh quand une table change.
   // Les hooks Supabase existants (useProjectsV2, useSupabaseTasks, etc.)
@@ -32,13 +34,28 @@ export function DashboardV2() {
     [navigateWithContext]
   )
 
+  // Fusionner emails non répondus dans les actions prioritaires
+  const allPriorityItems = useMemo(() => {
+    const emailItems = emails.map(e => ({
+      id: `email-${e.id}`,
+      type: 'email' as const,
+      label: e.metadata?.subject ?? e.content,
+      subLabel: e.metadata?.from ?? undefined,
+      severity: 'orange' as const,
+      projectId: e.project_id ?? undefined,
+      activityId: e.id,
+    }))
+    return [...emailItems, ...data.priorityActions].slice(0, 8)
+  }, [emails, data.priorityActions])
+
   const leftColumn = (
     <>
       <PriorityActionsWidget
-        items={data.priorityActions}
+        items={allPriorityItems}
         loading={data.loading}
         onNavigateToProject={data.handleNavigateToProject}
         onNavigateToLead={data.handleNavigateToLead}
+        onMarkEmailReplied={markAsReplied}
       />
       <ActiveProjectsWidget
         projects={data.activeProjectsList}

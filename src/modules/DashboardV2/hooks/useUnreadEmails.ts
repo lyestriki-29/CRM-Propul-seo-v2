@@ -1,0 +1,68 @@
+// src/modules/DashboardV2/hooks/useUnreadEmails.ts
+// Emails Gmail reçus non répondus (is_replied !== true) depuis project_activities_v2
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '../../../lib/supabase'
+
+export interface UnreadEmail {
+  id: string
+  project_id: string | null
+  content: string
+  created_at: string
+  metadata: {
+    from?: string
+    subject?: string
+    is_unread?: boolean
+    is_replied?: boolean
+    gmail_message_id?: string
+  }
+}
+
+export function useUnreadEmails() {
+  const [emails, setEmails] = useState<UnreadEmail[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchEmails = useCallback(async () => {
+    const { data } = await supabase
+      .from('project_activities_v2')
+      .select('id, project_id, content, created_at, metadata')
+      .eq('type', 'email')
+      .eq('is_auto', true)
+      // Montre les emails non explicitement marqués comme répondus
+      .not('metadata->>is_replied', 'eq', 'true')
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    setEmails((data ?? []) as UnreadEmail[])
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    fetchEmails()
+  }, [fetchEmails])
+
+  const markAsReplied = useCallback(async (id: string) => {
+    // Optimistic update
+    setEmails(prev => prev.filter(e => e.id !== id))
+
+    const { data: current } = await supabase
+      .from('project_activities_v2')
+      .select('metadata')
+      .eq('id', id)
+      .single()
+
+    const updatedMetadata = {
+      ...((current as any)?.metadata ?? {}),
+      is_replied: true,
+      is_unread: false,
+    }
+    // Le type généré de project_activities_v2 ne déclare pas metadata comme updatable
+    // → on passe par le client non-typé pour cet update spécifique
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
+      .from('project_activities_v2')
+      .update({ metadata: updatedMetadata })
+      .eq('id', id)
+  }, [])
+
+  return { emails, loading, markAsReplied, refetch: fetchEmails }
+}

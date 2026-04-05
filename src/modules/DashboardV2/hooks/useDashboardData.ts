@@ -6,12 +6,13 @@ import { useStore } from '../../../store/useStore'
 
 export interface PriorityActionItem {
   id: string
-  type: 'projet' | 'tache' | 'devis'
+  type: 'projet' | 'tache' | 'devis' | 'email'
   label: string
   subLabel?: string
   severity: 'red' | 'orange' | 'yellow'
   projectId?: string
   leadId?: string
+  activityId?: string   // pour les emails — permet le markAsReplied
 }
 
 export interface DashboardKpis {
