@@ -1,5 +1,5 @@
 // src/modules/ProjectDetailsV2/components/SharePortalButton.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link2, Link2Off, Copy, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -44,12 +44,21 @@ export function SharePortalButton({ project, onRefresh }: SharePortalButtonProps
     }
   }
 
+  useEffect(() => {
+    if (!copied) return
+    const timer = setTimeout(() => setCopied(false), 2000)
+    return () => clearTimeout(timer)
+  }, [copied])
+
   const handleCopy = async () => {
     if (!portalUrl) return
-    await navigator.clipboard.writeText(portalUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-    toast.success('Lien copié !')
+    try {
+      await navigator.clipboard.writeText(portalUrl)
+      setCopied(true)
+      toast.success('Lien copié !')
+    } catch {
+      toast.error('Impossible de copier le lien')
+    }
   }
 
   if (loading) {
