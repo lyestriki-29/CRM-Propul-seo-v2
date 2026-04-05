@@ -113,7 +113,8 @@ export function Layout() {
     // Ordre de priorité pour la redirection (même ordre que la sidebar)
     const modulePriority = [
       'dashboard', 'crm', 'crm-bot-one', 'crm-erp',
-      'projects', 'communication', 'communication-kpi',
+      'projects', 'projects-v2', 'monthly-dashboard',
+      'communication', 'communication-kpi',
       'communication-clients', 'accounting', 'settings'
     ];
 

@@ -54,7 +54,9 @@ export function useMonthlyData(): MonthlyMetrics & { refetch: () => void } {
 
     // CA encaissé : factures paid dans le mois en cours
     const caEncaisse = allInvoices
-      .filter(inv => inv.status === 'paid' && inv.date && inv.date >= monthStart && inv.date <= monthEnd)
+      .filter(inv => inv.status === 'paid' && inv.date &&
+        inv.date.slice(0, 10) >= monthStart.slice(0, 10) &&
+        inv.date.slice(0, 10) <= monthEnd.slice(0, 10))
       .reduce((sum, inv) => sum + (inv.amount ?? 0), 0)
 
     // CA en attente : toutes factures sent ou overdue
