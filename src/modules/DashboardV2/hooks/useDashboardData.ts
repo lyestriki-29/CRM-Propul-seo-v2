@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { useProjectsV2 } from '../../ProjectsManagerV2/hooks/useProjectsV2'
 import { useSupabaseTasks, useSupabaseLeads, useSupabaseAccountingEntries } from '../../../hooks/useSupabaseData'
 import { useStore } from '../../../store/useStore'
-import type { ProjectV2 } from '../../../types/project-v2'
 
 export interface PriorityActionItem {
   id: string
@@ -43,9 +42,10 @@ export function useDashboardData() {
       t => t.deadline === today && (t.status as string) !== 'done'
     ).length
 
+    // month_key n'existe pas dans le type AccountingEntryRow — on le dérive de entry_date
     const monthRevenue = (accountingEntries ?? [])
-      .filter(e => (e as any).month_key === currentMonthKey && e.type === 'revenue')
-      .reduce((sum, e) => sum + Number((e as any).amount ?? 0), 0)
+      .filter(e => e.entry_date?.slice(0, 7) === currentMonthKey && e.type === 'revenue')
+      .reduce((sum, e) => sum + Number(e.amount ?? 0), 0)
 
     return {
       activeProjects,
@@ -116,9 +116,10 @@ export function useDashboardData() {
     const currentYear = new Date().getFullYear()
     return Array.from({ length: 12 }, (_, i) => {
       const monthKey = `${currentYear}-${String(i + 1).padStart(2, '0')}`
+      // month_key n'existe pas dans le type AccountingEntryRow — on le dérive de entry_date
       const revenue = (accountingEntries ?? [])
-        .filter(e => (e as any).month_key === monthKey && e.type === 'revenue')
-        .reduce((sum, e) => sum + Number((e as any).amount ?? 0), 0)
+        .filter(e => e.entry_date?.slice(0, 7) === monthKey && e.type === 'revenue')
+        .reduce((sum, e) => sum + Number(e.amount ?? 0), 0)
       return { monthKey, revenue }
     })
   }, [accountingEntries])
