@@ -46,7 +46,7 @@ export function UpcomingMeetingsWidget({ onNavigateToProject }: UpcomingMeetings
         .filter(m => {
           if (!m.metadata?.start) return false
           const d = parseISO(m.metadata.start)
-          return isAfter(d, now) && d.getTime() <= limit.getTime()
+          return isAfter(d, now) && d.getTime() < limit.getTime()
         })
         .sort((a, b) =>
           parseISO(a.metadata.start!).getTime() - parseISO(b.metadata.start!).getTime()
