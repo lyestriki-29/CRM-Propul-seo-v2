@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { cn } from '../../../lib/utils'
+import { supabase } from '../../../lib/supabase'
 import type { ProjectV2, ProjectStatusV2, PrestaType } from '../../../types/project-v2'
 import { MOCK_USERS } from '../mocks/mockUsers'
 
@@ -20,7 +21,13 @@ export function EditProjectModal({ project, onSave, onClose }: EditProjectModalP
     budget:      project.budget != null ? String(project.budget) : '',
     end_date:    project.end_date ?? '',
     client_name: project.client_name ?? '',
+    siret:       project.siret ?? '',
   })
+
+  const [enriching, setEnriching] = useState(false)
+  const [enrichedName, setEnrichedName] = useState<string | null>(
+    project.company_enriched_at ? (project.company_data as any)?.nom_entreprise ?? (project.company_data as any)?.denomination ?? null : null
+  )
 
   const togglePrestaType = (type: PrestaType) => {
     setForm(prev => ({
@@ -29,6 +36,28 @@ export function EditProjectModal({ project, onSave, onClose }: EditProjectModalP
         ? prev.presta_type.filter(t => t !== type)
         : [...prev.presta_type, type],
     }))
+  }
+
+  const handleEnrich = async () => {
+    const cleanSiret = form.siret.replace(/\s/g, '')
+    if (!/^\d{14}$/.test(cleanSiret)) {
+      alert('SIRET invalide — 14 chiffres requis')
+      return
+    }
+    setEnriching(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('enrich-siret', {
+        body: { project_id: project.id, siret: cleanSiret },
+      })
+      if (error) throw error
+      setEnrichedName(data.company_name ?? null)
+      onSave({ siret: cleanSiret })
+    } catch (err) {
+      alert('Erreur enrichissement Pappers')
+      console.error('[enrich-siret]', err)
+    } finally {
+      setEnriching(false)
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,6 +76,7 @@ export function EditProjectModal({ project, onSave, onClose }: EditProjectModalP
       end_date:      form.end_date || null,
       client_name:   form.client_name.trim() || null,
       category:      form.presta_type[0] ?? project.category,
+      siret:         form.siret.trim() || null,
     })
   }
 
@@ -174,6 +204,33 @@ export function EditProjectModal({ project, onSave, onClose }: EditProjectModalP
               onChange={e => setForm({ ...form, end_date: e.target.value })}
               className="w-full p-2 border border-border rounded-md bg-surface-2 text-foreground text-sm"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">SIRET</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={form.siret}
+                onChange={e => setForm({ ...form, siret: e.target.value })}
+                placeholder="12345678901234"
+                maxLength={14}
+                className="flex-1 p-2 border border-border rounded-md bg-surface-2 text-foreground text-sm font-mono"
+              />
+              <button
+                type="button"
+                onClick={handleEnrich}
+                disabled={enriching || form.siret.replace(/\s/g, '').length !== 14}
+                className="px-3 py-2 text-xs rounded-md border border-primary text-primary hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {enriching ? '...' : 'Enrichir'}
+              </button>
+            </div>
+            {enrichedName && (
+              <p className="mt-1 text-xs text-emerald-400 flex items-center gap-1">
+                <span>✓</span> Données enrichies via Pappers : <strong>{enrichedName}</strong>
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3 pt-2">
