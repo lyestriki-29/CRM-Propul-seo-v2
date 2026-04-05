@@ -28,20 +28,23 @@ export function AiSummaryCard({ project, onRefresh }: AiSummaryCardProps) {
   const hoursSince = generatedAt ? differenceInHours(new Date(), parseISO(generatedAt)) : null
   const isFresh = hoursSince !== null && hoursSince < 24
 
-  const handleGenerate = () => generate(project.id)
+  const handleGenerate = async () => {
+    await generate(project.id)
+    setForceRegen(false)
+  }
 
   return (
     <Card className="bg-surface-2 border-border">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
             Résumé IA
           </CardTitle>
           <div className="flex items-center gap-2">
             {generatedAt && (
               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock className="h-3 w-3" aria-hidden="true" />
                 {formatDistanceToNow(parseISO(generatedAt), { locale: fr, addSuffix: true })}
               </span>
             )}
@@ -100,7 +103,7 @@ export function AiSummaryCard({ project, onRefresh }: AiSummaryCardProps) {
           </p>
         )}
 
-        {summary && !generating && (
+        {summary && (
           <div className="space-y-3">
             {BLOCKS.map((block) => (
               <div key={block.key}>
