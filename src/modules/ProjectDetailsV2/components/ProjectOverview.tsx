@@ -7,11 +7,13 @@ import { PrestaList } from '../../ProjectsManagerV2/components/PrestaBadge'
 import { CompletionScore } from '../../ProjectsManagerV2/components/CompletionScore'
 import { DeadlineBadge } from '../../ProjectsManagerV2/components/DeadlineBadge'
 import { NextActionCard } from './NextActionCard'
+import { AiSummaryCard } from './AiSummaryCard'
 import { useProjectsV2Context } from '../../ProjectsManagerV2/context/ProjectsV2Context'
 import type { ProjectV2 } from '../../../types/project-v2'
 
 interface ProjectOverviewProps {
   project: ProjectV2
+  onRefresh?: () => void
 }
 
 function MetricCard({ icon: Icon, label, value, sub }: {
@@ -32,7 +34,7 @@ function MetricCard({ icon: Icon, label, value, sub }: {
   )
 }
 
-export function ProjectOverview({ project }: ProjectOverviewProps) {
+export function ProjectOverview({ project, onRefresh }: ProjectOverviewProps) {
   const { updateProject } = useProjectsV2Context()
 
   const formatDate = (d: string | null) =>
@@ -150,6 +152,9 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
 
       {/* Prochaine action */}
       <NextActionCard project={project} onUpdate={handleNextActionUpdate} />
+
+      {/* Résumé IA */}
+      <AiSummaryCard project={project} onRefresh={onRefresh ?? (() => {})} />
     </div>
   )
 }

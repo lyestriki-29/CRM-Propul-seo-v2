@@ -9,6 +9,7 @@ import { ProjectBilling } from './ProjectBilling'
 import { ProjectFollowUp } from './ProjectFollowUp'
 import { ProjectEmailRules } from './ProjectEmailRules'
 import type { ProjectV2 } from '../../../types/project-v2'
+import { useProjectsV2Context } from '../../ProjectsManagerV2/context/ProjectsV2Context'
 
 type TabId = 'overview' | 'checklist' | 'timeline' | 'documents' | 'billing' | 'followup' | 'gmail'
 
@@ -24,10 +25,11 @@ const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
 
 export function ProjectDetailsTabsV2({ project }: { project: ProjectV2 }) {
   const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const { refetch } = useProjectsV2Context()
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':  return <ProjectOverview project={project} />
+      case 'overview':  return <ProjectOverview project={project} onRefresh={refetch} />
       case 'checklist': return <ProjectChecklist project={project} />
       case 'timeline':  return <ProjectTimeline projectId={project.id} />
       case 'documents': return <ProjectDocuments projectId={project.id} />
