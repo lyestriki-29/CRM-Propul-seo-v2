@@ -26,6 +26,14 @@ serve(async (req) => {
       )
     }
 
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(project_id)) {
+      return new Response(
+        JSON.stringify({ error: 'project_id doit être un UUID valide' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
     if (!anthropicKey) {
       return new Response(
@@ -140,32 +148,41 @@ Réponds UNIQUEMENT en JSON strict, sans texte avant ni après :
     } catch {
       console.error('[generate-ai-summary] JSON invalide:', rawText)
       return new Response(
-        JSON.stringify({ error: 'Réponse Claude non parseable', raw: rawText }),
+        JSON.stringify({ error: 'Réponse Claude non parseable' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     if (!summary.situation || !summary.action || !summary.milestone) {
+      console.error('[generate-ai-summary] Structure JSON Claude incomplète:', summary)
       return new Response(
-        JSON.stringify({ error: 'Structure JSON Claude incomplète', raw: summary }),
+        JSON.stringify({ error: 'Structure JSON Claude incomplète' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     // 6. Persister le résumé
-    const { error: updateError } = await supabase
+    const { error: updateError, count } = await supabase
       .from('projects_v2')
       .update({
         ai_summary: summary,
         ai_summary_generated_at: new Date().toISOString(),
       })
       .eq('id', project_id)
+      .select('id', { count: 'exact', head: true })
 
     if (updateError) {
       console.error('[generate-ai-summary] Erreur update:', updateError.message)
       return new Response(
         JSON.stringify({ error: 'Erreur sauvegarde résumé', detail: updateError.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!count || count === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Projet introuvable lors de la sauvegarde' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
