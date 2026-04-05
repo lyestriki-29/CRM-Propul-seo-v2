@@ -13,7 +13,7 @@ import type { ProjectV2 } from '../../../types/project-v2'
 
 interface ProjectOverviewProps {
   project: ProjectV2
-  onRefresh?: () => void
+  onRefresh: () => void
 }
 
 function MetricCard({ icon: Icon, label, value, sub }: {
@@ -154,7 +154,7 @@ export function ProjectOverview({ project, onRefresh }: ProjectOverviewProps) {
       <NextActionCard project={project} onUpdate={handleNextActionUpdate} />
 
       {/* Résumé IA */}
-      <AiSummaryCard project={project} onRefresh={onRefresh ?? (() => {})} />
+      <AiSummaryCard project={project} onRefresh={onRefresh} />
     </div>
   )
 }
