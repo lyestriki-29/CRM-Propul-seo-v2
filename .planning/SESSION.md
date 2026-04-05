@@ -1,25 +1,29 @@
-# Session State — 2026-04-05 22:00
+# Session State — 2026-04-05 23:30
 
 ## Branch
 main
 
 ## Completed This Session
-- Sprint 1 Feature 2 : badge "prochaine action" sur cartes Kanban + card éditable dans Vue d'ensemble
-- Sprint 1 Feature 5 : service automationService + intégration dans updateProjectStatus (fire-and-forget)
-- Migration Supabase : next_action_label, next_action_due, automation_logs
-- Roadmap V3 : docs/superpowers/plans/ROADMAP_V3.md (4 sprints documentés)
-- Plan Sprint 1 : docs/superpowers/plans/2026-04-05-sprint1-next-action-automations.md
+- Sprint 2 Feature 4 : Champ SIRET + Edge Function enrich-siret + enrichissement Pappers
+- Sprint 2 Feature 6 : Dashboard "Mois en cours" (4 métriques CA + listes projets)
+- Migration Supabase : siret, company_data, company_enriched_at sur projects_v2
+- Fixes sécurité Edge Function : POST-only, zero-row detection, error masking
+- Fixes qualité : toast sonner, date comparison bug, modulePriority Layout
 
 ## Next Task
-Sprint 2 — Session 2 : Feature 4 (Enrichissement SIRET/Pappers) + Feature 6 (Dashboard "Mois en cours")
-Commencer par lire ROADMAP_V3.md puis rédiger le plan Sprint 2
+Sprint 3 — Feature 1 (Résumé IA automatique de la fiche client)
+- Bouton "Résumer avec IA" dans ProjectOverview
+- Edge Function Supabase → Claude API claude-sonnet-4-6
+- 3 blocs : Situation actuelle · Action en cours · Prochain jalon
+- Persisté : ai_summary (JSONB), ai_summary_generated_at
+- Lire ROADMAP_V3.md puis rédiger le plan Sprint 3
 
 ## Blockers
-None
+- PAPPERS_API_KEY non encore configurée dans Supabase env — la function enrich-siret retournera 500 jusqu'à ajout de la clé
 
 ## Key Context
 - Repo GitHub : https://github.com/lyestriki-29/CRM-Propul-seo-v2.git (branch main)
 - Projet Supabase : wftozvnvstxzvfplveyz
-- Stack V2 : modules dans src/modules/ProjectsManagerV2/ + src/modules/ProjectDetailsV2/
-- Context V2 : useProjectsV2Context() dans ProjectsV2Context.tsx — source de vérité pour les projets
-- Commits Sprint 1 : fb3ae8b → 3634ad8 (10 commits)
+- Stack V2 : modules dans src/modules/ProjectsManagerV2/ + src/modules/ProjectDetailsV2/ + src/modules/MonthlyDashboard/
+- Commits Sprint 2 : 023c1eb → 3d1116d (11 commits)
+- ANTHROPIC_API_KEY déjà présente en V2 (Sprint 3 peut l'utiliser directement)
