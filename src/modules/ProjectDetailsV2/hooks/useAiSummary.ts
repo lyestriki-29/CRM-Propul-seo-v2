@@ -22,7 +22,17 @@ export function useAiSummary(onSuccess: () => void): UseAiSummaryResult {
       })
 
       if (fnError) {
-        setError(fnError.message ?? 'Erreur lors de la génération du résumé')
+        // Extraire le détail depuis le body de la réponse si disponible
+        let detail = fnError.message ?? 'Erreur lors de la génération du résumé'
+        try {
+          const ctx = (fnError as any).context
+          if (ctx instanceof Response) {
+            const body = await ctx.json()
+            if (body?.detail) detail = `${body.error} — ${body.detail}`
+            else if (body?.error) detail = body.error
+          }
+        } catch { /* ignore */ }
+        setError(detail)
         return
       }
 

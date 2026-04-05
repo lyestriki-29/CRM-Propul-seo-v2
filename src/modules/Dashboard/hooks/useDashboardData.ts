@@ -83,6 +83,10 @@ export function useDashboardData() {
     navigateWithContext('tasks', {});
   };
 
+  const handleNavigateToProject = (id: string) => {
+    navigateWithContext('projects-v2', { projectId: id });
+  };
+
   const formattedDate = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long',
     day: 'numeric',
@@ -92,6 +96,7 @@ export function useDashboardData() {
 
   return {
     mounted,
+    projects,
     currentYear,
     currentYearRevenue,
     contactsCount,
@@ -108,5 +113,6 @@ export function useDashboardData() {
     handleNavigateToCRM,
     handleNavigateToProjects,
     handleNavigateToTasks,
+    handleNavigateToProject,
   };
 }

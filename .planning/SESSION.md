@@ -1,26 +1,29 @@
-# Session State — 2026-04-05 14:00
+# Session State — 2026-04-05 20:30
 
 ## Branch
 main
 
 ## Completed This Session
-- Migration portal_token : appliquée via MCP Supabase
-- Migration sprint2 (siret + company_data) : appliquée
-- Migration sprint3 (ai_summary) : appliquée
-- Edge Function enrich-siret : déployée (version 4, ACTIVE)
-- Edge Function generate-ai-summary : migrée Claude → Groq (llama-3.3-70b-versatile), déployée
-- Secrets Supabase : PAPPERS_API_KEY + GROQ_API_KEY ajoutés manuellement par l'utilisateur
+- Dashboard résumés IA : section AiSummariesSection ajoutée au Dashboard (cartes par projet avec ai_summary)
+- Fix CORS generate-ai-summary : header x-application-name manquant bloquait les POST
+- Fix generate-ai-summary : verify_jwt false + GROQ_API_KEY invalide → corrigé par user
+- Edge function enrichie v7 : lit metadata.body (emails), project_briefs_v2, project_follow_ups_v2
+- Trigger SQL progress/completion_score : recalcul auto sur checklist_items_v2
+- UpcomingMeetingsCard : RDV à venir sur le Dashboard (depuis project_activities_v2 type meeting)
+- Navigation projet depuis Dashboard : handleNavigateToProject + useEffect dans ProjectsManagerV2Inner
 
 ## Next Task
-Roadmap V3 terminée — définir Roadmap V4 ou nouvelles features
+Brainstorm Dashboard V2 en cours — user a choisi :
+- Mission C : Mix KPIs + Actions prioritaires
+- Layout : pas encore choisi (question 2 affichée, options A/B/C)
+→ Reprendre le brainstorm visuel (http://localhost:58377 à relancer), poser la question layout puis continuer le flow brainstorming → spec → plan
 
 ## Blockers
 None
 
 ## Key Context
-- Toutes les features Sprint 2-3-4 étaient déjà codées, seules migrations + déploiements manquaient
-- Groq API key : gsk_zu8y... (dans supabase/.env local, gitignorée)
-- Pappers API key : a7ed1... (dans supabase/.env local, gitignorée)
-- supabase/.env est gitignorée — les clés ne sont PAS dans le repo
-- Pour déployer des Edge Functions : utiliser mcp__plugin_supabase_supabase__deploy_edge_function (CLI n'a pas les droits)
-- Pour appliquer des migrations : utiliser mcp__plugin_supabase_supabase__apply_migration
+- Le Dashboard actuel (src/modules/Dashboard/) est basé sur l'ancienne archi — travailler UNIQUEMENT sur V2 à partir de maintenant
+- generate-ai-summary : verify_jwt=false, GROQ_API_KEY valide dans Supabase secrets, x-application-name dans CORS headers
+- Trigger SQL auto-update progress/completion_score sur checklist_items_v2 déployé et opérationnel
+- Visual companion server : à relancer avec `bash /Users/trikilyes/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh --project-dir /Users/trikilyes/Desktop/Privé/CRMPropulseo-main`
+- Brainstorm skill chargé, tasks 1-2 complétées, task 3 (questions clarification) in_progress

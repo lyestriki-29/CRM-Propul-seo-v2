@@ -15,7 +15,9 @@ import { TasksCard } from './components/TasksCard';
 import { QuickStatsCard } from './components/QuickStatsCard';
 import { UrgentTasksAlert } from './components/UrgentTasksAlert';
 import { RevenueChartSection } from './components/RevenueChartSection';
-import { ObjectivesSection } from './components/ObjectivesSection';
+import { ObjectivesSection } from './components/ObjectivesSection'
+import { AiSummariesSection } from './components/AiSummariesSection'
+import { UpcomingMeetingsCard } from './components/UpcomingMeetingsCard';
 
 export function Dashboard() {
   const [isPrivacyMode, setIsPrivacyMode] = useState(false);
@@ -110,6 +112,7 @@ export function Dashboard() {
               onNavigateToTasks={data.handleNavigateToTasks}
             />
           )}
+          <UpcomingMeetingsCard isMobile={isMobile} />
           <RevenueChartSection
             isPrivacyMode={isPrivacyMode}
             isMobile={isMobile}
@@ -123,6 +126,13 @@ export function Dashboard() {
             isMobile={isMobile}
             onOpenModal={() => setShowObjectivesModal(true)}
           />
+          {!isPrivacyMode && (
+            <AiSummariesSection
+              projects={(data.projects ?? []) as any}
+              isMobile={isMobile}
+              onNavigateToProject={data.handleNavigateToProject}
+            />
+          )}
         </motion.div>
       </div>
 

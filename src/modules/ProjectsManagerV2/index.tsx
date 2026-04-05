@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Plus, Briefcase, ChevronRight, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { EmptyState } from '../../components/common/EmptyState'
@@ -8,6 +8,7 @@ import { ProjectStatusBadge } from './components/ProjectStatusBadge'
 import { PrestaList } from './components/PrestaBadge'
 import { ProjectsV2Provider } from './context/ProjectsV2Context'
 import { useMockProjects } from './hooks/useMockProjects'
+import { useStore } from '../../store/useStore'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 import { MobileHeader } from '../../components/mobile/MobileHeader'
 import { FAB } from '../../components/mobile/FAB'
@@ -38,6 +39,7 @@ export function ProjectsManagerV2() {
 function ProjectsManagerV2Inner() {
   const { projects, updateProjectStatus, updateProject, addProject, deleteProject } = useMockProjects()
   const isMobile = useIsMobile()
+  const { navigationContext } = useStore()
 
   const [showAddProject, setShowAddProject]         = useState(false)
   const [showProjectDetails, setShowProjectDetails] = useState(false)
@@ -45,6 +47,13 @@ function ProjectsManagerV2Inner() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingProject, setEditingProject] = useState<ProjectV2 | null>(null)
   const [filterUser, setFilterUser] = useState<string>('')
+
+  useEffect(() => {
+    if (navigationContext?.projectId) {
+      setSelectedProjectId(navigationContext.projectId)
+      setShowProjectDetails(true)
+    }
+  }, [navigationContext?.projectId])
 
   const handleViewProject = (project: ProjectV2) => {
     setSelectedProjectId(project.id)
