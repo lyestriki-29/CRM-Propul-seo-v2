@@ -93,17 +93,20 @@ export function useClientPortal() {
     // 4. Contact client (si client_id présent)
     let contact: PortalClientContact | null = null
     if (project.client_id) {
-      const { data: clientData } = await supabaseAnon
+      const { data: clientData, error: contactError } = await supabaseAnon
         .from('clients')
-        .select('full_name, email, phone, city, sector')
+        .select('name, email, phone, address, sector')
         .eq('id', project.client_id)
         .single()
+      if (contactError) {
+        console.error('[ClientPortal] contact fetch failed:', contactError.message)
+      }
       if (clientData) {
         contact = {
-          name: clientData.full_name ?? null,
+          name: clientData.name ?? null,
           email: clientData.email ?? null,
           phone: clientData.phone ?? null,
-          city: clientData.city ?? null,
+          city: clientData.address ?? null,
           sector: clientData.sector ?? null,
         }
       }
