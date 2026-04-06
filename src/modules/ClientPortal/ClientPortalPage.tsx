@@ -212,7 +212,7 @@ function LeftColumn({
                   <div key={phase.title} className="flex gap-3">
                     <div className="flex flex-col items-center">
                       <div className={[
-                        'w-6 h-6 rounded-full flex items-center justify-content-center text-xs z-10 border-2 flex-shrink-0',
+                        'w-6 h-6 rounded-full flex items-center justify-center text-xs z-10 border-2 flex-shrink-0',
                         st === 'done'   ? 'bg-emerald-100 text-emerald-600 border-emerald-300' : '',
                         st === 'active' ? 'bg-violet-100 text-violet-700 border-violet-400 ring-2 ring-violet-200' : '',
                         st === 'todo'   ? 'bg-slate-50 text-slate-400 border-slate-200' : '',
