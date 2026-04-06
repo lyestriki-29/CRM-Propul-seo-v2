@@ -19,6 +19,14 @@ export interface PortalInvoice {
   due_date: string | null
 }
 
+export interface PortalClientContact {
+  name: string | null
+  email: string | null
+  phone: string | null
+  city: string | null
+  sector: string | null
+}
+
 export interface PortalData {
   project: Pick<
     ProjectV2,
@@ -33,9 +41,12 @@ export interface PortalData {
     | 'presta_type'
     | 'start_date'
     | 'end_date'
+    | 'budget'
+    | 'ai_summary'
   >
   checklist: Pick<ChecklistItemV2, 'id' | 'title' | 'phase' | 'status'>[]
   invoices: PortalInvoice[]
+  contact: PortalClientContact | null
 }
 
 export function useClientPortal() {
@@ -49,10 +60,10 @@ export function useClientPortal() {
     setError(null)
     setData(null)
 
-    // 1. Récupérer le projet par token
+    // 1. Projet par token
     const { data: project, error: projectError } = await supabaseAnon
       .from('projects_v2')
-      .select('id, name, client_name, status, progress, completion_score, next_action_label, next_action_due, presta_type, start_date, end_date')
+      .select('id, name, client_name, client_id, status, progress, completion_score, next_action_label, next_action_due, presta_type, start_date, end_date, budget, ai_summary')
       .eq('portal_token', token)
       .eq('portal_enabled', true)
       .single()
@@ -71,7 +82,7 @@ export function useClientPortal() {
       .is('parent_task_id', null)
       .order('sort_order', { ascending: true })
 
-    // 3. Factures (envoyées et payées uniquement)
+    // 3. Factures (envoyées, payées, en retard)
     const { data: invoices } = await supabaseAnon
       .from('project_invoices_v2')
       .select('id, label, amount, status, date, due_date')
@@ -79,10 +90,30 @@ export function useClientPortal() {
       .in('status', ['sent', 'paid', 'overdue'])
       .order('date', { ascending: false })
 
+    // 4. Contact client (si client_id présent)
+    let contact: PortalClientContact | null = null
+    if (project.client_id) {
+      const { data: clientData } = await supabaseAnon
+        .from('clients')
+        .select('full_name, email, phone, city, sector')
+        .eq('id', project.client_id)
+        .single()
+      if (clientData) {
+        contact = {
+          name: clientData.full_name ?? null,
+          email: clientData.email ?? null,
+          phone: clientData.phone ?? null,
+          city: clientData.city ?? null,
+          sector: clientData.sector ?? null,
+        }
+      }
+    }
+
     setData({
       project: project as PortalData['project'],
       checklist: (checklist ?? []) as PortalData['checklist'],
       invoices: (invoices ?? []) as PortalInvoice[],
+      contact,
     })
     setLoading(false)
   }, [])
