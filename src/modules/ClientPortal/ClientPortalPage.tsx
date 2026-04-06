@@ -1,6 +1,6 @@
 // src/modules/ClientPortal/ClientPortalPage.tsx
-import React, { useEffect } from 'react'
-import { CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react'
+import React, { useEffect, useMemo } from 'react'
+import { AlertCircle, Clock, CheckCircle2, Circle, Timer } from 'lucide-react'
 import { useClientPortal } from './useClientPortal'
 import type { ChecklistItemV2 } from '@/types/project-v2'
 
@@ -16,52 +16,427 @@ const STATUS_LABELS: Record<string, string> = {
   closed: 'Clôturé',
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  prospect: 'bg-gray-500',
-  brief_received: 'bg-blue-500',
-  quote_sent: 'bg-yellow-500',
-  in_progress: 'bg-indigo-500',
-  review: 'bg-purple-500',
-  delivered: 'bg-green-500',
-  maintenance: 'bg-teal-500',
-  on_hold: 'bg-orange-500',
-  closed: 'bg-gray-400',
+const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
+  prospect:      { bg: 'bg-gray-100',   text: 'text-gray-600',   dot: 'bg-gray-400' },
+  brief_received:{ bg: 'bg-blue-50',    text: 'text-blue-700',   dot: 'bg-blue-500' },
+  quote_sent:    { bg: 'bg-yellow-50',  text: 'text-yellow-700', dot: 'bg-yellow-500' },
+  in_progress:   { bg: 'bg-green-50',   text: 'text-green-700',  dot: 'bg-green-500' },
+  review:        { bg: 'bg-purple-50',  text: 'text-purple-700', dot: 'bg-purple-500' },
+  delivered:     { bg: 'bg-teal-50',    text: 'text-teal-700',   dot: 'bg-teal-500' },
+  maintenance:   { bg: 'bg-teal-50',    text: 'text-teal-700',   dot: 'bg-teal-400' },
+  on_hold:       { bg: 'bg-orange-50',  text: 'text-orange-700', dot: 'bg-orange-500' },
+  closed:        { bg: 'bg-gray-100',   text: 'text-gray-500',   dot: 'bg-gray-400' },
 }
 
-const CHECKLIST_STATUS_ICON: Record<ChecklistItemV2['status'], React.ReactElement> = {
-  done: <CheckCircle2 className="w-4 h-4 text-green-400" />,
-  in_progress: <Clock className="w-4 h-4 text-yellow-400" />,
-  todo: <Circle className="w-4 h-4 text-gray-500" />,
+const INVOICE_STATUS: Record<string, { label: string; cls: string }> = {
+  sent:    { label: 'Envoyée',   cls: 'text-indigo-600' },
+  paid:    { label: 'Payée',     cls: 'text-green-600' },
+  overdue: { label: 'En retard', cls: 'text-red-600' },
 }
 
-const INVOICE_STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  sent: { label: 'Envoyée', color: 'text-blue-400' },
-  paid: { label: 'Payée', color: 'text-green-400' },
-  overdue: { label: 'En retard', color: 'text-red-400' },
+function formatDate(iso: string | null, opts?: Intl.DateTimeFormatOptions) {
+  if (!iso) return null
+  return new Date(iso).toLocaleDateString('fr-FR', opts ?? { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-interface ClientPortalPageProps {
-  token: string
+function daysUntil(iso: string | null): number | null {
+  if (!iso) return null
+  const diff = new Date(iso).getTime() - Date.now()
+  return Math.ceil(diff / (1000 * 60 * 60 * 24))
 }
+
+type ChecklistItem = Pick<ChecklistItemV2, 'id' | 'title' | 'phase' | 'status'>
+
+function groupByPhase(checklist: ChecklistItem[]) {
+  const map = new Map<string, { title: string; items: ChecklistItem[] }>()
+  for (const item of checklist) {
+    const key = item.phase ?? 'Général'
+    if (!map.has(key)) map.set(key, { title: key, items: [] })
+    map.get(key)!.items.push(item)
+  }
+  return Array.from(map.values())
+}
+
+function phaseStatus(items: { status: ChecklistItemV2['status'] }[]): 'done' | 'active' | 'todo' {
+  if (items.every(i => i.status === 'done')) return 'done'
+  if (items.some(i => i.status === 'done' || i.status === 'in_progress')) return 'active'
+  return 'todo'
+}
+
+// ===== PORTAL HEADER =====
+
+function PortalHeader({
+  project,
+  statusStyle,
+}: {
+  project: { name: string; status: string }
+  statusStyle: { bg: string; text: string; dot: string }
+}) {
+  return (
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-md">
+            Propul'SEO
+          </span>
+          <div className="w-px h-5 bg-slate-200" />
+          <span className="text-sm font-bold text-slate-900">{project.name}</span>
+        </div>
+        <div className={`flex items-center gap-1.5 ${statusStyle.bg} ${statusStyle.text} border border-current/20 rounded-full px-3 py-1 text-xs font-semibold`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+          {STATUS_LABELS[project.status] ?? project.status}
+        </div>
+      </div>
+    </header>
+  )
+}
+
+// ===== STAT CARD =====
+
+function StatCard({ label, value, fill, sub }: { label: string; value: string; fill: number | null; sub?: string }) {
+  return (
+    <div className="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-4">
+      <p className="text-indigo-200 text-[10px] font-semibold tracking-widest uppercase mb-1">{label}</p>
+      <p className="text-white text-3xl font-extrabold leading-none">{value}</p>
+      {fill !== null && (
+        <div className="mt-2 h-1 bg-white/20 rounded-full">
+          <div className="h-full bg-gradient-to-r from-indigo-300 to-white rounded-full transition-all" style={{ width: `${fill}%` }} />
+        </div>
+      )}
+      {sub && <p className="text-indigo-300 text-[11px] mt-2">{sub}</p>}
+    </div>
+  )
+}
+
+// ===== PORTAL HERO =====
+
+function PortalHero({
+  project,
+  doneTasks,
+  totalTasks,
+  daysLeft,
+}: {
+  project: { name: string; client_name: string | null; progress: number; completion_score: number; start_date: string | null; end_date: string | null }
+  doneTasks: number
+  totalTasks: number
+  daysLeft: number | null
+}) {
+  return (
+    <div className="bg-gradient-to-br from-indigo-600 to-violet-700 px-4 sm:px-6 py-10">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+          <div>
+            <p className="text-indigo-200 text-[11px] font-semibold tracking-widest uppercase mb-1">Espace client</p>
+            <h1 className="text-white text-3xl font-extrabold">{project.name}</h1>
+            {project.client_name && (
+              <p className="text-indigo-300 text-sm mt-1">{project.client_name}</p>
+            )}
+          </div>
+          <div className="text-right text-sm">
+            {project.start_date && (
+              <p className="text-indigo-300">Début · {formatDate(project.start_date, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            )}
+            {project.end_date && (
+              <p className="text-white font-semibold mt-0.5">Fin prévue · {formatDate(project.end_date, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatCard label="Avancement" value={`${project.progress}%`} fill={project.progress} />
+          <StatCard label="Tâches" value={`${doneTasks}/${totalTasks}`} fill={totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0} />
+          <StatCard label="Complétude" value={`${project.completion_score}%`} fill={project.completion_score} />
+          <StatCard
+            label="Jours restants"
+            value={daysLeft !== null ? (daysLeft > 0 ? String(daysLeft) : 'Livré') : '—'}
+            fill={null}
+            sub={project.end_date ? `Livraison · ${formatDate(project.end_date, { day: 'numeric', month: 'short' })}` : undefined}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ===== LEFT COLUMN =====
+
+type ProjectForLeft = {
+  next_action_label: string | null
+  next_action_due: string | null
+}
+
+function LeftColumn({
+  project,
+  phases,
+  checklist,
+  invoices,
+}: {
+  project: ProjectForLeft
+  phases: ReturnType<typeof groupByPhase>
+  checklist: ChecklistItem[]
+  invoices: import('./useClientPortal').PortalInvoice[]
+}) {
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Prochaine étape */}
+      {project.next_action_label && (
+        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border border-violet-200 rounded-2xl p-5 flex items-center gap-4">
+          <div className="w-11 h-11 min-w-[44px] bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center text-white text-xl">
+            🎯
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-violet-600 tracking-widest uppercase mb-1">Prochaine étape</p>
+            <p className="text-base font-bold text-slate-800">{project.next_action_label}</p>
+            {project.next_action_due && (
+              <p className="text-xs text-violet-600 font-medium mt-0.5 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Avant le {formatDate(project.next_action_due)}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Phases */}
+      {phases.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-sm">📍</div>
+            <h2 className="text-sm font-bold text-slate-900">Avancement par phase</h2>
+          </div>
+          <div className="p-5">
+            <div className="flex flex-col gap-0">
+              {phases.map((phase, i) => {
+                const st = phaseStatus(phase.items)
+                const done = phase.items.filter(x => x.status === 'done').length
+                return (
+                  <div key={phase.title} className="flex gap-3">
+                    <div className="flex flex-col items-center">
+                      <div className={[
+                        'w-6 h-6 rounded-full flex items-center justify-content-center text-xs z-10 border-2 flex-shrink-0',
+                        st === 'done'   ? 'bg-emerald-100 text-emerald-600 border-emerald-300' : '',
+                        st === 'active' ? 'bg-violet-100 text-violet-700 border-violet-400 ring-2 ring-violet-200' : '',
+                        st === 'todo'   ? 'bg-slate-50 text-slate-400 border-slate-200' : '',
+                      ].join(' ')}>
+                        <span className="m-auto">{st === 'done' ? '✓' : st === 'active' ? '◉' : '○'}</span>
+                      </div>
+                      {i < phases.length - 1 && <div className="w-px flex-1 bg-slate-200 my-1 min-h-[16px]" />}
+                    </div>
+                    <div className={`pb-5 flex-1 ${i === phases.length - 1 ? 'pb-1' : ''}`}>
+                      <div className="flex items-center gap-2">
+                        <p className={`text-sm font-semibold ${st === 'done' ? 'text-slate-400' : 'text-slate-800'}`}>
+                          {phase.title}
+                        </p>
+                        {st === 'active' && (
+                          <span className="bg-violet-100 text-violet-700 text-[9px] font-bold tracking-wide px-1.5 py-0.5 rounded-md">EN COURS</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">{done}/{phase.items.length} tâches</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Checklist */}
+      {checklist.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center text-sm">✅</div>
+              <h2 className="text-sm font-bold text-slate-900">Checklist projet</h2>
+            </div>
+            <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg">
+              {checklist.filter(c => c.status === 'done').length} / {checklist.length}
+            </span>
+          </div>
+          <ul>
+            {checklist.map((item, i) => (
+              <li
+                key={item.id}
+                className={`flex items-center gap-3 px-5 py-2.5 ${i < checklist.length - 1 ? 'border-b border-slate-50' : ''}`}
+              >
+                {item.status === 'done'        && <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
+                {item.status === 'in_progress' && <Timer className="w-4 h-4 text-amber-500 flex-shrink-0" />}
+                {item.status === 'todo'        && <Circle className="w-4 h-4 text-slate-300 flex-shrink-0" />}
+                <span className={`text-sm flex-1 ${item.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+                  {item.title}
+                </span>
+                {item.status === 'in_progress' && (
+                  <span className="text-[10px] bg-amber-50 text-amber-600 font-semibold px-1.5 py-0.5 rounded-md">En cours</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Factures */}
+      {invoices.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-yellow-50 flex items-center justify-center text-sm">🧾</div>
+            <h2 className="text-sm font-bold text-slate-900">Facturation</h2>
+          </div>
+          <ul>
+            {invoices.map((inv, i) => {
+              const s = INVOICE_STATUS[inv.status] ?? { label: inv.status, cls: 'text-slate-400' }
+              return (
+                <li key={inv.id} className={`flex items-center justify-between px-5 py-3.5 ${i < invoices.length - 1 ? 'border-b border-slate-50' : ''}`}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">📄</span>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">{inv.label}</p>
+                      {inv.date && <p className="text-xs text-slate-400 mt-0.5">{formatDate(inv.date)}</p>}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-extrabold text-slate-900">
+                      {inv.amount.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                    </p>
+                    <p className={`text-xs font-semibold mt-0.5 ${s.cls}`}>{s.label}</p>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ===== RIGHT SIDEBAR =====
+
+type ProjectForSidebar = {
+  presta_type: string[] | null
+  start_date: string | null
+  end_date: string | null
+  budget: number | null
+  ai_summary: { situation: string; action: string; milestone: string } | null
+}
+
+function RightSidebar({
+  project,
+  contact,
+}: {
+  project: ProjectForSidebar
+  contact: import('./useClientPortal').PortalClientContact | null
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Contact */}
+      {contact && (contact.name || contact.email || contact.phone) && (
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 px-5 py-4 border-b border-slate-200">
+            {contact.name && <p className="text-sm font-bold text-slate-900">{contact.name}</p>}
+            {contact.sector && <p className="text-xs text-slate-500 mt-0.5">{contact.sector}</p>}
+          </div>
+          <div className="px-5 py-4 flex flex-col gap-3">
+            {contact.email && (
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <span className="text-base">📧</span> {contact.email}
+              </div>
+            )}
+            {contact.phone && (
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <span className="text-base">📞</span> {contact.phone}
+              </div>
+            )}
+            {contact.city && (
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <span className="text-base">📍</span> {contact.city}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Infos projet */}
+      {(project.presta_type?.length || project.start_date || project.end_date || project.budget) && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-5">
+          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">Détails du projet</p>
+          <div className="flex flex-col gap-2.5">
+            {project.presta_type && project.presta_type.length > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Prestation</span>
+                <span className="text-xs font-semibold text-slate-900">{project.presta_type.join(', ')}</span>
+              </div>
+            )}
+            {project.start_date && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Démarrage</span>
+                <span className="text-xs font-semibold text-slate-900">{formatDate(project.start_date, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              </div>
+            )}
+            {project.end_date && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Livraison</span>
+                <span className="text-xs font-semibold text-slate-900">{formatDate(project.end_date, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              </div>
+            )}
+            {project.budget != null && project.budget > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Budget</span>
+                <span className="text-xs font-semibold text-slate-900">
+                  {project.budget.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Résumé IA */}
+      {project.ai_summary && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-5">
+          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">Résumé du projet</p>
+          <p className="text-xs text-slate-600 leading-relaxed">{project.ai_summary.situation}</p>
+          {project.ai_summary.milestone && (
+            <div className="mt-3 bg-violet-50 border border-violet-100 rounded-xl p-3">
+              <p className="text-[10px] font-bold text-violet-600 uppercase tracking-wide mb-1">Prochain jalon</p>
+              <p className="text-xs text-violet-800 font-medium">{project.ai_summary.milestone}</p>
+            </div>
+          )}
+          <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">P</div>
+            <div>
+              <p className="text-xs font-semibold text-slate-800">Équipe Propul'SEO</p>
+              <p className="text-[10px] text-slate-400">Mis à jour automatiquement</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ===== MAIN COMPONENT =====
+
+interface ClientPortalPageProps { token: string }
 
 export function ClientPortalPage({ token }: ClientPortalPageProps) {
   const { data, loading, error, fetchPortalData } = useClientPortal()
 
   useEffect(() => {
-    // Light mode pour le portail client (pas de dark forcé)
     document.documentElement.classList.remove('dark')
     fetchPortalData(token)
-    return () => {
-      document.documentElement.classList.add('dark')
-    }
+    return () => { document.documentElement.classList.add('dark') }
   }, [token, fetchPortalData])
+
+  const phases = useMemo(
+    () => (data ? groupByPhase(data.checklist) : []),
+    [data]
+  )
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center text-gray-500">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center text-slate-400">
           <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p>Chargement de votre espace projet…</p>
+          <p className="text-sm">Chargement de votre espace projet…</p>
         </div>
       </div>
     )
@@ -69,139 +444,36 @@ export function ClientPortalPage({ token }: ClientPortalPageProps) {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="text-center max-w-sm">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h1 className="text-xl font-semibold text-gray-800 mb-2">Lien invalide</h1>
-          <p className="text-gray-500">{error ?? 'Ce lien est invalide ou a été désactivé.'}</p>
+          <h1 className="text-xl font-semibold text-slate-800 mb-2">Lien invalide</h1>
+          <p className="text-slate-500">{error ?? 'Ce lien est invalide ou a été désactivé.'}</p>
         </div>
       </div>
     )
   }
 
-  const { project, checklist, invoices } = data
+  const { project, checklist, invoices, contact } = data
   const doneTasks = checklist.filter(c => c.status === 'done').length
-  const totalTasks = checklist.length
+  const statusStyle = STATUS_COLORS[project.status] ?? STATUS_COLORS.in_progress
+  const daysLeft = daysUntil(project.end_date)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Espace client</p>
-            <h1 className="text-lg font-bold text-gray-900">{project.name}</h1>
-            {project.client_name && (
-              <p className="text-sm text-gray-500">{project.client_name}</p>
-            )}
-          </div>
-          <span className={`px-3 py-1 rounded-full text-white text-xs font-medium ${STATUS_COLORS[project.status] ?? 'bg-gray-500'}`}>
-            {STATUS_LABELS[project.status] ?? project.status}
-          </span>
-        </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
-
-        {/* Progression */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Avancement</h2>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Progression globale</span>
-                <span className="font-semibold">{project.progress}%</span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-indigo-500 rounded-full transition-all"
-                  style={{ width: `${project.progress}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Score de complétude</span>
-                <span className="font-semibold">{project.completion_score}%</span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${project.completion_score}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Prochaine action */}
-        {project.next_action_label && (
-          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-indigo-700 mb-1">Prochaine étape</h2>
-            <p className="text-gray-800 font-medium">{project.next_action_label}</p>
-            {project.next_action_due && (
-              <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                Avant le {new Date(project.next_action_due).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Checklist */}
-        {checklist.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-700">Checklist projet</h2>
-              <span className="text-xs text-gray-400">{doneTasks}/{totalTasks} tâches</span>
-            </div>
-            <ul className="space-y-2">
-              {checklist.map(item => (
-                <li key={item.id} className="flex items-center gap-3 text-sm">
-                  {CHECKLIST_STATUS_ICON[item.status]}
-                  <span className={item.status === 'done' ? 'line-through text-gray-400' : 'text-gray-700'}>
-                    {item.title}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Factures */}
-        {invoices.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-4">Factures</h2>
-            <ul className="space-y-3">
-              {invoices.map(inv => (
-                <li key={inv.id} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{inv.label}</p>
-                    {inv.date && (
-                      <p className="text-xs text-gray-400">
-                        {new Date(inv.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-800">
-                      {inv.amount.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                    </p>
-                    <p className={`text-xs font-medium ${INVOICE_STATUS_LABELS[inv.status]?.color ?? 'text-gray-400'}`}>
-                      {INVOICE_STATUS_LABELS[inv.status]?.label ?? inv.status}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Footer */}
-        <p className="text-center text-xs text-gray-400 pb-4">
-          Vue partagée en lecture seule · Propul'SEO
-        </p>
+    <div className="min-h-screen bg-slate-100">
+      <PortalHeader project={project} statusStyle={statusStyle} />
+      <PortalHero project={project} doneTasks={doneTasks} totalTasks={checklist.length} daysLeft={daysLeft} />
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+        <LeftColumn project={project} phases={phases} checklist={checklist} invoices={invoices} />
+        <RightSidebar project={project} contact={contact} />
       </main>
+      <footer className="max-w-5xl mx-auto px-6 pb-10 flex items-center justify-center gap-2 text-xs text-slate-400">
+        <span className="font-semibold text-indigo-600">Propul'SEO</span>
+        <span>·</span>
+        <span>Vue partagée en lecture seule</span>
+        <span>·</span>
+        <span>🔒 Accès sécurisé</span>
+      </footer>
     </div>
   )
 }
