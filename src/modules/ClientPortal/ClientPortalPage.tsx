@@ -1,7 +1,8 @@
 // src/modules/ClientPortal/ClientPortalPage.tsx
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { AlertCircle, Clock, CheckCircle2, Circle, Timer } from 'lucide-react'
 import { useClientPortal } from './useClientPortal'
+import type { PortalInvoice, PortalClientContact } from './useClientPortal'
 import type { ChecklistItemV2 } from '@/types/project-v2'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -82,7 +83,7 @@ function PortalHeader({
           <div className="w-px h-5 bg-slate-200" />
           <span className="text-sm font-bold text-slate-900">{project.name}</span>
         </div>
-        <div className={`flex items-center gap-1.5 ${statusStyle.bg} ${statusStyle.text} border border-current/20 rounded-full px-3 py-1 text-xs font-semibold`}>
+        <div className={`flex items-center gap-1.5 ${statusStyle.bg} ${statusStyle.text} border border-slate-200 rounded-full px-3 py-1 text-xs font-semibold`}>
           <div className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
           {STATUS_LABELS[project.status] ?? project.status}
         </div>
@@ -100,7 +101,7 @@ function StatCard({ label, value, fill, sub }: { label: string; value: string; f
       <p className="text-white text-3xl font-extrabold leading-none">{value}</p>
       {fill !== null && (
         <div className="mt-2 h-1 bg-white/20 rounded-full">
-          <div className="h-full bg-gradient-to-r from-indigo-300 to-white rounded-full transition-all" style={{ width: `${fill}%` }} />
+          <div className="h-full bg-gradient-to-r from-indigo-300 to-white rounded-full transition-all" style={{ width: `${Math.min(100, Math.max(0, fill))}%` }} />
         </div>
       )}
       {sub && <p className="text-indigo-300 text-[11px] mt-2">{sub}</p>}
@@ -116,7 +117,7 @@ function PortalHero({
   totalTasks,
   daysLeft,
 }: {
-  project: { name: string; client_name: string | null; progress: number; completion_score: number; start_date: string | null; end_date: string | null }
+  project: { name: string; client_name?: string | null; progress: number; completion_score: number; start_date?: string | null; end_date: string | null }
   doneTasks: number
   totalTasks: number
   daysLeft: number | null
@@ -147,7 +148,7 @@ function PortalHero({
           <StatCard label="Complétude" value={`${project.completion_score}%`} fill={project.completion_score} />
           <StatCard
             label="Jours restants"
-            value={daysLeft !== null ? (daysLeft > 0 ? String(daysLeft) : 'Livré') : '—'}
+            value={daysLeft !== null ? (daysLeft > 0 ? String(daysLeft) : daysLeft === 0 ? "Aujourd'hui" : 'Livré') : '—'}
             fill={null}
             sub={project.end_date ? `Livraison · ${formatDate(project.end_date, { day: 'numeric', month: 'short' })}` : undefined}
           />
@@ -173,7 +174,7 @@ function LeftColumn({
   project: ProjectForLeft
   phases: ReturnType<typeof groupByPhase>
   checklist: ChecklistItem[]
-  invoices: import('./useClientPortal').PortalInvoice[]
+  invoices: PortalInvoice[]
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -323,7 +324,7 @@ function RightSidebar({
   contact,
 }: {
   project: ProjectForSidebar
-  contact: import('./useClientPortal').PortalClientContact | null
+  contact: PortalClientContact | null
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -345,9 +346,9 @@ function RightSidebar({
                 <span className="text-base">📞</span> {contact.phone}
               </div>
             )}
-            {contact.city && (
+            {contact.address && (
               <div className="flex items-center gap-2 text-xs text-slate-600">
-                <span className="text-base">📍</span> {contact.city}
+                <span className="text-base">📍</span> {contact.address}
               </div>
             )}
           </div>
@@ -428,7 +429,7 @@ export function ClientPortalPage({ token }: ClientPortalPageProps) {
 
   const phases = useMemo(
     () => (data ? groupByPhase(data.checklist) : []),
-    [data]
+    [data?.checklist]
   )
 
   if (loading) {

@@ -23,7 +23,7 @@ export interface PortalClientContact {
   name: string | null
   email: string | null
   phone: string | null
-  city: string | null
+  address: string | null
   sector: string | null
 }
 
@@ -106,7 +106,7 @@ export function useClientPortal() {
           name: clientData.name ?? null,
           email: clientData.email ?? null,
           phone: clientData.phone ?? null,
-          city: clientData.address ?? null,
+          address: clientData.address ?? null,
           sector: clientData.sector ?? null,
         }
       }
