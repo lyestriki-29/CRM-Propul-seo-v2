@@ -423,8 +423,14 @@ export function ClientPortalPage({ token }: ClientPortalPageProps) {
 
   useEffect(() => {
     document.documentElement.classList.remove('dark')
+    document.documentElement.style.colorScheme = 'light'
+    document.body.style.background = '#ffffff'
     fetchPortalData(token)
-    return () => { document.documentElement.classList.add('dark') }
+    return () => {
+      document.documentElement.classList.add('dark')
+      document.documentElement.style.colorScheme = 'dark'
+      document.body.style.background = ''
+    }
   }, [token, fetchPortalData])
 
   const phases = useMemo(
@@ -434,7 +440,7 @@ export function ClientPortalPage({ token }: ClientPortalPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center text-slate-400">
           <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm">Chargement de votre espace projet…</p>
@@ -445,7 +451,7 @@ export function ClientPortalPage({ token }: ClientPortalPageProps) {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center max-w-sm">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h1 className="text-xl font-semibold text-slate-800 mb-2">Lien invalide</h1>
@@ -461,7 +467,7 @@ export function ClientPortalPage({ token }: ClientPortalPageProps) {
   const daysLeft = daysUntil(project.end_date)
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-white">
       <PortalHeader project={project} statusStyle={statusStyle} />
       <PortalHero project={project} doneTasks={doneTasks} totalTasks={checklist.length} daysLeft={daysLeft} />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">

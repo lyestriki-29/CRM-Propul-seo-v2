@@ -1,0 +1,108 @@
+<h2>Quel style pour le portail client ?</h2>
+<p class="subtitle">On va refaire le portail Lolett de zéro — choisis le style qui correspond à l'image que tu veux projeter.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="premium" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%); padding: 20px; min-height: 200px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div>
+          <div style="color:#a78bfa; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:600;">ESPACE CLIENT</div>
+          <div style="color:#fff; font-size:20px; font-weight:700; margin-top:2px;">Lolett</div>
+        </div>
+        <div style="background:#a78bfa22; color:#a78bfa; border:1px solid #a78bfa44; border-radius:20px; padding:4px 12px; font-size:11px; font-weight:600;">En cours</div>
+      </div>
+      <div style="background:#ffffff0d; border-radius:12px; padding:16px; margin-bottom:12px;">
+        <div style="color:#a78bfa; font-size:11px; font-weight:600; margin-bottom:8px;">AVANCEMENT</div>
+        <div style="display:flex; justify-content:space-between; color:#e2e8f0; font-size:13px; margin-bottom:6px;">
+          <span>Progression</span><span style="color:#a78bfa; font-weight:700;">75%</span>
+        </div>
+        <div style="height:6px; background:#ffffff15; border-radius:3px;">
+          <div style="width:75%; height:100%; background:linear-gradient(90deg,#7c3aed,#a78bfa); border-radius:3px;"></div>
+        </div>
+      </div>
+      <div style="background:linear-gradient(135deg,#7c3aed22,#a78bfa11); border:1px solid #a78bfa33; border-radius:10px; padding:12px;">
+        <div style="color:#a78bfa; font-size:10px; font-weight:600; margin-bottom:4px;">PROCHAINE ÉTAPE</div>
+        <div style="color:#e2e8f0; font-size:13px; font-weight:500;">Validation finale client</div>
+        <div style="color:#94a3b8; font-size:11px; margin-top:3px;">Avant le 15 avril 2026</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Premium Dark</h3>
+      <p>Fond sombre, violet, ultra professionnel. Style agence haut de gamme.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="clean" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f8fafc; padding: 20px; min-height: 200px; border-bottom: 1px solid #e2e8f0;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div>
+          <div style="color:#6366f1; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:600;">PROPUL'SEO × LOLETT</div>
+          <div style="color:#0f172a; font-size:20px; font-weight:800; margin-top:2px;">Votre projet</div>
+        </div>
+        <div style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:20px; padding:4px 12px; font-size:11px; font-weight:600;">● En cours</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; text-align:center;">
+          <div style="font-size:28px; font-weight:800; color:#6366f1;">75%</div>
+          <div style="font-size:11px; color:#64748b;">Avancement</div>
+        </div>
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; text-align:center;">
+          <div style="font-size:28px; font-weight:800; color:#22c55e;">12/16</div>
+          <div style="font-size:11px; color:#64748b;">Tâches</div>
+        </div>
+      </div>
+      <div style="background:#eff6ff; border-left:3px solid #6366f1; border-radius:0 8px 8px 0; padding:10px 12px;">
+        <div style="font-size:11px; color:#6366f1; font-weight:600; margin-bottom:2px;">PROCHAINE ÉTAPE</div>
+        <div style="font-size:13px; color:#1e293b; font-weight:500;">Validation finale client</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Clean Light</h3>
+      <p>Fond blanc, chiffres larges, très lisible. Style SaaS moderne et épuré.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="branded" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(160deg, #fff 0%, #faf5ff 100%); padding: 20px; min-height: 200px;">
+      <div style="background:linear-gradient(135deg,#7c3aed,#6366f1); padding:16px 20px; border-radius:12px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="color:#ddd6fe; font-size:10px; letter-spacing:1px; font-weight:500;">Propul'SEO</div>
+          <div style="color:#fff; font-size:18px; font-weight:700;">Lolett — Site vitrine</div>
+        </div>
+        <div style="background:#ffffff25; color:#fff; border-radius:20px; padding:4px 10px; font-size:10px; font-weight:600;">EN COURS</div>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <div style="flex:1; background:#fff; border:1px solid #ede9fe; border-radius:10px; padding:10px;">
+          <div style="font-size:22px; font-weight:800; color:#7c3aed;">75%</div>
+          <div style="height:3px; background:#ede9fe; border-radius:2px; margin:4px 0;">
+            <div style="width:75%; height:100%; background:#7c3aed; border-radius:2px;"></div>
+          </div>
+          <div style="font-size:10px; color:#94a3b8; margin-top:4px;">Avancement</div>
+        </div>
+        <div style="flex:1; background:#fff; border:1px solid #ede9fe; border-radius:10px; padding:10px;">
+          <div style="font-size:22px; font-weight:800; color:#6366f1;">65%</div>
+          <div style="height:3px; background:#e0e7ff; border-radius:2px; margin:4px 0;">
+            <div style="width:65%; height:100%; background:#6366f1; border-radius:2px;"></div>
+          </div>
+          <div style="font-size:10px; color:#94a3b8; margin-top:4px;">Complétude</div>
+        </div>
+      </div>
+      <div style="background:#fff; border:1px solid #ede9fe; border-radius:10px; padding:10px; display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; background:linear-gradient(135deg,#7c3aed,#6366f1); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px;">→</div>
+        <div>
+          <div style="font-size:10px; color:#7c3aed; font-weight:600;">PROCHAINE ÉTAPE</div>
+          <div style="font-size:12px; color:#1e293b; font-weight:500;">Validation finale client</div>
+          <div style="font-size:10px; color:#94a3b8;">15 avril 2026</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Branded Purple</h3>
+      <p>Header coloré Propul'SEO, fond clair. Mix professionnel + identité agence.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Clique pour sélectionner, puis dis-moi ton choix dans le terminal.</p>
