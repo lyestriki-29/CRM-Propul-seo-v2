@@ -10,6 +10,7 @@ import { MobileNavFAB } from '../mobile/MobileNavFAB';
 import { Dashboard } from '../../modules/Dashboard';
 import { Lock, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { ProjectsV2Provider } from '../../modules/ProjectsManagerV2/context/ProjectsV2Context';
 
 // Lazy load heavy modules
 const CRM = lazy(() => import('../../modules/CRM').then(m => ({ default: m.CRM })));
@@ -238,11 +239,11 @@ export function Layout() {
       case 'monthly-dashboard':
         return wrappedComponent(MonthlyDashboard);
       case 'site-web':
-        return wrappedComponent(SiteWebManager);
+        return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><SiteWebManager /></Suspense></ProjectsV2Provider>;
       case 'erp-manager':
-        return wrappedComponent(ERPManager);
+        return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><ERPManager /></Suspense></ProjectsV2Provider>;
       case 'comm-manager':
-        return wrappedComponent(CommunicationManager);
+        return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><CommunicationManager /></Suspense></ProjectsV2Provider>;
       default:
         return <Dashboard />;
     }
