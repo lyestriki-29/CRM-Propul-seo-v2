@@ -29,19 +29,21 @@ export function SiteWebManager() {
     const month = now.getMonth()
     const year = now.getFullYear()
 
+    // CA signé : somme des budgets signés ce mois (filtre sur end_date, seul champ disponible en mock)
     const caSign = projects
       .filter(p => SIGNED_STATUSES.includes(p.sw_status))
       .filter(p => {
-        const d = new Date(p.start_date)
-        return d.getMonth() === month && d.getFullYear() === year
+        const d = p.end_date ? new Date(p.end_date) : null
+        return d ? d.getMonth() === month && d.getFullYear() === year : false
       })
       .reduce((sum, p) => sum + (p.budget ?? 0), 0)
 
+    // CA livré : projets avec statut livre dont end_date est ce mois
     const caLivre = projects
       .filter(p => p.sw_status === 'livre')
       .filter(p => {
-        const d = new Date(p.start_date)
-        return d.getMonth() === month && d.getFullYear() === year
+        const d = p.end_date ? new Date(p.end_date) : null
+        return d ? d.getMonth() === month && d.getFullYear() === year : false
       })
       .reduce((sum, p) => sum + (p.budget ?? 0), 0)
 
@@ -200,7 +202,7 @@ export function SiteWebManager() {
 
             {/* Brief tab */}
             <div className="flex-1 overflow-auto">
-              <SiteWebBriefTab projectId={selectedProject.id} />
+              <SiteWebBriefTab key={selectedProject.id} projectId={selectedProject.id} />
             </div>
 
             {/* Actions */}

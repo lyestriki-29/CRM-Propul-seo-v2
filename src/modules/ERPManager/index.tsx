@@ -106,48 +106,48 @@ export function ERPManager() {
                   {/* Cards */}
                   <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
                     {cards.map(project => (
-                      <button
-                        key={project.id}
-                        onClick={() => setSelectedId(project.id === selectedId ? null : project.id)}
-                        className={cn(
-                          'w-full text-left p-3 rounded-lg border transition-all',
-                          selectedId === project.id
-                            ? 'border-primary bg-primary/5 shadow-sm'
-                            : 'border-border bg-surface-2 hover:border-primary/40 hover:shadow-sm'
-                        )}
-                      >
-                        <p className="text-xs font-medium text-foreground leading-snug line-clamp-2">
-                          {project.name}
-                        </p>
-                        {project.client_name && (
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{project.client_name}</p>
-                        )}
-                        {project.budget && (
-                          <p className="text-xs text-primary mt-1 font-medium">
-                            {project.budget.toLocaleString('fr-FR')} €
+                      <div key={project.id} className="flex flex-col gap-1">
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedId(project.id === selectedId ? null : project.id)}
+                          onKeyDown={e => e.key === 'Enter' && setSelectedId(project.id === selectedId ? null : project.id)}
+                          className={cn(
+                            'w-full text-left p-3 rounded-lg border transition-all cursor-pointer',
+                            selectedId === project.id
+                              ? 'border-primary bg-primary/5 shadow-sm'
+                              : 'border-border bg-surface-2 hover:border-primary/40 hover:shadow-sm'
+                          )}
+                        >
+                          <p className="text-xs font-medium text-foreground leading-snug line-clamp-2">
+                            {project.name}
                           </p>
-                        )}
-                        {project.next_action_label && (
-                          <p className="text-xs text-muted-foreground mt-1 truncate flex items-center gap-1">
-                            <ChevronRight className="w-3 h-3 shrink-0" />
-                            {project.next_action_label}
-                          </p>
-                        )}
-                        {/* Status change select */}
+                          {project.client_name && (
+                            <p className="text-xs text-muted-foreground mt-0.5 truncate">{project.client_name}</p>
+                          )}
+                          {project.budget && (
+                            <p className="text-xs text-primary mt-1 font-medium">
+                              {project.budget.toLocaleString('fr-FR')} €
+                            </p>
+                          )}
+                          {project.next_action_label && (
+                            <p className="text-xs text-muted-foreground mt-1 truncate flex items-center gap-1">
+                              <ChevronRight className="w-3 h-3 shrink-0" />
+                              {project.next_action_label}
+                            </p>
+                          )}
+                        </div>
+                        {/* Status change select — outside the clickable div to avoid invalid HTML nesting */}
                         <select
                           value={project.erp_status}
-                          onChange={e => {
-                            e.stopPropagation()
-                            updateStatus(project.id, e.target.value as StatusERP)
-                          }}
-                          onClick={e => e.stopPropagation()}
-                          className="mt-2 w-full text-xs border border-border rounded bg-surface-1 text-muted-foreground py-0.5 px-1"
+                          onChange={e => updateStatus(project.id, e.target.value as StatusERP)}
+                          className="w-full text-xs border border-border rounded bg-surface-1 text-muted-foreground py-0.5 px-1"
                         >
                           {ERP_COLUMNS.map(c => (
                             <option key={c.id} value={c.id}>{c.label}</option>
                           ))}
                         </select>
-                      </button>
+                      </div>
                     ))}
                     {cards.length === 0 && (
                       <div className="flex-1 border border-dashed border-border rounded-lg flex items-center justify-center min-h-16">
@@ -183,7 +183,7 @@ export function ERPManager() {
               ))}
             </div>
             <div className="flex-1 overflow-y-auto">
-              {activeTab === 'brief' && <ERPBriefTab projectId={selectedProject.id} />}
+              {activeTab === 'brief' && <ERPBriefTab key={selectedProject.id} projectId={selectedProject.id} />}
               {activeTab === 'checklist' && (
                 <div className="p-4 text-xs text-muted-foreground">Checklist à venir.</div>
               )}
