@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Settings2, Plus, ChevronRight } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useMockERPProjects } from './hooks/useMockERPProjects'
-import { ERPBriefTab } from './components/ERPBriefTab'
+import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import { MOCK_ERP_BRIEFS } from './mocks'
 import type { StatusERP } from '../../types/project-v2'
 
@@ -21,8 +21,20 @@ export function ERPManager() {
   const { projects, updateStatus } = useMockERPProjects()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'brief' | 'checklist'>('brief')
+  const [showDetails, setShowDetails] = useState(false)
 
   const selectedProject = projects.find(p => p.id === selectedId) ?? null
+
+  if (showDetails && selectedProject) {
+    return (
+      <ProjectDetailsV2
+        projectId={selectedProject.id}
+        project={selectedProject}
+        backLabel="ERP Sur Mesure"
+        onBack={() => { setShowDetails(false); setSelectedId(null) }}
+      />
+    )
+  }
 
   // KPIs
   const caSigne = projects
@@ -110,8 +122,8 @@ export function ERPManager() {
                         <div
                           role="button"
                           tabIndex={0}
-                          onClick={() => setSelectedId(project.id === selectedId ? null : project.id)}
-                          onKeyDown={e => e.key === 'Enter' && setSelectedId(project.id === selectedId ? null : project.id)}
+                          onClick={() => { setSelectedId(project.id); setShowDetails(true) }}
+                          onKeyDown={e => { if (e.key === 'Enter') { setSelectedId(project.id); setShowDetails(true) } }}
                           className={cn(
                             'w-full text-left p-3 rounded-lg border transition-all cursor-pointer',
                             selectedId === project.id

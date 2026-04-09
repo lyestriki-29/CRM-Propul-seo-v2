@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { Globe, TrendingUp, FolderOpen, Award, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 import { useMockSiteWebProjects } from './hooks/useMockSiteWebProjects'
-import { SiteWebBriefTab } from './components/SiteWebBriefTab'
+import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import type { StatusSiteWeb } from '../../types/project-v2'
 import type { ProjectV2 } from '../../types/project-v2'
 
@@ -23,6 +23,18 @@ const SIGNED_STATUSES: StatusSiteWeb[] = ['signe', 'en_production', 'livre']
 export function SiteWebManager() {
   const { projects, updateStatus, deleteProject } = useMockSiteWebProjects()
   const [selectedProject, setSelectedProject] = useState<SiteWebProject | null>(null)
+  const [showDetails, setShowDetails] = useState(false)
+
+  if (showDetails && selectedProject) {
+    return (
+      <ProjectDetailsV2
+        projectId={selectedProject.id}
+        project={selectedProject}
+        backLabel="Site Web & SEO"
+        onBack={() => { setShowDetails(false); setSelectedProject(null) }}
+      />
+    )
+  }
 
   const kpis = useMemo(() => {
     const now = new Date()
@@ -62,6 +74,7 @@ export function SiteWebManager() {
 
   const handleViewProject = (project: SiteWebProject) => {
     setSelectedProject(project)
+    setShowDetails(true)
   }
 
   const handleDeleteProject = (project: SiteWebProject) => {

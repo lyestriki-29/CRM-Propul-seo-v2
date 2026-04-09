@@ -2,15 +2,20 @@ import { useMockProjects } from '../ProjectsManagerV2/hooks/useMockProjects'
 import { ProjectDetailsTabsV2 } from './components/ProjectDetailsTabsV2'
 import { ProjectV2LeftSidebar } from './components/ProjectV2LeftSidebar'
 import { ProjectV2RightSidebar } from './components/ProjectV2RightSidebar'
+import type { ProjectV2 } from '../../types/project-v2'
 
 interface ProjectDetailsV2Props {
   projectId: string
   onBack: () => void
+  /** Passer le projet directement (modules avec données mock locales) */
+  project?: ProjectV2
+  /** Label du fil d'ariane, ex: "Site Web & SEO" */
+  backLabel?: string
 }
 
-export function ProjectDetailsV2({ projectId, onBack }: ProjectDetailsV2Props) {
+export function ProjectDetailsV2({ projectId, onBack, project: projectProp, backLabel = 'Projets V2' }: ProjectDetailsV2Props) {
   const { getProjectById, refetch } = useMockProjects()
-  const project = getProjectById(projectId)
+  const project = projectProp ?? getProjectById(projectId)
 
   if (!project) {
     return (
@@ -31,7 +36,7 @@ export function ProjectDetailsV2({ projectId, onBack }: ProjectDetailsV2Props) {
           onClick={onBack}
           className="flex items-center gap-1.5 text-xs text-[#9ca3af] hover:text-[#ede9fe] transition-colors"
         >
-          ← Projets V2
+          ← {backLabel}
         </button>
         <span className="text-[rgba(139,92,246,0.3)]">/</span>
         <span className="text-xs font-medium text-[#ede9fe] truncate">{project.name}</span>

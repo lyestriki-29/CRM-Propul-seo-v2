@@ -1,8 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Megaphone, TrendingUp, Users, Award, DollarSign } from 'lucide-react'
 import { useMockCommProjects } from './hooks/useMockCommProjects'
-import { CommBriefTab } from './components/CommBriefTab'
-import { CommMonthlyCycles } from './components/CommMonthlyCycles'
+import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import { MOCK_COMM_BRIEFS } from './mocks'
 import type { StatusComm, ProjectV2 } from '../../types/project-v2'
 
@@ -25,6 +24,18 @@ export function CommunicationManager() {
   const { projects, updateStatus } = useMockCommProjects()
   const [selectedProject, setSelectedProject] = useState<CommProject | null>(null)
   const [activeTab, setActiveTab] = useState<DetailTab>('brief')
+  const [showDetails, setShowDetails] = useState(false)
+
+  if (showDetails && selectedProject) {
+    return (
+      <ProjectDetailsV2
+        projectId={selectedProject.id}
+        project={selectedProject}
+        backLabel="Communication"
+        onBack={() => { setShowDetails(false); setSelectedProject(null) }}
+      />
+    )
+  }
 
   const kpis = useMemo(() => {
     const mrr = MOCK_COMM_BRIEFS
@@ -55,8 +66,8 @@ export function CommunicationManager() {
   }, [projects])
 
   const handleProjectClick = (project: CommProject) => {
-    setSelectedProject(prev => prev?.id === project.id ? null : project)
-    setActiveTab('brief')
+    setSelectedProject(project)
+    setShowDetails(true)
   }
 
   const handleStatusChange = (project: CommProject, status: StatusComm) => {
