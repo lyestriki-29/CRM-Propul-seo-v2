@@ -1,24 +1,22 @@
-# Session State — 2026-04-07 12:30
+# Session State — 2026-04-09 22:00
 
 ## Branch
 main
 
 ## Completed This Session
-- Portail client découvert : système token + page publique `/portal/:token`
-- Token Lolett généré en BD (portal_token actif)
-- Refonte complète `ClientPortalPage.tsx` : hero violet, stats, phases, checklist, sidebar
-- `useClientPortal.ts` enrichi : contact client (name/address), budget, ai_summary
-- Fix fond noir : `color-scheme: light` + `document.body.style.background` forcé dans useEffect
+- Exploration V2 Beta: cartographie complète des modules (kanban, fiche 7 onglets, dashboard, mois en cours)
+- Brainstorm entamé: identification des besoins d'évolution du CRM V2
 
 ## Next Task
-Aucune tâche définie — demander à l'utilisateur quoi faire ensuite
+Brainstorm complet sur les 3 types de prestation (Web, ERP, Accompagnement Communication) à partir des plaquettes Propulseo envoyées par l'utilisateur. Définir : checklists par type, champs personnalisés par prestation, puis rédiger le spec design doc.
 
 ## Blockers
-None
+Attente des 3 plaquettes commerciales Propulseo pour cadrer les besoins précis
 
 ## Key Context
-- Portail Lolett : `http://localhost:5173/portal/01059c08-6bd0-4197-b2d1-473af0db4785`
-- `clients` table : colonnes `name` (pas `full_name`) et `address` (pas `city`)
-- Le fond noir venait de `color-scheme: dark` dans `index.css` — corrigé via JS dans useEffect
-- `presta_type` est `PrestaType[]` (tableau) → afficher avec `.join(', ')`
-- Build passe avec `✓` malgré erreurs TS pre-existantes (UserSelector, ActivityCard, etc.)
+- V2 Beta sidebar : Dashboard V2, Projets V2 (kanban 9 col), Mois en cours
+- Table Supabase : `projects_v2` — déjà branchée, presta_type actuel = web/seo/erp/saas
+- Décisions actées : remplacer par 3 types = Web / ERP / Accompagnement Communication
+- Kanban commun avec filtres par utilisateur ET par presta type
+- Plusieurs onglets fiche projet encore en mocks (checklist, journal, facturation, suivi, brief)
+- Priorité : ajouter fonctionnalités manquantes AVANT de brancher les mocks sur Supabase
