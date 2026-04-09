@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Globe, TrendingUp, FolderOpen, Award } from 'lucide-react'
+import { Globe, TrendingUp, FolderOpen, Award, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 import { useMockSiteWebProjects } from './hooks/useMockSiteWebProjects'
 import { SiteWebBriefTab } from './components/SiteWebBriefTab'
@@ -37,18 +37,25 @@ export function SiteWebManager() {
       })
       .reduce((sum, p) => sum + (p.budget ?? 0), 0)
 
+    const caLivre = projects
+      .filter(p => p.sw_status === 'livre')
+      .filter(p => {
+        const d = new Date(p.start_date)
+        return d.getMonth() === month && d.getFullYear() === year
+      })
+      .reduce((sum, p) => sum + (p.budget ?? 0), 0)
+
     const actifs = projects.filter(p => ACTIVE_STATUSES.includes(p.sw_status)).length
 
     const packCount: Record<string, number> = {}
     for (const p of projects) {
-      // derive pack from budget — best effort with mock data
       const b = p.budget
       const pack = b === 1480 ? 'Starter' : b === 1980 ? 'Pro' : b === 2980 ? 'Entreprise' : 'Sur mesure'
       packCount[pack] = (packCount[pack] ?? 0) + 1
     }
     const topPack = Object.entries(packCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
 
-    return { caSign, actifs, topPack }
+    return { caSign, caLivre, actifs, topPack }
   }, [projects])
 
   const handleViewProject = (project: SiteWebProject) => {
@@ -87,6 +94,12 @@ export function SiteWebManager() {
           <TrendingUp className="w-4 h-4 text-green-500" />
           <span className="text-muted-foreground">CA signé ce mois</span>
           <span className="font-semibold text-foreground">{kpis.caSign.toLocaleString('fr-FR')}€</span>
+        </div>
+        <div className="w-px bg-border" />
+        <div className="flex items-center gap-2 text-sm">
+          <DollarSign className="w-4 h-4 text-emerald-500" />
+          <span className="text-muted-foreground">CA livré</span>
+          <span className="font-semibold text-foreground">{kpis.caLivre.toLocaleString('fr-FR')}€</span>
         </div>
         <div className="w-px bg-border" />
         <div className="flex items-center gap-2 text-sm">

@@ -2,7 +2,7 @@ import type { ChecklistItemV2 } from '../../../types/project-v2'
 
 const now = new Date().toISOString()
 
-export const COMM_CHECKLIST_ABONNEMENT: Omit<ChecklistItemV2, 'id' | 'project_id' | 'created_at' | 'updated_at'>[] = [
+export const COMM_CHECKLIST_INSTAGRAM: Omit<ChecklistItemV2, 'id' | 'project_id' | 'created_at' | 'updated_at'>[] = [
   { parent_task_id: null, title: 'Brief mensuel reçu', phase: 'onboarding', status: 'todo', priority: 'high', assigned_to: null, assigned_name: null, due_date: null, sort_order: 1 },
   { parent_task_id: null, title: 'Calendrier éditorial validé', phase: 'conception', status: 'todo', priority: 'high', assigned_to: null, assigned_name: null, due_date: null, sort_order: 2 },
   { parent_task_id: null, title: 'Visuels créés', phase: 'developpement', status: 'todo', priority: 'high', assigned_to: null, assigned_name: null, due_date: null, sort_order: 3 },

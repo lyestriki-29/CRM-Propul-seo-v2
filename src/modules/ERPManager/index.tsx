@@ -3,6 +3,7 @@ import { Settings2, Plus, ChevronRight } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useMockERPProjects } from './hooks/useMockERPProjects'
 import { ERPBriefTab } from './components/ERPBriefTab'
+import { MOCK_ERP_BRIEFS } from './mocks'
 import type { StatusERP } from '../../types/project-v2'
 
 const ERP_COLUMNS: { id: StatusERP; label: string; color: string }[] = [
@@ -28,13 +29,16 @@ export function ERPManager() {
     .filter(p => ['signe', 'en_developpement', 'recette', 'livre'].includes(p.erp_status) && p.budget)
     .reduce((acc, p) => acc + (p.budget ?? 0), 0)
 
-  const nbActifs = projects.filter(p =>
-    !['perdu', 'livre', 'prospect'].includes(p.erp_status)
-  ).length
+  const caLivre = projects
+    .filter(p => p.erp_status === 'livre' && p.budget)
+    .reduce((acc, p) => acc + (p.budget ?? 0), 0)
+
+  const nbEnDev = projects.filter(p => p.erp_status === 'en_developpement').length
 
   const nbModulesMoyen = (() => {
-    const withModules = projects.filter(p => p.id && selectedId === null)
-    return withModules.length > 0 ? 0 : 0
+    const briefs = Object.values(MOCK_ERP_BRIEFS)
+    const total = briefs.reduce((acc, b) => acc + (b.modules?.length ?? 0), 0)
+    return briefs.length > 0 ? Math.round(total / briefs.length) : 0
   })()
 
   return (
@@ -66,13 +70,20 @@ export function ERPManager() {
         </div>
         <div className="w-px bg-border" />
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Projets actifs</span>
-          <span className="text-sm font-semibold text-foreground">{nbActifs}</span>
+          <span className="text-xs text-muted-foreground">CA livré</span>
+          <span className="text-sm font-semibold text-foreground">
+            {caLivre.toLocaleString('fr-FR')} €
+          </span>
         </div>
         <div className="w-px bg-border" />
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Nb modules moyen</span>
+          <span className="text-xs text-muted-foreground">Modules moyen/projet</span>
           <span className="text-sm font-semibold text-foreground">{nbModulesMoyen}</span>
+        </div>
+        <div className="w-px bg-border" />
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground">En développement</span>
+          <span className="text-sm font-semibold text-foreground">{nbEnDev}</span>
         </div>
       </div>
 
