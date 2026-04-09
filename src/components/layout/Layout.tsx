@@ -29,6 +29,9 @@ const CommunicationClients = lazy(() => import('../../modules/CommunicationClien
 const ProjectsManagerV2 = lazy(() => import('../../modules/ProjectsManagerV2').then(m => ({ default: m.ProjectsManagerV2 })))
 const DashboardV2 = lazy(() => import('../../modules/DashboardV2').then(m => ({ default: m.DashboardV2 })))
 const MonthlyDashboard = lazy(() => import('../../modules/MonthlyDashboard').then(m => ({ default: m.MonthlyDashboard })));
+const SiteWebManager = lazy(() => import('../../modules/SiteWebManager').then(m => ({ default: m.SiteWebManager })))
+const ERPManager = lazy(() => import('../../modules/ERPManager').then(m => ({ default: m.ERPManager })))
+const CommunicationManager = lazy(() => import('../../modules/CommunicationManager').then(m => ({ default: m.CommunicationManager })))
 
 // Loading component
 const ModuleLoader = () => (
@@ -110,11 +113,15 @@ export function Layout() {
       'settings': 'can_view_settings',
       'monthly-dashboard': 'can_view_projects',
       'dashboard-v2': 'can_view_dashboard',
+      'site-web': 'can_view_projects',
+      'erp-manager': 'can_view_projects',
+      'comm-manager': 'can_view_projects',
     };
 
     // Ordre de priorité pour la redirection (même ordre que la sidebar)
     const modulePriority = [
-      'dashboard', 'dashboard-v2', 'crm', 'crm-bot-one', 'crm-erp',
+      'dashboard', 'dashboard-v2', 'site-web', 'erp-manager', 'comm-manager',
+      'crm', 'crm-bot-one', 'crm-erp',
       'projects', 'projects-v2', 'monthly-dashboard',
       'communication', 'communication-kpi',
       'communication-clients', 'accounting', 'settings'
@@ -154,6 +161,9 @@ export function Layout() {
       'communication-clients': 'can_view_communication',
       'monthly-dashboard': 'can_view_projects',
       'dashboard-v2': 'can_view_dashboard',
+      'site-web': 'can_view_projects',
+      'erp-manager': 'can_view_projects',
+      'comm-manager': 'can_view_projects',
     };
 
     const permission = modulePermissions[module];
@@ -227,6 +237,12 @@ export function Layout() {
         return wrappedComponent(DashboardV2);
       case 'monthly-dashboard':
         return wrappedComponent(MonthlyDashboard);
+      case 'site-web':
+        return wrappedComponent(SiteWebManager);
+      case 'erp-manager':
+        return wrappedComponent(ERPManager);
+      case 'comm-manager':
+        return wrappedComponent(CommunicationManager);
       default:
         return <Dashboard />;
     }

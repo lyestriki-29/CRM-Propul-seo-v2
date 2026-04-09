@@ -3,6 +3,9 @@ import { useCallback, useMemo } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Zap } from 'lucide-react'
+import { MOCK_SITEWEB_PROJECTS } from '../SiteWebManager/mocks'
+import { MOCK_ERP_PROJECTS } from '../ERPManager/mocks'
+import { MOCK_COMM_PROJECTS, MOCK_COMM_BRIEFS } from '../CommunicationManager/mocks'
 import { useStore } from '../../store/useStore'
 import { BentoGrid } from './components/BentoGrid'
 import { KpiStatsWidget } from './components/right/KpiStatsWidget'
@@ -33,6 +36,31 @@ export function DashboardV2() {
     () => navigateWithContext('projects-v2', {}),
     [navigateWithContext]
   )
+
+  // KPIs V2 globaux (données mock)
+  const v2Kpis = useMemo(() => {
+    const swCA = MOCK_SITEWEB_PROJECTS
+      .filter(p => ['signe', 'en_production', 'livre'].includes(p.sw_status))
+      .reduce((sum, p) => sum + (p.budget ?? 0), 0)
+    const swActive = MOCK_SITEWEB_PROJECTS
+      .filter(p => !['livre', 'perdu'].includes(p.sw_status)).length
+
+    const erpCA = MOCK_ERP_PROJECTS
+      .filter(p => ['signe', 'en_developpement', 'recette', 'livre'].includes(p.erp_status))
+      .reduce((sum, p) => sum + (p.budget ?? 0), 0)
+    const erpActive = MOCK_ERP_PROJECTS
+      .filter(p => !['livre', 'perdu'].includes(p.erp_status)).length
+
+    const mrr = MOCK_COMM_BRIEFS
+      .filter(b => b.type_contrat === 'abonnement' && b.mrr != null)
+      .reduce((sum, b) => sum + (b.mrr ?? 0), 0)
+    const commActive = MOCK_COMM_PROJECTS
+      .filter(p => p.comm_status === 'actif').length
+
+    const totalCA = swCA + erpCA + mrr
+
+    return { swCA, swActive, erpCA, erpActive, mrr, commActive, totalCA }
+  }, [])
 
   // Fusionner emails non répondus dans les actions prioritaires
   const allPriorityItems = useMemo(() => {
@@ -95,6 +123,29 @@ export function DashboardV2() {
           </span>
         </div>
       )}
+
+      {/* KPIs globaux V2 */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="glass-card rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1">CA Total V2</p>
+          <p className="text-xl font-bold text-foreground">{v2Kpis.totalCA.toLocaleString('fr-FR')}€</p>
+        </div>
+        <div className="glass-card rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1">MRR Communication</p>
+          <p className="text-xl font-bold text-emerald-400">{v2Kpis.mrr.toLocaleString('fr-FR')}€/mois</p>
+          <p className="text-xs text-muted-foreground mt-1">{v2Kpis.commActive} abonnement{v2Kpis.commActive !== 1 ? 's' : ''} actif{v2Kpis.commActive !== 1 ? 's' : ''}</p>
+        </div>
+        <div className="glass-card rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1">Site Web & SEO</p>
+          <p className="text-xl font-bold text-blue-400">{v2Kpis.swCA.toLocaleString('fr-FR')}€</p>
+          <p className="text-xs text-muted-foreground mt-1">{v2Kpis.swActive} projet{v2Kpis.swActive !== 1 ? 's' : ''} actif{v2Kpis.swActive !== 1 ? 's' : ''}</p>
+        </div>
+        <div className="glass-card rounded-xl p-4">
+          <p className="text-xs text-muted-foreground mb-1">ERP Sur Mesure</p>
+          <p className="text-xl font-bold text-violet-400">{v2Kpis.erpCA.toLocaleString('fr-FR')}€</p>
+          <p className="text-xs text-muted-foreground mt-1">{v2Kpis.erpActive} projet{v2Kpis.erpActive !== 1 ? 's' : ''} actif{v2Kpis.erpActive !== 1 ? 's' : ''}</p>
+        </div>
+      </div>
 
       <BentoGrid left={leftColumn} right={rightColumn} />
     </div>
