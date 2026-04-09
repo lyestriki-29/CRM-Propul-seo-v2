@@ -16,7 +16,7 @@ export type ProjectStatusV2 =
   | 'on_hold'
   | 'closed'
 
-export type PrestaType = 'web' | 'seo' | 'erp' | 'saas'
+export type PrestaType = 'web' | 'seo' | 'erp' | 'saas' | 'site_web' | 'erp_v2' | 'communication'
 
 // ===== PROJET ÉTENDU =====
 
@@ -185,6 +185,123 @@ export interface ProjectBrief {
   created_at: string
   updated_at: string
 }
+
+// ===== BRIEF SITE WEB =====
+export type PackSiteWeb = 'starter' | 'professionnel' | 'entreprise' | 'sur_mesure'
+export type NiveauSEO = 'basique' | 'avance' | 'premium'
+
+export interface BriefSiteWeb {
+  id: string
+  project_id: string
+  pack: PackSiteWeb
+  nb_pages: number | null
+  budget: number | null
+  niveau_seo: NiveauSEO
+  url_site: string | null
+  plateforme: string | null
+  status: BriefStatus
+  created_at: string
+  updated_at: string
+}
+
+// ===== BRIEF ERP =====
+export type ModuleERP =
+  | 'gestion_commerciale'
+  | 'crm_suivi'
+  | 'gestion_projets'
+  | 'stocks_logistique'
+  | 'suivi_financier'
+  | 'multi_utilisateurs'
+  | 'tableaux_bord'
+  | 'connexions_api'
+  | 'sur_mesure'
+
+export interface BriefERP {
+  id: string
+  project_id: string
+  modules: ModuleERP[]
+  nb_utilisateurs: number | null
+  budget: number | null
+  outils_integres: string | null
+  url_deploiement: string | null
+  status: BriefStatus
+  created_at: string
+  updated_at: string
+}
+
+// ===== BRIEF COMMUNICATION =====
+export type TypeContratComm = 'abonnement' | 'branding' | 'photos_videos'
+export type PackComm = 'starter' | 'premium' | 'excellence'
+export type PlateformeComm = 'instagram' | 'linkedin' | 'multi'
+
+export interface BriefComm {
+  id: string
+  project_id: string
+  type_contrat: TypeContratComm
+  pack: PackComm | null
+  nb_posts_mois: number | null
+  nb_reels_mois: number | null
+  nb_templates: number | null
+  plateforme: PlateformeComm | null
+  date_debut: string | null
+  date_renouvellement: string | null
+  mrr: number | null
+  budget: number | null
+  date_livraison: string | null
+  status: BriefStatus
+  created_at: string
+  updated_at: string
+}
+
+// ===== CYCLES MENSUELS COMMUNICATION =====
+export type CycleStatus = 'en_cours' | 'termine'
+
+export interface CommMonthlyCycle {
+  id: string
+  project_id: string
+  mois: string          // format YYYY-MM-DD (1er du mois)
+  label: string         // ex: "Avril 2026"
+  status: CycleStatus
+  created_at: string
+}
+
+export interface CommCycleTask {
+  id: string
+  cycle_id: string
+  project_id: string
+  title: string
+  done: boolean
+  sort_order: number
+}
+
+// ===== STATUTS KANBAN PAR MODULE =====
+export type StatusSiteWeb =
+  | 'prospect'
+  | 'devis_envoye'
+  | 'signe'
+  | 'en_production'
+  | 'livre'
+  | 'perdu'
+
+export type StatusERP =
+  | 'prospect'
+  | 'analyse_besoins'
+  | 'devis_envoye'
+  | 'signe'
+  | 'en_developpement'
+  | 'recette'
+  | 'livre'
+  | 'perdu'
+
+export type StatusComm =
+  | 'prospect'
+  | 'brief_creatif'
+  | 'devis_envoye'
+  | 'signe'
+  | 'en_production'
+  | 'actif'
+  | 'termine'
+  | 'perdu'
 
 // ===== TEMPLATES CHECKLIST =====
 

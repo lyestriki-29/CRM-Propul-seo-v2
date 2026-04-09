@@ -1,10 +1,13 @@
 import type { PrestaType } from '../../../types/project-v2'
 
 const PRESTA_CONFIG: Record<PrestaType, { label: string; className: string }> = {
-  web:  { label: 'Web',  className: 'bg-blue-500/20 text-blue-300 border-blue-600' },
-  seo:  { label: 'SEO',  className: 'bg-green-500/20 text-green-300 border-green-600' },
-  erp:  { label: 'ERP',  className: 'bg-orange-500/20 text-orange-300 border-orange-600' },
-  saas: { label: 'SaaS', className: 'bg-violet-500/20 text-violet-300 border-violet-600' },
+  web:           { label: 'Web',          className: 'bg-blue-500/20 text-blue-300 border-blue-600' },
+  seo:           { label: 'SEO',          className: 'bg-green-500/20 text-green-300 border-green-600' },
+  erp:           { label: 'ERP',          className: 'bg-orange-500/20 text-orange-300 border-orange-600' },
+  saas:          { label: 'SaaS',         className: 'bg-violet-500/20 text-violet-300 border-violet-600' },
+  site_web:      { label: 'Site Web',     className: 'bg-blue-500/20 text-blue-300 border-blue-600' },
+  erp_v2:        { label: 'ERP v2',       className: 'bg-orange-500/20 text-orange-300 border-orange-600' },
+  communication: { label: 'Comm.',        className: 'bg-pink-500/20 text-pink-300 border-pink-600' },
 }
 
 interface PrestaBadgeProps {
