@@ -26,17 +26,6 @@ export function CommunicationManager() {
   const [activeTab, setActiveTab] = useState<DetailTab>('brief')
   const [showDetails, setShowDetails] = useState(false)
 
-  if (showDetails && selectedProject) {
-    return (
-      <ProjectDetailsV2
-        projectId={selectedProject.id}
-        project={selectedProject}
-        backLabel="Communication"
-        onBack={() => { setShowDetails(false); setSelectedProject(null) }}
-      />
-    )
-  }
-
   const kpis = useMemo(() => {
     const mrr = MOCK_COMM_BRIEFS
       .filter(b => b.type_contrat === 'abonnement' && b.mrr != null)
@@ -64,6 +53,17 @@ export function CommunicationManager() {
 
     return { mrr, nbAbonnes, topPackLabel, caOneShot }
   }, [projects])
+
+  if (showDetails && selectedProject) {
+    return (
+      <ProjectDetailsV2
+        projectId={selectedProject.id}
+        project={selectedProject}
+        backLabel="Communication"
+        onBack={() => { setShowDetails(false); setSelectedProject(null) }}
+      />
+    )
+  }
 
   const handleProjectClick = (project: CommProject) => {
     setSelectedProject(project)

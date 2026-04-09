@@ -25,17 +25,6 @@ export function SiteWebManager() {
   const [selectedProject, setSelectedProject] = useState<SiteWebProject | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
-  if (showDetails && selectedProject) {
-    return (
-      <ProjectDetailsV2
-        projectId={selectedProject.id}
-        project={selectedProject}
-        backLabel="Site Web & SEO"
-        onBack={() => { setShowDetails(false); setSelectedProject(null) }}
-      />
-    )
-  }
-
   const kpis = useMemo(() => {
     const now = new Date()
     const month = now.getMonth()
@@ -71,6 +60,17 @@ export function SiteWebManager() {
 
     return { caSign, caLivre, actifs, topPack }
   }, [projects])
+
+  if (showDetails && selectedProject) {
+    return (
+      <ProjectDetailsV2
+        projectId={selectedProject.id}
+        project={selectedProject}
+        backLabel="Site Web & SEO"
+        onBack={() => { setShowDetails(false); setSelectedProject(null) }}
+      />
+    )
+  }
 
   const handleViewProject = (project: SiteWebProject) => {
     setSelectedProject(project)
