@@ -1,22 +1,28 @@
-# Session State — 2026-04-09 22:00
+# Session State — 2026-04-09 23:45
 
 ## Branch
 main
 
 ## Completed This Session
-- Exploration V2 Beta: cartographie complète des modules (kanban, fiche 7 onglets, dashboard, mois en cours)
-- Brainstorm entamé: identification des besoins d'évolution du CRM V2
+- Task 1: types project-v2.ts — StatusSiteWeb/ERP/Comm, BriefSiteWeb/ERP/Comm, CommMonthlyCycle
+- Task 2: mocks SiteWebManager — projets, briefs, checklists
+- Task 3: SiteWebManager — hook + SiteWebBriefTab + index (kanban 6 col)
+- Task 4: ERPManager complet — mocks + hook + ERPBriefTab + index (kanban 8 col)
+- Task 5: mocks CommunicationManager — projets, briefs, checklists, cycles mensuels
+- Task 6: CommunicationManager — hooks + CommBriefTab + CommMonthlyCycles + index (kanban 8 col)
+- Task 7: Sidebar + Layout wiring — 3 nouveaux modules (site-web, erp-manager, comm-manager)
+- Task 8: DashboardV2 KPIs globaux — CA total, MRR, ventilation par pôle
 
 ## Next Task
-Brainstorm complet sur les 3 types de prestation (Web, ERP, Accompagnement Communication) à partir des plaquettes Propulseo envoyées par l'utilisateur. Définir : checklists par type, champs personnalisés par prestation, puis rédiger le spec design doc.
+Plan 100% terminé. Prochaine étape : brancher les modules sur Supabase (remplacer les mocks).
+Ou review UX / ajout checklist dans SiteWebManager et ERPManager.
 
 ## Blockers
-Attente des 3 plaquettes commerciales Propulseo pour cadrer les besoins précis
+None
 
 ## Key Context
-- V2 Beta sidebar : Dashboard V2, Projets V2 (kanban 9 col), Mois en cours
-- Table Supabase : `projects_v2` — déjà branchée, presta_type actuel = web/seo/erp/saas
-- Décisions actées : remplacer par 3 types = Web / ERP / Accompagnement Communication
-- Kanban commun avec filtres par utilisateur ET par presta type
-- Plusieurs onglets fiche projet encore en mocks (checklist, journal, facturation, suivi, brief)
-- Priorité : ajouter fonctionnalités manquantes AVANT de brancher les mocks sur Supabase
+- MOCK_COMM_BRIEFS est un BriefComm[] (array, pas Record) — utiliser .find(b => b.project_id === id)
+- COMM_CHECKLIST_INSTAGRAM (pas ABONNEMENT) est le bon export name
+- ERPManager : kanban cards sont des <div role="button"> (pas <button>) pour éviter nested interactive elements
+- Erreurs TS pré-existantes dans supabaseService.ts/accountingSlice.ts — ne pas toucher, le build passe quand même
+- glass-card est une classe CSS custom dispo dans DashboardV2
