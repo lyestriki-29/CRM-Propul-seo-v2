@@ -7,27 +7,24 @@ import type { ProjectV2 } from '../../types/project-v2'
 interface ProjectDetailsV2Props {
   projectId: string
   onBack: () => void
-  /** Passer le projet directement (modules avec données mock locales) */
+  /** Passer le projet directement (modules sans ProjectsV2Provider dans l'arbre) */
   project?: ProjectV2
   /** Label du fil d'ariane, ex: "Site Web & SEO" */
   backLabel?: string
 }
 
-export function ProjectDetailsV2({ projectId, onBack, project: projectProp, backLabel = 'Projets V2' }: ProjectDetailsV2Props) {
-  const { getProjectById, refetch } = useMockProjects()
-  const project = projectProp ?? getProjectById(projectId)
-
-  if (!project) {
-    return (
-      <div className="p-6">
-        <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-          ← Retour
-        </button>
-        <p className="text-muted-foreground">Projet introuvable.</p>
-      </div>
-    )
-  }
-
+// UI pure — pas de hook, utilisable sans contexte
+function ProjectDetailsV2UI({
+  project,
+  onBack,
+  backLabel = 'Projets V2',
+  refetch,
+}: {
+  project: ProjectV2
+  onBack: () => void
+  backLabel?: string
+  refetch?: () => void
+}) {
   return (
     <div className="flex flex-col h-screen bg-[#020205] overflow-hidden">
       {/* Breadcrumb */}
@@ -56,9 +53,44 @@ export function ProjectDetailsV2({ projectId, onBack, project: projectProp, back
 
         {/* Sidebar droite */}
         <div className="w-[300px] shrink-0 border-l border-[rgba(139,92,246,0.18)] overflow-y-auto bg-[#070512]">
-          <ProjectV2RightSidebar project={project} onRefresh={refetch} />
+          <ProjectV2RightSidebar project={project} onRefresh={refetch ?? (() => {})} />
         </div>
       </div>
     </div>
   )
+}
+
+// Variante avec contexte Supabase (ProjectsManagerV2 → ProjectsV2Provider requis)
+function ProjectDetailsV2WithContext({
+  projectId,
+  onBack,
+  backLabel,
+}: {
+  projectId: string
+  onBack: () => void
+  backLabel?: string
+}) {
+  const { getProjectById, refetch } = useMockProjects()
+  const project = getProjectById(projectId)
+
+  if (!project) {
+    return (
+      <div className="p-6">
+        <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
+          ← Retour
+        </button>
+        <p className="text-muted-foreground">Projet introuvable.</p>
+      </div>
+    )
+  }
+
+  return <ProjectDetailsV2UI project={project} onBack={onBack} backLabel={backLabel} refetch={refetch} />
+}
+
+// Export principal — dispatche selon si le projet est fourni directement
+export function ProjectDetailsV2({ projectId, onBack, project, backLabel }: ProjectDetailsV2Props) {
+  if (project) {
+    return <ProjectDetailsV2UI project={project} onBack={onBack} backLabel={backLabel} />
+  }
+  return <ProjectDetailsV2WithContext projectId={projectId} onBack={onBack} backLabel={backLabel} />
 }
