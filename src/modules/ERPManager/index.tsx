@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { Settings2, Plus, ChevronRight } from 'lucide-react'
-import { cn } from '../../lib/utils'
+import { Settings2, Plus } from 'lucide-react'
 import { useMockERPProjects } from './hooks/useMockERPProjects'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import { MOCK_ERP_BRIEFS } from './mocks'
@@ -20,7 +19,6 @@ const ERP_COLUMNS: { id: StatusERP; label: string; color: string }[] = [
 export function ERPManager() {
   const { projects, updateStatus } = useMockERPProjects()
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'brief' | 'checklist'>('brief')
   const [showDetails, setShowDetails] = useState(false)
 
   const selectedProject = projects.find(p => p.id === selectedId) ?? null
@@ -99,109 +97,50 @@ export function ERPManager() {
         </div>
       </div>
 
-      {/* Main layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Kanban */}
-        <div className="flex-1 overflow-x-auto overflow-y-hidden">
-          <div className="flex gap-3 p-4 h-full" style={{ minWidth: `${ERP_COLUMNS.length * 220}px` }}>
-            {ERP_COLUMNS.map(col => {
-              const cards = projects.filter(p => p.erp_status === col.id)
-              return (
-                <div key={col.id} className="flex flex-col w-52 shrink-0">
-                  {/* Column header */}
-                  <div className="flex items-center gap-2 mb-2 px-1">
-                    <div className={cn('w-2 h-2 rounded-full', col.color)} />
-                    <span className="text-xs font-medium text-foreground truncate">{col.label}</span>
-                    <span className="ml-auto text-xs text-muted-foreground">{cards.length}</span>
-                  </div>
-
-                  {/* Cards */}
-                  <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
-                    {cards.map(project => (
-                      <div key={project.id} className="flex flex-col gap-1">
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => { setSelectedId(project.id); setShowDetails(true) }}
-                          onKeyDown={e => { if (e.key === 'Enter') { setSelectedId(project.id); setShowDetails(true) } }}
-                          className={cn(
-                            'w-full text-left p-3 rounded-lg border transition-all cursor-pointer',
-                            selectedId === project.id
-                              ? 'border-primary bg-primary/5 shadow-sm'
-                              : 'border-border bg-surface-2 hover:border-primary/40 hover:shadow-sm'
-                          )}
-                        >
-                          <p className="text-xs font-medium text-foreground leading-snug line-clamp-2">
-                            {project.name}
-                          </p>
-                          {project.client_name && (
-                            <p className="text-xs text-muted-foreground mt-0.5 truncate">{project.client_name}</p>
-                          )}
-                          {project.budget && (
-                            <p className="text-xs text-primary mt-1 font-medium">
-                              {project.budget.toLocaleString('fr-FR')} €
-                            </p>
-                          )}
-                          {project.next_action_label && (
-                            <p className="text-xs text-muted-foreground mt-1 truncate flex items-center gap-1">
-                              <ChevronRight className="w-3 h-3 shrink-0" />
-                              {project.next_action_label}
-                            </p>
-                          )}
-                        </div>
-                        {/* Status change select — outside the clickable div to avoid invalid HTML nesting */}
-                        <select
-                          value={project.erp_status}
-                          onChange={e => updateStatus(project.id, e.target.value as StatusERP)}
-                          className="w-full text-xs border border-border rounded bg-surface-1 text-muted-foreground py-0.5 px-1"
-                        >
-                          {ERP_COLUMNS.map(c => (
-                            <option key={c.id} value={c.id}>{c.label}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                    {cards.length === 0 && (
-                      <div className="flex-1 border border-dashed border-border rounded-lg flex items-center justify-center min-h-16">
-                        <span className="text-xs text-muted-foreground">Vide</span>
-                      </div>
-                    )}
-                  </div>
+      {/* Kanban */}
+      <div className="flex-1 overflow-auto p-4">
+        <div className="flex gap-4 overflow-x-auto pb-4" style={{ minWidth: `${ERP_COLUMNS.length * 220}px` }}>
+          {ERP_COLUMNS.map(col => {
+            const colProjects = projects.filter(p => p.erp_status === col.id)
+            return (
+              <div key={col.id} className="flex-shrink-0 w-56">
+                {/* Header coloré — même style que SiteWeb */}
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-t-lg ${col.color} text-white`}>
+                  <span className="text-xs font-semibold truncate">{col.label}</span>
+                  <span className="text-xs opacity-80 ml-auto">{colProjects.length}</span>
                 </div>
-              )
-            })}
-          </div>
-        </div>
 
-        {/* Side panel */}
-        {selectedProject && (
-          <div className="w-80 shrink-0 border-l border-border bg-surface-1 flex flex-col overflow-hidden">
-            <div className="px-4 py-3 border-b border-border">
-              <p className="text-xs font-semibold text-foreground truncate">{selectedProject.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{selectedProject.client_name}</p>
-            </div>
-            {/* Tabs */}
-            <div className="flex border-b border-border">
-              {(['brief', 'checklist'] as const).map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)}
-                  className={cn(
-                    'flex-1 py-2 text-xs font-medium transition-colors',
-                    activeTab === tab
-                      ? 'text-primary border-b-2 border-primary'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}>
-                  {tab === 'brief' ? 'Brief' : 'Checklist'}
-                </button>
-              ))}
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {activeTab === 'brief' && <ERPBriefTab key={selectedProject.id} projectId={selectedProject.id} />}
-              {activeTab === 'checklist' && (
-                <div className="p-4 text-xs text-muted-foreground">Checklist à venir.</div>
-              )}
-            </div>
-          </div>
-        )}
+                {/* Cartes */}
+                <div className="bg-surface-2 rounded-b-lg p-2 space-y-2 min-h-20">
+                  {colProjects.map(project => (
+                    <div
+                      key={project.id}
+                      onClick={() => { setSelectedId(project.id); setShowDetails(true) }}
+                      className={`bg-surface-1 rounded-lg p-3 cursor-pointer hover:bg-surface-3 transition-colors border ${
+                        selectedId === project.id ? 'border-primary' : 'border-border'
+                      }`}
+                    >
+                      <p className="text-xs font-medium text-foreground truncate">{project.name}</p>
+                      {project.client_name && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{project.client_name}</p>
+                      )}
+                      {project.budget != null && (
+                        <p className="text-xs text-primary mt-1 font-medium">
+                          {project.budget.toLocaleString('fr-FR')} €
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  {colProjects.length === 0 && (
+                    <div className="flex items-center justify-center min-h-16">
+                      <span className="text-xs text-muted-foreground/50">—</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

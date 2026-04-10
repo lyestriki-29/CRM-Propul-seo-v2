@@ -1,2 +1,137 @@
-// Alias vers le hook Supabase — préserve la compatibilité des imports existants
-export { useChecklistV2 as useMockChecklist } from './useChecklistV2'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { supabase } from '../../../lib/supabase'
+import { MOCK_SITEWEB_CHECKLISTS } from '../../SiteWebManager/mocks/mockSiteWebChecklists'
+import { MOCK_ERP_CHECKLISTS } from '../../ERPManager/mocks/mockERPChecklists'
+import type { ChecklistItemV2, ChecklistPhase, ChecklistStatus } from '../../../types/project-v2'
+
+// Registre des checklists mock (SiteWeb + ERP ; Comm = vide → template affiché)
+const MOCK_REGISTRY: Record<string, ChecklistItemV2[]> = {
+  ...MOCK_SITEWEB_CHECKLISTS,
+  ...MOCK_ERP_CHECKLISTS,
+}
+
+function isMockProject(projectId: string) {
+  return (
+    projectId.startsWith('sw-') ||
+    projectId.startsWith('erp-') ||
+    projectId.startsWith('comm-')
+  )
+}
+
+interface UseChecklistReturn {
+  items: ChecklistItemV2[]
+  loading: boolean
+  progress: number
+  progressByPhase: Record<ChecklistPhase, { total: number; done: number; percent: number }>
+  addItem: (item: Omit<ChecklistItemV2, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
+  updateItem: (id: string, updates: Partial<ChecklistItemV2>) => Promise<void>
+  deleteItem: (id: string) => Promise<void>
+  setItemStatus: (id: string, status: ChecklistStatus) => Promise<void>
+}
+
+export function useMockChecklist(projectId: string): UseChecklistReturn {
+  const [items, setItems] = useState<ChecklistItemV2[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!projectId) return
+
+    if (isMockProject(projectId)) {
+      // Charger les données mock locales (pas de Supabase)
+      setItems(MOCK_REGISTRY[projectId] ?? [])
+      setLoading(false)
+      return
+    }
+
+    // Projet réel → Supabase
+    setLoading(true)
+    supabase
+      .from('checklist_items_v2')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('sort_order', { ascending: true })
+      .then(({ data, error }) => {
+        if (!error && data) setItems(data as ChecklistItemV2[])
+        setLoading(false)
+      })
+  }, [projectId])
+
+  const progress = useMemo(() => {
+    const rootItems = items.filter(i => !i.parent_task_id)
+    if (rootItems.length === 0) return 0
+    const done = rootItems.filter(i => i.status === 'done').length
+    return Math.round((done / rootItems.length) * 100)
+  }, [items])
+
+  const progressByPhase = useMemo(() => {
+    const phases: ChecklistPhase[] = [
+      'onboarding', 'conception', 'developpement', 'recette', 'post_livraison', 'general',
+    ]
+    const result = {} as Record<ChecklistPhase, { total: number; done: number; percent: number }>
+    for (const phase of phases) {
+      const phaseItems = items.filter(i => i.phase === phase && !i.parent_task_id)
+      const done = phaseItems.filter(i => i.status === 'done').length
+      result[phase] = {
+        total: phaseItems.length,
+        done,
+        percent: phaseItems.length > 0 ? Math.round((done / phaseItems.length) * 100) : 0,
+      }
+    }
+    return result
+  }, [items])
+
+  const addItem = useCallback(async (data: Omit<ChecklistItemV2, 'id' | 'created_at' | 'updated_at'>) => {
+    if (isMockProject(projectId)) {
+      const newItem: ChecklistItemV2 = {
+        ...data,
+        id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      setItems(prev => [...prev, newItem])
+      return
+    }
+    const { data: created, error } = await supabase
+      .from('checklist_items_v2')
+      .insert({ ...data, project_id: projectId })
+      .select()
+      .single()
+    if (!error && created) setItems(prev => [...prev, created as ChecklistItemV2])
+  }, [projectId])
+
+  const updateItem = useCallback(async (id: string, updates: Partial<ChecklistItemV2>) => {
+    if (isMockProject(projectId)) {
+      setItems(prev =>
+        prev.map(i =>
+          i.id === id ? { ...i, ...updates, updated_at: new Date().toISOString() } : i
+        )
+      )
+      return
+    }
+    const { data, error } = await supabase
+      .from('checklist_items_v2')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    if (!error && data) setItems(prev => prev.map(i => i.id === id ? data as ChecklistItemV2 : i))
+  }, [projectId])
+
+  const deleteItem = useCallback(async (id: string) => {
+    if (isMockProject(projectId)) {
+      setItems(prev => prev.filter(i => i.id !== id && i.parent_task_id !== id))
+      return
+    }
+    const { error } = await supabase.from('checklist_items_v2').delete().eq('id', id)
+    if (!error) setItems(prev => prev.filter(i => i.id !== id && i.parent_task_id !== id))
+  }, [projectId])
+
+  const setItemStatus = useCallback(async (id: string, status: ChecklistStatus) => {
+    await updateItem(id, { status })
+  }, [updateItem])
+
+  return { items, loading, progress, progressByPhase, addItem, updateItem, deleteItem, setItemStatus }
+}
+
+// Alias pour compatibilité avec les imports existants
+export { useChecklistV2 } from './useChecklistV2'
