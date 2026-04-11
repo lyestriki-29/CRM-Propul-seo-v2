@@ -145,7 +145,7 @@ export function useClientPortal() {
   const revokeToken = useCallback(async (projectId: string): Promise<boolean> => {
     const { error } = await supabase
       .from('projects_v2')
-      .update({ portal_token: null, portal_enabled: false })
+      .update({ portal_token: null, portal_enabled: false, portal_short_code: null, portal_expires_at: null })
       .eq('id', projectId)
 
     return !error

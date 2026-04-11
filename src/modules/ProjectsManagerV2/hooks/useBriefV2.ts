@@ -15,6 +15,7 @@ interface UseBriefV2Return {
   loading: boolean
   projectName: string
   briefToken: string | null
+  briefShortCode: string | null
   tokenEnabled: boolean
   saveBrief: (data: Partial<ProjectBrief>) => Promise<void>
   enableBriefToken: () => Promise<string | null>
@@ -26,6 +27,7 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
   const [loading, setLoading] = useState(true)
   const [projectName, setProjectName] = useState('')
   const [briefToken, setBriefToken] = useState<string | null>(null)
+  const [briefShortCode, setBriefShortCode] = useState<string | null>(null)
   const [tokenEnabled, setTokenEnabled] = useState(false)
 
   useEffect(() => {
@@ -47,12 +49,13 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
     // Fetch token state from projects_v2
     supabase
       .from('projects_v2')
-      .select('brief_token, brief_token_enabled, name')
+      .select('brief_token, brief_short_code, brief_token_enabled, name')
       .eq('id', projectId)
       .single()
       .then(({ data }) => {
         if (data) {
           setBriefToken(data.brief_token ?? null)
+          setBriefShortCode((data as { brief_short_code?: string | null }).brief_short_code ?? null)
           setTokenEnabled(data.brief_token_enabled ?? false)
           setProjectName(data.name ?? '')
         }
@@ -90,6 +93,7 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
       .eq('id', projectId)
     if (error) return null
     setBriefToken(token)
+    setBriefShortCode(shortCode)
     setTokenEnabled(true)
     return shortCode
   }, [projectId])
@@ -102,11 +106,12 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
       .eq('id', projectId)
     if (error) return false
     setBriefToken(null)
+    setBriefShortCode(null)
     setTokenEnabled(false)
     return true
   }, [projectId])
 
-  return { brief, loading, projectName, briefToken, tokenEnabled, saveBrief, enableBriefToken, disableBriefToken }
+  return { brief, loading, projectName, briefToken, briefShortCode, tokenEnabled, saveBrief, enableBriefToken, disableBriefToken }
 }
 
 // Hook séparé pour l'accès public (page ClientBriefPage — sans auth)
