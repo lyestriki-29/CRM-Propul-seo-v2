@@ -30,6 +30,8 @@ const FIELDS: BriefField[] = [
   { key: 'notes',             label: 'Notes complémentaires',     placeholder: 'Toute information utile...',                      rows: 3 },
 ]
 
+const BRIEF_FIELD_KEYS = ['objective', 'target_audience', 'pages', 'techno', 'design_references', 'notes'] as const
+
 interface ProjectBriefProps {
   projectId: string
 }
@@ -68,7 +70,7 @@ export function ProjectBrief({ projectId }: ProjectBriefProps) {
   const isReadOnly = (isSubmitted && !forceEdit) || status === 'frozen'
   const statusConf = STATUS_CONFIG[status]
 
-  const BRIEF_FIELD_KEYS = ['objective', 'target_audience', 'pages', 'techno', 'design_references', 'notes'] as const
+  // Vérifie les données sauvegardées (brief Supabase), pas les champs locaux non encore sauvegardés
   const hasBriefContent = !!brief && BRIEF_FIELD_KEYS.some(k => (brief[k] ?? '').trim().length > 0)
   const slug = projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'projet'
 
@@ -110,14 +112,17 @@ export function ProjectBrief({ projectId }: ProjectBriefProps) {
             }
             fileName={`brief-vierge-${slug}.pdf`}
           >
-            {({ loading: pdfLoading }) => (
-              <button
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-2 border border-border rounded-md text-xs text-foreground hover:bg-surface-3 transition-colors disabled:opacity-50"
-                disabled={pdfLoading}
+            {({ loading: pdfLoading, url }) => (
+              <a
+                href={url ?? undefined}
+                download={`brief-vierge-${slug}.pdf`}
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-2 border border-border rounded-md text-xs text-foreground hover:bg-surface-3 transition-colors aria-disabled:opacity-50 no-underline"
+                aria-disabled={pdfLoading || !url}
+                onClick={e => { if (pdfLoading || !url) e.preventDefault() }}
               >
                 <Download className="h-3 w-3" />
                 {pdfLoading ? 'Génération…' : 'Formulaire vierge'}
-              </button>
+              </a>
             )}
           </PDFDownloadLink>
 
@@ -134,14 +139,17 @@ export function ProjectBrief({ projectId }: ProjectBriefProps) {
               }
               fileName={`brief-recap-${slug}.pdf`}
             >
-              {({ loading: pdfLoading }) => (
-                <button
-                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-md text-xs text-indigo-300 hover:bg-indigo-500/20 transition-colors disabled:opacity-50"
-                  disabled={pdfLoading}
+              {({ loading: pdfLoading, url }) => (
+                <a
+                  href={url ?? undefined}
+                  download={`brief-recap-${slug}.pdf`}
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-md text-xs text-indigo-300 hover:bg-indigo-500/20 transition-colors aria-disabled:opacity-50 no-underline"
+                  aria-disabled={pdfLoading || !url}
+                  onClick={e => { if (pdfLoading || !url) e.preventDefault() }}
                 >
                   <Download className="h-3 w-3" />
                   {pdfLoading ? 'Génération…' : 'Récapitulatif'}
-                </button>
+                </a>
               )}
             </PDFDownloadLink>
           )}
