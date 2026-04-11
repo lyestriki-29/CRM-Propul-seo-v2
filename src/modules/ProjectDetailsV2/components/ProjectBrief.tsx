@@ -54,8 +54,12 @@ export function ProjectBrief({ projectId }: ProjectBriefProps) {
   }, [brief])
 
   const handleSave = async () => {
-    await saveBrief({ ...fields, status })
-    toast.success('Brief sauvegardé')
+    try {
+      await saveBrief({ ...fields, status })
+      toast.success('Brief sauvegardé')
+    } catch {
+      toast.error('Erreur lors de la sauvegarde')
+    }
   }
 
   const isSubmitted = brief?.status === 'submitted'
@@ -74,7 +78,7 @@ export function ProjectBrief({ projectId }: ProjectBriefProps) {
           {isSubmitted && !forceEdit && (
             <div className="flex items-center gap-1.5 text-xs text-blue-300">
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-              Reçu le {new Date(brief.submitted_at!).toLocaleDateString('fr-FR')}
+              {brief.submitted_at ? `Reçu le ${new Date(brief.submitted_at).toLocaleDateString('fr-FR')}` : 'Brief reçu'}
             </div>
           )}
           <span className={`text-xs px-2 py-0.5 rounded ${statusConf.color}`}>{statusConf.label}</span>

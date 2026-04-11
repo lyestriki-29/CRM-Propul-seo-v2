@@ -12,6 +12,8 @@ export type BriefFields = Pick<
 interface UseBriefV2Return {
   brief: ProjectBrief | null
   loading: boolean
+  briefToken: string | null
+  tokenEnabled: boolean
   saveBrief: (data: Partial<ProjectBrief>) => Promise<void>
   enableBriefToken: () => Promise<string | null>
   disableBriefToken: () => Promise<boolean>
@@ -20,6 +22,8 @@ interface UseBriefV2Return {
 export function useBriefV2(projectId: string): UseBriefV2Return {
   const [brief, setBrief] = useState<ProjectBrief | null>(null)
   const [loading, setLoading] = useState(true)
+  const [briefToken, setBriefToken] = useState<string | null>(null)
+  const [tokenEnabled, setTokenEnabled] = useState(false)
 
   useEffect(() => {
     // Fix 4: set loading false before returning on empty projectId
@@ -37,6 +41,18 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
         if (!error) setBrief(data as ProjectBrief | null)
         setLoading(false)
       })
+    // Fetch token state from projects_v2
+    supabase
+      .from('projects_v2')
+      .select('brief_token, brief_token_enabled')
+      .eq('id', projectId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setBriefToken(data.brief_token ?? null)
+          setTokenEnabled(data.brief_token_enabled ?? false)
+        }
+      })
   }, [projectId])
 
   const saveBrief = useCallback(async (data: Partial<ProjectBrief>) => {
@@ -47,14 +63,16 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
         .eq('id', brief.id)
         .select()
         .single()
-      if (!error && updated) setBrief(updated as ProjectBrief)
+      if (error) throw new Error(error.message)
+      if (updated) setBrief(updated as ProjectBrief)
     } else {
       const { data: created, error } = await supabase
         .from('project_briefs_v2')
         .insert({ ...data, project_id: projectId })
         .select()
         .single()
-      if (!error && created) setBrief(created as ProjectBrief)
+      if (error) throw new Error(error.message)
+      if (created) setBrief(created as ProjectBrief)
     }
   }, [brief, projectId])
 
@@ -66,6 +84,8 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
       .update({ brief_token: token, brief_token_enabled: true })
       .eq('id', projectId)
     if (error) return null
+    setBriefToken(token)
+    setTokenEnabled(true)
     return token
   }, [projectId])
 
@@ -75,10 +95,13 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
       .from('projects_v2')
       .update({ brief_token: null, brief_token_enabled: false })
       .eq('id', projectId)
-    return !error
+    if (error) return false
+    setBriefToken(null)
+    setTokenEnabled(false)
+    return true
   }, [projectId])
 
-  return { brief, loading, saveBrief, enableBriefToken, disableBriefToken }
+  return { brief, loading, briefToken, tokenEnabled, saveBrief, enableBriefToken, disableBriefToken }
 }
 
 // Hook séparé pour l'accès public (page ClientBriefPage — sans auth)
