@@ -32,15 +32,22 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { token, companyName, fields } = await req.json() as {
-      token: string;
+    const { token, short_code, companyName, fields } = await req.json() as {
+      token?: string;
+      short_code?: string;
       companyName: string;
       fields: Record<string, string | null>;
     };
 
-    if (!token || !companyName?.trim()) {
+    if (!token && !short_code) {
       return new Response(
-        JSON.stringify({ ok: false, error: "token et companyName requis" }),
+        JSON.stringify({ ok: false, error: "token ou short_code requis" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (!companyName?.trim()) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "companyName requis" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -50,12 +57,16 @@ Deno.serve(async (req) => {
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 1. Valider le token
-    const { data: invitation, error: invErr } = await supabase
+    // 1. Valider le token ou short_code
+    const invQuery = supabase
       .from("brief_invitations")
-      .select("id, status, company_name")
-      .eq("token", token)
-      .single();
+      .select("id, status, company_name");
+
+    const { data: invitation, error: invErr } = await (
+      short_code
+        ? invQuery.eq("short_code", short_code)
+        : invQuery.eq("token", token!)
+    ).single();
 
     if (invErr || !invitation) {
       return new Response(
