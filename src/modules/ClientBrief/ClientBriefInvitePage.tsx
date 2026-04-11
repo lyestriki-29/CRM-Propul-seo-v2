@@ -167,11 +167,13 @@ const PAGE_BG: React.CSSProperties = {
   backgroundAttachment: 'fixed',
   minHeight: '100vh',
   position: 'relative',
+  overflowX: 'hidden',
 }
 
 // Injecte la couleur de fond sur <html> pour l'overscroll
 if (typeof document !== 'undefined') {
   document.documentElement.style.backgroundColor = '#0a0118'
+  document.documentElement.style.overflowX = 'hidden'
 }
 
 /* ── Composant principal ── */
