@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
-import { FileSpreadsheet, Save, CheckCircle2 } from 'lucide-react'
+import { FileSpreadsheet, Save, CheckCircle2, Download } from 'lucide-react'
 import { toast } from 'sonner'
+import { PDFDownloadLink } from '@react-pdf/renderer'
 import type { BriefStatus } from '../../../types/project-v2'
 import { useBriefV2 } from '../../ProjectsManagerV2/hooks/useBriefV2'
 import { ShareBriefButton } from './ShareBriefButton'
+import { BriefPDFDocument } from './BriefPDFDocument'
 
 const STATUS_CONFIG: Record<BriefStatus, { label: string; color: string }> = {
   draft:     { label: 'Brouillon',  color: 'bg-gray-500/20 text-gray-400' },
@@ -33,7 +35,7 @@ interface ProjectBriefProps {
 }
 
 export function ProjectBrief({ projectId }: ProjectBriefProps) {
-  const { brief, loading, saveBrief } = useBriefV2(projectId)
+  const { brief, loading, projectName, saveBrief } = useBriefV2(projectId)
   const [status, setStatus] = useState<BriefStatus>('draft')
   const [fields, setFields] = useState<Record<string, string>>({
     objective: '', target_audience: '', pages: '', techno: '', design_references: '', notes: '',
@@ -66,6 +68,10 @@ export function ProjectBrief({ projectId }: ProjectBriefProps) {
   const isReadOnly = (isSubmitted && !forceEdit) || status === 'frozen'
   const statusConf = STATUS_CONFIG[status]
 
+  const BRIEF_FIELD_KEYS = ['objective', 'target_audience', 'pages', 'techno', 'design_references', 'notes'] as const
+  const hasBriefContent = !!brief && BRIEF_FIELD_KEYS.some(k => (brief[k] ?? '').trim().length > 0)
+  const slug = projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'projet'
+
   if (loading) {
     return <div className="text-sm text-muted-foreground py-4">Chargement…</div>
   }
@@ -93,6 +99,53 @@ export function ProjectBrief({ projectId }: ProjectBriefProps) {
               <option value="frozen">Figé</option>
             </select>
           )}
+          {/* Bouton formulaire vierge — toujours visible */}
+          <PDFDownloadLink
+            document={
+              <BriefPDFDocument
+                projectName={projectName || 'Projet'}
+                brief={brief}
+                mode="blank"
+              />
+            }
+            fileName={`brief-vierge-${slug}.pdf`}
+          >
+            {({ loading: pdfLoading }) => (
+              <button
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-2 border border-border rounded-md text-xs text-foreground hover:bg-surface-3 transition-colors disabled:opacity-50"
+                disabled={pdfLoading}
+              >
+                <Download className="h-3 w-3" />
+                {pdfLoading ? 'Génération…' : 'Formulaire vierge'}
+              </button>
+            )}
+          </PDFDownloadLink>
+
+          {/* Bouton récapitulatif — visible si brief non vide */}
+          {hasBriefContent && (
+            <PDFDownloadLink
+              document={
+                <BriefPDFDocument
+                  projectName={projectName || 'Projet'}
+                  brief={brief}
+                  mode="filled"
+                  submittedAt={brief?.submitted_at}
+                />
+              }
+              fileName={`brief-recap-${slug}.pdf`}
+            >
+              {({ loading: pdfLoading }) => (
+                <button
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-md text-xs text-indigo-300 hover:bg-indigo-500/20 transition-colors disabled:opacity-50"
+                  disabled={pdfLoading}
+                >
+                  <Download className="h-3 w-3" />
+                  {pdfLoading ? 'Génération…' : 'Récapitulatif'}
+                </button>
+              )}
+            </PDFDownloadLink>
+          )}
+
           <ShareBriefButton projectId={projectId} />
         </div>
       </div>
