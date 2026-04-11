@@ -83,7 +83,13 @@ export const handleSupabaseSuccess = <T>(data: T): SupabaseResult<T> => {
 // ===== CLIENT SUPABASE ANON (accès public, sans auth) =====
 export const supabaseAnon = createClient(
   effectiveUrl,
-  effectiveKey
+  effectiveKey,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
 );
 
 // ===== INFO DEBUG (dev only) =====

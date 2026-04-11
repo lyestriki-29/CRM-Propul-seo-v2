@@ -21,15 +21,6 @@ const FIELDS: FieldDef[] = [
   { key: 'notes',             label: 'Notes complémentaires',               placeholder: 'Toute information utile pour l\'équipe...',         rows: 3 },
 ]
 
-const EMPTY_FIELDS: BriefFields = {
-  objective: null,
-  target_audience: null,
-  pages: null,
-  techno: null,
-  design_references: null,
-  notes: null,
-}
-
 interface ClientBriefPageProps {
   token: string
 }
@@ -40,6 +31,7 @@ export function ClientBriefPage({ token }: ClientBriefPageProps) {
     document.documentElement.style.colorScheme = 'light'
     document.body.style.background = '#ffffff'
     return () => {
+      // Restore dark mode if this component ever unmounts within the CRM layout
       document.documentElement.classList.add('dark')
       document.documentElement.style.colorScheme = 'dark'
       document.body.style.background = ''
