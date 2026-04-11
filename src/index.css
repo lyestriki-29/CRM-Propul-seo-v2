@@ -651,6 +651,12 @@ body {
   transform: scale(1.05);
 }
 
+/* Spin animation for Loader2 icon */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Pull to refresh indicator */
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
