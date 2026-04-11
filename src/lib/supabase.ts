@@ -80,6 +80,12 @@ export const handleSupabaseSuccess = <T>(data: T): SupabaseResult<T> => {
   };
 };
 
+// ===== CLIENT SUPABASE ANON (accès public, sans auth) =====
+export const supabaseAnon = createClient(
+  effectiveUrl,
+  effectiveKey
+);
+
 // ===== INFO DEBUG (dev only) =====
 if (import.meta.env.DEV) {
   if (isDemoMode) {
