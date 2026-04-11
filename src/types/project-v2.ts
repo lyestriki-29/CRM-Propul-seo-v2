@@ -52,6 +52,9 @@ export interface ProjectV2 {
   // === PORTAIL CLIENT ===
   portal_token: string | null
   portal_enabled: boolean
+  // === BRIEF TOKEN ===
+  brief_token: string | null
+  brief_token_enabled: boolean
   created_at: string
   updated_at: string
 }
@@ -170,7 +173,7 @@ export interface ProjectDocument {
 
 // ===== BRIEF =====
 
-export type BriefStatus = 'draft' | 'validated' | 'frozen'
+export type BriefStatus = 'draft' | 'submitted' | 'validated' | 'frozen'
 
 export interface ProjectBrief {
   id: string
@@ -181,6 +184,7 @@ export interface ProjectBrief {
   techno?: string | null
   design_references?: string | null
   notes?: string | null
+  submitted_at?: string | null
   status: BriefStatus
   created_at: string
   updated_at: string
