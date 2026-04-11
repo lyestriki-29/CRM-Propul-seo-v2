@@ -81,7 +81,7 @@ function FieldCard({ field, index, value, onChange, readOnly }: {
   )
 }
 
-export function BriefForm({ code, projectName, projectId, brief, alreadySubmitted }: {
+export function BriefForm({ code: _code, projectName, projectId, brief, alreadySubmitted }: {
   code: string; projectName: string; projectId: string; brief: BriefData; alreadySubmitted: boolean
 }) {
   const [values, setValues] = useState({
