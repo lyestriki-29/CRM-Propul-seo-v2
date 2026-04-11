@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   filledText: {
     fontSize: 10,
     color: '#111827',
-    lineHeight: 1.5,
+    lineHeight: 15,
   },
   emptyAnswer: {
     fontSize: 10,
