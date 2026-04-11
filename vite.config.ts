@@ -31,6 +31,8 @@ export default defineConfig({
           'vendor-utils': ['date-fns', 'date-fns-tz', 'clsx', 'tailwind-merge'],
           // Zustand state management
           'vendor-state': ['zustand'],
+          // PDF rendering (lazy-loaded, chunk séparé)
+          'vendor-pdf': ['@react-pdf/renderer'],
         },
       },
     },

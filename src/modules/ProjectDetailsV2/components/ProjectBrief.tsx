@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy } from 'react'
 import { FileSpreadsheet, Save, CheckCircle2, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import type { BriefStatus } from '../../../types/project-v2'
 import { useBriefV2 } from '../../ProjectsManagerV2/hooks/useBriefV2'
 import { ShareBriefButton } from './ShareBriefButton'
-import { BriefPDFDocument } from './BriefPDFDocument'
+
+const BriefPDFDocument = lazy(() =>
+  import('./BriefPDFDocument').then(m => ({ default: m.BriefPDFDocument }))
+)
 
 const STATUS_CONFIG: Record<BriefStatus, { label: string; color: string }> = {
   draft:     { label: 'Brouillon',  color: 'bg-gray-500/20 text-gray-400' },
@@ -30,7 +33,7 @@ const FIELDS: BriefField[] = [
   { key: 'notes',             label: 'Notes complémentaires',     placeholder: 'Toute information utile...',                      rows: 3 },
 ]
 
-const BRIEF_FIELD_KEYS = ['objective', 'target_audience', 'pages', 'techno', 'design_references', 'notes'] as const
+const BRIEF_FIELD_KEYS = FIELDS.map(f => f.key)
 
 interface ProjectBriefProps {
   projectId: string
@@ -71,7 +74,7 @@ export function ProjectBrief({ projectId }: ProjectBriefProps) {
   const statusConf = STATUS_CONFIG[status]
 
   // Vérifie les données sauvegardées (brief Supabase), pas les champs locaux non encore sauvegardés
-  const hasBriefContent = !!brief && BRIEF_FIELD_KEYS.some(k => (brief[k] ?? '').trim().length > 0)
+  const hasBriefContent = !!brief && BRIEF_FIELD_KEYS.some(k => ((brief as unknown as Record<string, string>)[k] ?? '').trim().length > 0)
   const slug = projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'projet'
 
   if (loading) {
