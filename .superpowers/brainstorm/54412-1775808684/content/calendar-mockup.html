@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendrier Communication — Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f0f1a; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; }
+
+  /* Module shell */
+  .module { display: flex; flex-direction: column; height: 100vh; }
+
+  /* Header */
+  .module-header { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid #2a2a3e; background: #12121f; flex-shrink: 0; }
+  .module-header h1 { font-size: 15px; font-weight: 600; }
+  .header-icon { color: #f87171; font-size: 16px; }
+
+  /* KPI bar */
+  .kpi-bar { display: flex; gap: 20px; padding: 8px 20px; border-bottom: 1px solid #2a2a3e; background: #0d0d1a; font-size: 12px; color: #94a3b8; flex-shrink: 0; flex-wrap: wrap; }
+  .kpi-bar span b { color: #f1f5f9; }
+
+  /* Sub-nav */
+  .sub-nav { display: flex; border-bottom: 1px solid #2a2a3e; background: #0f0f1a; flex-shrink: 0; padding: 0 20px; }
+  .sub-nav-item { padding: 9px 14px; font-size: 12px; font-weight: 500; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .sub-nav-item.active { color: #a78bfa; border-bottom-color: #7c3aed; }
+  .sub-nav-item:hover:not(.active) { color: #94a3b8; }
+
+  /* Calendar toolbar */
+  .cal-toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-bottom: 1px solid #1e1e30; flex-shrink: 0; background: #0f0f1a; flex-wrap: wrap; }
+  .view-tabs { display: flex; border: 1px solid #2a2a3e; border-radius: 6px; overflow: hidden; }
+  .view-tab { padding: 5px 11px; font-size: 11px; font-weight: 500; color: #64748b; cursor: pointer; background: transparent; border: none; }
+  .view-tab.active { background: #1e1e3a; color: #a78bfa; }
+  .nav-btn { padding: 5px 10px; background: #1e1e30; border: 1px solid #2a2a3e; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: 12px; }
+  .nav-btn:hover { background: #252540; }
+  .current-period { font-size: 13px; font-weight: 600; color: #f1f5f9; padding: 0 6px; }
+  .ml-auto { margin-left: auto; }
+  .btn-new { padding: 6px 14px; background: #7c3aed; border: none; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .filter-chip { padding: 4px 10px; background: #1e1e30; border: 1px solid #2a2a3e; border-radius: 20px; font-size: 11px; color: #94a3b8; cursor: pointer; }
+  .filter-chip:hover { border-color: #7c3aed; color: #a78bfa; }
+
+  /* Calendar grid */
+  .cal-grid { flex: 1; overflow: auto; display: flex; flex-direction: column; }
+  .cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid #1e1e30; flex-shrink: 0; }
+  .cal-day-header { padding: 8px 10px; text-align: center; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; border-right: 1px solid #1e1e30; }
+  .cal-day-header:last-child { border-right: none; }
+  .cal-days-row { display: grid; grid-template-columns: repeat(7, 1fr); flex: 1; }
+  .cal-day { border-right: 1px solid #1e1e30; border-bottom: 1px solid #1e1e30; padding: 6px; min-height: 120px; vertical-align: top; position: relative; }
+  .cal-day:last-child { border-right: none; }
+  .cal-day.today { background: #1a1a2e; }
+  .day-num { font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
+  .day-num.today-num { background: #7c3aed; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+
+  /* Task cards */
+  .task-card { background: #1a1a2e; border-radius: 5px; padding: 5px 7px; margin-bottom: 4px; cursor: pointer; border-left: 3px solid transparent; transition: background 0.15s; }
+  .task-card:hover { background: #22223a; }
+  .task-card.importance-critique { border-left-color: #ef4444; }
+  .task-card.importance-haute { border-left-color: #f97316; }
+  .task-card.importance-moyenne { border-left-color: #eab308; }
+  .task-card.importance-faible { border-left-color: #22c55e; }
+
+  .task-title { font-size: 11px; font-weight: 500; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin-bottom: 4px; }
+
+  .task-badges { display: flex; flex-wrap: wrap; gap: 3px; }
+  .badge { padding: 1px 6px; border-radius: 20px; font-size: 9px; font-weight: 600; line-height: 1.6; }
+  .badge-todo { background: #1e2a3a; color: #60a5fa; }
+  .badge-inprogress { background: #1e2e1e; color: #4ade80; }
+  .badge-done { background: #2a2a2a; color: #94a3b8; }
+  .badge-critique { background: #2d1515; color: #f87171; }
+  .badge-haute { background: #2d1e10; color: #fb923c; }
+  .badge-moyenne { background: #2d2810; color: #fbbf24; }
+  .badge-faible { background: #102d15; color: #4ade80; }
+  .badge-project { background: #1e1e3a; color: #a78bfa; }
+
+  .more-tasks { font-size: 10px; color: #475569; padding: 2px 4px; cursor: pointer; }
+  .more-tasks:hover { color: #a78bfa; }
+</style>
+</head>
+<body>
+<div class="module">
+
+  <!-- Header -->
+  <div class="module-header">
+    <span class="header-icon">📣</span>
+    <h1>Communication</h1>
+  </div>
+
+  <!-- KPI bar -->
+  <div class="kpi-bar">
+    <span>📈 MRR <b>4 200€/mois</b></span>
+    <span>|</span>
+    <span>👥 Abonnés actifs <b>3</b></span>
+    <span>|</span>
+    <span>🏆 Pack le + vendu <b>Premium</b></span>
+    <span>|</span>
+    <span>💰 CA one-shot ce mois <b>1 500€</b></span>
+  </div>
+
+  <!-- Sub-nav -->
+  <div class="sub-nav">
+    <div class="sub-nav-item">🗂 Kanban</div>
+    <div class="sub-nav-item active">📅 Calendrier</div>
+  </div>
+
+  <!-- Calendar toolbar -->
+  <div class="cal-toolbar">
+    <div class="view-tabs">
+      <div class="view-tab active">Semaine</div>
+      <div class="view-tab">Mois</div>
+      <div class="view-tab">Par projet</div>
+    </div>
+    <button class="nav-btn">‹</button>
+    <span class="current-period">7 – 13 avril 2026</span>
+    <button class="nav-btn">›</button>
+    <button class="nav-btn">Aujourd'hui</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <div class="filter-chip">🔴 Critique</div>
+      <div class="filter-chip">🟠 Haute</div>
+      <div class="filter-chip">📁 Projet…</div>
+      <div class="filter-chip">⚡ Statut…</div>
+    </div>
+    <div class="ml-auto">
+      <button class="btn-new">+ Nouvelle tâche</button>
+    </div>
+  </div>
+
+  <!-- Calendar grid -->
+  <div class="cal-grid">
+    <div class="cal-days-header">
+      <div class="cal-day-header">Lun</div>
+      <div class="cal-day-header">Mar</div>
+      <div class="cal-day-header">Mer</div>
+      <div class="cal-day-header">Jeu</div>
+      <div class="cal-day-header">Ven</div>
+      <div class="cal-day-header">Sam</div>
+      <div class="cal-day-header">Dim</div>
+    </div>
+    <div class="cal-days-row">
+
+      <!-- Lundi 7 -->
+      <div class="cal-day">
+        <div class="day-num">7</div>
+        <div class="task-card importance-haute">
+          <div class="task-title">Brief visuel Lolette</div>
+          <div class="task-badges">
+            <span class="badge badge-inprogress">En cours</span>
+            <span class="badge badge-haute">Haute</span>
+            <span class="badge badge-project">Lolette</span>
+          </div>
+        </div>
+        <div class="task-card importance-moyenne">
+          <div class="task-title">Rédiger post LinkedIn</div>
+          <div class="task-badges">
+            <span class="badge badge-todo">À faire</span>
+            <span class="badge badge-moyenne">Moyenne</span>
+            <span class="badge badge-project">Propul'SEO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mardi 8 -->
+      <div class="cal-day">
+        <div class="day-num">8</div>
+        <div class="task-card importance-critique">
+          <div class="task-title">Validation BAT client</div>
+          <div class="task-badges">
+            <span class="badge badge-todo">À faire</span>
+            <span class="badge badge-critique">Critique</span>
+            <span class="badge badge-project">Locagame</span>
+          </div>
+        </div>
+        <div class="task-card importance-faible">
+          <div class="task-title">Archive stories avril</div>
+          <div class="task-badges">
+            <span class="badge badge-done">Terminé</span>
+            <span class="badge badge-faible">Faible</span>
+            <span class="badge badge-project">Propul'SEO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mercredi 9 -->
+      <div class="cal-day">
+        <div class="day-num">9</div>
+        <div class="task-card importance-haute">
+          <div class="task-title">Tournage reel Lolette</div>
+          <div class="task-badges">
+            <span class="badge badge-inprogress">En cours</span>
+            <span class="badge badge-haute">Haute</span>
+            <span class="badge badge-project">Lolette</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jeudi 10 (today) -->
+      <div class="cal-day today">
+        <div class="day-num"><span class="today-num">10</span></div>
+        <div class="task-card importance-critique">
+          <div class="task-title">Envoyer brandbook v2</div>
+          <div class="task-badges">
+            <span class="badge badge-todo">À faire</span>
+            <span class="badge badge-critique">Critique</span>
+            <span class="badge badge-project">Locagame</span>
+          </div>
+        </div>
+        <div class="task-card importance-haute">
+          <div class="task-title">Corriger postes Insta</div>
+          <div class="task-badges">
+            <span class="badge badge-inprogress">En cours</span>
+            <span class="badge badge-haute">Haute</span>
+            <span class="badge badge-project">Lolette</span>
+          </div>
+        </div>
+        <div class="task-card importance-moyenne">
+          <div class="task-title">Template ppt offres</div>
+          <div class="task-badges">
+            <span class="badge badge-done">Terminé</span>
+            <span class="badge badge-moyenne">Moyenne</span>
+            <span class="badge badge-project">Propul'SEO</span>
+          </div>
+        </div>
+        <div class="more-tasks">+ 2 tâches</div>
+      </div>
+
+      <!-- Vendredi 11 -->
+      <div class="cal-day">
+        <div class="day-num">11</div>
+        <div class="task-card importance-haute">
+          <div class="task-title">Relancer prospect comm</div>
+          <div class="task-badges">
+            <span class="badge badge-todo">À faire</span>
+            <span class="badge badge-haute">Haute</span>
+            <span class="badge badge-project">Propul'SEO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Samedi 12 -->
+      <div class="cal-day">
+        <div class="day-num">12</div>
+      </div>
+
+      <!-- Dimanche 13 -->
+      <div class="cal-day">
+        <div class="day-num">13</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

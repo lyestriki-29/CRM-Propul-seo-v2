@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vue Par Projet — Options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f0f1a; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; padding: 24px; }
+
+  h2 { font-size: 18px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+  .subtitle { color: #64748b; font-size: 13px; margin-bottom: 24px; }
+
+  .options { display: flex; flex-direction: column; gap: 20px; }
+
+  .option { border: 2px solid #2a2a3e; border-radius: 12px; padding: 20px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+  .option:hover { border-color: #7c3aed; background: #12121f; }
+  .option.selected { border-color: #7c3aed; background: #12121f; }
+  .option-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .option-letter { width: 28px; height: 28px; border-radius: 50%; background: #1e1e3a; color: #a78bfa; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .option-title { font-size: 15px; font-weight: 600; color: #f1f5f9; }
+  .option-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+  /* OPTION A — Timeline horizontale par projet */
+  .timeline { overflow-x: auto; }
+  .timeline-grid { display: table; border-collapse: collapse; min-width: 100%; }
+  .timeline-header { display: table-row; }
+  .timeline-corner { display: table-cell; width: 110px; padding: 6px 8px; background: #12121f; border: 1px solid #1e1e30; font-size: 10px; color: #475569; font-weight: 600; text-transform: uppercase; }
+  .timeline-day-head { display: table-cell; padding: 6px 4px; text-align: center; background: #12121f; border: 1px solid #1e1e30; font-size: 10px; color: #475569; font-weight: 600; min-width: 80px; }
+  .timeline-day-head.today { color: #a78bfa; }
+  .timeline-row { display: table-row; }
+  .project-label { display: table-cell; padding: 8px; background: #12121f; border: 1px solid #1e1e30; vertical-align: top; }
+  .project-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .project-name { font-size: 11px; font-weight: 600; color: #e2e8f0; }
+  .timeline-cell { display: table-cell; border: 1px solid #1e1e30; padding: 4px; vertical-align: top; min-width: 80px; min-height: 60px; }
+  .timeline-cell.today-col { background: #1a1a2e; }
+
+  .mini-card { background: #1e1e3a; border-radius: 4px; padding: 4px 6px; margin-bottom: 3px; border-left: 3px solid transparent; cursor: grab; }
+  .mini-card:active { cursor: grabbing; }
+  .mini-card.critique { border-left-color: #ef4444; }
+  .mini-card.haute { border-left-color: #f97316; }
+  .mini-card.moyenne { border-left-color: #eab308; }
+  .mini-card.faible { border-left-color: #22c55e; }
+  .mini-title { font-size: 10px; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
+  .mini-badges { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; }
+  .mini-badge { font-size: 8px; padding: 1px 4px; border-radius: 10px; font-weight: 600; }
+  .mb-todo { background: #1e2a3a; color: #60a5fa; }
+  .mb-prog { background: #1e2e1e; color: #4ade80; }
+  .mb-done { background: #2a2a2a; color: #94a3b8; }
+
+  /* OPTION B — Liste groupée */
+  .list-group { margin-bottom: 16px; }
+  .list-group-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #12121f; border-radius: 8px 8px 0 0; border: 1px solid #2a2a3e; }
+  .list-group-title { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+  .list-group-count { background: #1e1e3a; color: #a78bfa; font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 20px; }
+  .list-group-toggle { margin-left: auto; color: #64748b; font-size: 12px; }
+  .list-items { border: 1px solid #2a2a3e; border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
+  .list-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid #1e1e30; background: #0f0f1a; cursor: grab; transition: background 0.15s; }
+  .list-item:last-child { border-bottom: none; }
+  .list-item:hover { background: #14142a; }
+  .item-drag { color: #2a2a3e; font-size: 14px; cursor: grab; }
+  .item-title { font-size: 12px; color: #e2e8f0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-date { font-size: 11px; color: #475569; white-space: nowrap; }
+  .item-badges { display: flex; gap: 4px; flex-shrink: 0; }
+  .ibadge { font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+  .ib-todo { background: #1e2a3a; color: #60a5fa; }
+  .ib-prog { background: #1e2e1e; color: #4ade80; }
+  .ib-done { background: #2a2a2a; color: #94a3b8; }
+  .ib-critique { background: #2d1515; color: #f87171; }
+  .ib-haute { background: #2d1e10; color: #fb923c; }
+  .ib-moyenne { background: #2d2810; color: #fbbf24; }
+  .ib-faible { background: #102d15; color: #4ade80; }
+
+  .pros-cons { display: flex; gap: 12px; margin-top: 14px; }
+  .pros, .cons { flex: 1; background: #12121f; border-radius: 6px; padding: 10px 12px; }
+  .pros h4 { color: #4ade80; font-size: 11px; margin-bottom: 6px; }
+  .cons h4 { color: #f87171; font-size: 11px; margin-bottom: 6px; }
+  .pros ul, .cons ul { padding-left: 14px; font-size: 11px; color: #94a3b8; line-height: 1.7; }
+
+  .selected-indicator { display: none; }
+  .option.selected .selected-indicator { display: inline-block; margin-left: auto; background: #7c3aed; color: #fff; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+</style>
+</head>
+<body>
+
+<h2>Vue "Par projet" — choisir l'affichage</h2>
+<p class="subtitle">Les deux montrent les tâches groupées par projet. La différence c'est le format.</p>
+
+<div class="options">
+
+  <!-- OPTION A : Timeline -->
+  <div class="option" id="opt-a" onclick="select('a')">
+    <div class="option-header">
+      <div class="option-letter">A</div>
+      <div>
+        <div class="option-title">Timeline — grille projets × jours</div>
+        <div class="option-desc">Une ligne par projet, une colonne par jour. Comme un Gantt léger. Drag &amp; drop entre cases.</div>
+      </div>
+      <span class="selected-indicator">✓ Sélectionné</span>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-grid">
+        <!-- Header -->
+        <div class="timeline-header">
+          <div class="timeline-corner">Projet</div>
+          <div class="timeline-day-head">Lun 7</div>
+          <div class="timeline-day-head">Mar 8</div>
+          <div class="timeline-day-head">Mer 9</div>
+          <div class="timeline-day-head today">Jeu 10 ◉</div>
+          <div class="timeline-day-head">Ven 11</div>
+          <div class="timeline-day-head">Sam 12</div>
+          <div class="timeline-day-head">Dim 13</div>
+        </div>
+        <!-- Row Lolette -->
+        <div class="timeline-row">
+          <div class="project-label">
+            <span class="project-dot" style="background:#f97316"></span>
+            <span class="project-name">Lolette</span>
+          </div>
+          <div class="timeline-cell">
+            <div class="mini-card haute"><div class="mini-title">Brief visuel</div><div class="mini-badges"><span class="mini-badge mb-prog">En cours</span></div></div>
+          </div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell">
+            <div class="mini-card haute"><div class="mini-title">Tournage reel</div><div class="mini-badges"><span class="mini-badge mb-prog">En cours</span></div></div>
+          </div>
+          <div class="timeline-cell today-col">
+            <div class="mini-card haute"><div class="mini-title">Corriger Insta</div><div class="mini-badges"><span class="mini-badge mb-prog">En cours</span></div></div>
+          </div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell"></div>
+        </div>
+        <!-- Row Locagame -->
+        <div class="timeline-row">
+          <div class="project-label">
+            <span class="project-dot" style="background:#a78bfa"></span>
+            <span class="project-name">Locagame</span>
+          </div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell">
+            <div class="mini-card critique"><div class="mini-title">Validation BAT</div><div class="mini-badges"><span class="mini-badge mb-todo">À faire</span></div></div>
+          </div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell today-col">
+            <div class="mini-card critique"><div class="mini-title">Brandbook v2</div><div class="mini-badges"><span class="mini-badge mb-todo">À faire</span></div></div>
+          </div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell"></div>
+        </div>
+        <!-- Row Propul'SEO -->
+        <div class="timeline-row">
+          <div class="project-label">
+            <span class="project-dot" style="background:#22c55e"></span>
+            <span class="project-name">Propul'SEO</span>
+          </div>
+          <div class="timeline-cell">
+            <div class="mini-card moyenne"><div class="mini-title">Post LinkedIn</div><div class="mini-badges"><span class="mini-badge mb-todo">À faire</span></div></div>
+          </div>
+          <div class="timeline-cell">
+            <div class="mini-card faible"><div class="mini-title">Archive stories</div><div class="mini-badges"><span class="mini-badge mb-done">Terminé</span></div></div>
+          </div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell today-col">
+            <div class="mini-card moyenne"><div class="mini-title">Template ppt</div><div class="mini-badges"><span class="mini-badge mb-done">Terminé</span></div></div>
+          </div>
+          <div class="timeline-cell">
+            <div class="mini-card haute"><div class="mini-title">Relancer prospect</div><div class="mini-badges"><span class="mini-badge mb-todo">À faire</span></div></div>
+          </div>
+          <div class="timeline-cell"></div>
+          <div class="timeline-cell"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pros-cons">
+      <div class="pros"><h4>Pour</h4><ul><li>Vision immédiate charge par projet</li><li>Drag entre jours très naturel</li><li>Voir les chevauchements d'un coup d'œil</li></ul></div>
+      <div class="cons"><h4>Contre</h4><ul><li>Horizontal = scroll si beaucoup de projets</li><li>Titres tâches tronqués en cellule étroite</li></ul></div>
+    </div>
+  </div>
+
+  <!-- OPTION B : Liste groupée -->
+  <div class="option" id="opt-b" onclick="select('b')">
+    <div class="option-header">
+      <div class="option-letter">B</div>
+      <div>
+        <div class="option-title">Liste groupée — accordéon par projet</div>
+        <div class="option-desc">Sections repliables par projet. Chaque tâche sur une ligne avec date, statut et importance.</div>
+      </div>
+      <span class="selected-indicator">✓ Sélectionné</span>
+    </div>
+
+    <!-- Lolette group -->
+    <div class="list-group">
+      <div class="list-group-header">
+        <span class="project-dot" style="background:#f97316;width:10px;height:10px;border-radius:50%;display:inline-block"></span>
+        <span class="list-group-title">Lolette</span>
+        <span class="list-group-count">3 tâches</span>
+        <span class="list-group-toggle">▾</span>
+      </div>
+      <div class="list-items">
+        <div class="list-item">
+          <span class="item-drag">⠿</span>
+          <span class="item-title">Brief visuel</span>
+          <span class="item-date">Lun 7</span>
+          <div class="item-badges">
+            <span class="ibadge ib-prog">En cours</span>
+            <span class="ibadge ib-haute">Haute</span>
+          </div>
+        </div>
+        <div class="list-item">
+          <span class="item-drag">⠿</span>
+          <span class="item-title">Tournage reel</span>
+          <span class="item-date">Mer 9</span>
+          <div class="item-badges">
+            <span class="ibadge ib-prog">En cours</span>
+            <span class="ibadge ib-haute">Haute</span>
+          </div>
+        </div>
+        <div class="list-item">
+          <span class="item-drag">⠿</span>
+          <span class="item-title">Corriger postes Insta</span>
+          <span class="item-date">Jeu 10</span>
+          <div class="item-badges">
+            <span class="ibadge ib-prog">En cours</span>
+            <span class="ibadge ib-haute">Haute</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Locagame group -->
+    <div class="list-group">
+      <div class="list-group-header">
+        <span class="project-dot" style="background:#a78bfa;width:10px;height:10px;border-radius:50%;display:inline-block"></span>
+        <span class="list-group-title">Locagame</span>
+        <span class="list-group-count">2 tâches</span>
+        <span class="list-group-toggle">▾</span>
+      </div>
+      <div class="list-items">
+        <div class="list-item">
+          <span class="item-drag">⠿</span>
+          <span class="item-title">Validation BAT client</span>
+          <span class="item-date">Mar 8</span>
+          <div class="item-badges">
+            <span class="ibadge ib-todo">À faire</span>
+            <span class="ibadge ib-critique">Critique</span>
+          </div>
+        </div>
+        <div class="list-item">
+          <span class="item-drag">⠿</span>
+          <span class="item-title">Envoyer brandbook v2</span>
+          <span class="item-date">Jeu 10</span>
+          <div class="item-badges">
+            <span class="ibadge ib-todo">À faire</span>
+            <span class="ibadge ib-critique">Critique</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Propul'SEO -->
+    <div class="list-group">
+      <div class="list-group-header">
+        <span class="project-dot" style="background:#22c55e;width:10px;height:10px;border-radius:50%;display:inline-block"></span>
+        <span class="list-group-title">Propul'SEO</span>
+        <span class="list-group-count">4 tâches</span>
+        <span class="list-group-toggle">▾</span>
+      </div>
+      <div class="list-items">
+        <div class="list-item">
+          <span class="item-drag">⠿</span>
+          <span class="item-title">Rédiger post LinkedIn</span>
+          <span class="item-date">Lun 7</span>
+          <div class="item-badges">
+            <span class="ibadge ib-todo">À faire</span>
+            <span class="ibadge ib-moyenne">Moyenne</span>
+          </div>
+        </div>
+        <div class="list-item">
+          <span class="item-drag">⠿</span>
+          <span class="item-title">Archive stories avril</span>
+          <span class="item-date">Mar 8</span>
+          <div class="item-badges">
+            <span class="ibadge ib-done">Terminé</span>
+            <span class="ibadge ib-faible">Faible</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pros-cons">
+      <div class="pros"><h4>Pour</h4><ul><li>Titres complets lisibles</li><li>Facile à trier / filtrer par date</li><li>Sections repliables = épuré</li></ul></div>
+      <div class="cons"><h4>Contre</h4><ul><li>Moins visuel sur la charge temporelle</li><li>Drag pour changer de date moins intuitif</li></ul></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function select(choice) {
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  document.getElementById('opt-' + choice).classList.add('selected');
+  if (window.__selectChoice) window.__selectChoice(choice, choice === 'a' ? 'Timeline grille projets × jours' : 'Liste groupée accordéon par projet');
+}
+</script>
+</body>
+</html>

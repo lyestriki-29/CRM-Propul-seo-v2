@@ -1,0 +1,82 @@
+<h2>Intégration dans le CommunicationManager</h2>
+<p class="subtitle">Comment basculer entre Kanban et Calendrier ? Choisis l'approche qui te convient.</p>
+
+<div class="options">
+
+  <!-- Option A -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Onglets dans le header</h3>
+      <p>Deux onglets "Kanban" et "Calendrier" dans la barre du haut — bascule instantanée, même page.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Communication — aperçu</div>
+        <div class="mockup-body" style="padding:0">
+          <!-- Header comm -->
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #333;background:#1a1a2e">
+            <span style="font-size:13px;font-weight:600;color:#f1f1f1">📣 Communication</span>
+            <div style="margin-left:auto;display:flex;gap:0;border:1px solid #444;border-radius:6px;overflow:hidden">
+              <div style="padding:4px 12px;background:#7c3aed;color:#fff;font-size:11px;font-weight:600">Kanban</div>
+              <div style="padding:4px 12px;background:transparent;color:#aaa;font-size:11px;cursor:pointer">📅 Calendrier</div>
+            </div>
+          </div>
+          <!-- KPI bar -->
+          <div style="display:flex;gap:16px;padding:8px 14px;background:#111;border-bottom:1px solid #333;font-size:11px;color:#888">
+            <span>📈 MRR <b style="color:#fff">4 200€/mois</b></span>
+            <span>👥 Abonnés <b style="color:#fff">3</b></span>
+            <span>🏆 Pack le + vendu <b style="color:#fff">Premium</b></span>
+          </div>
+          <!-- Kanban preview -->
+          <div style="display:flex;gap:6px;padding:10px;overflow:hidden">
+            {['Prospect','Brief','Signé','En prod','Actif'].map((col,i) =>
+              `<div style="flex:1;min-width:0;background:#1e1e2e;border-radius:6px;padding:6px">
+                <div style="font-size:10px;font-weight:600;color:#aaa;margin-bottom:4px">${col}</div>
+                <div style="background:#2a2a3e;border-radius:4px;padding:5px;font-size:10px;color:#ddd;margin-bottom:3px">Projet client</div>
+                <div style="background:#2a2a3e;border-radius:4px;padding:5px;font-size:10px;color:#555">—</div>
+              </div>`
+            ).join('')}
+          </div>
+          <div style="padding:0 10px 6px;font-size:10px;color:#555;text-align:center">← Kanban pipeline projet →</div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>Pour</h4><ul><li>Simple et familier</li><li>KPI bar toujours visible</li><li>Pas de nav supplémentaire</li></ul></div>
+        <div class="cons"><h4>Contre</h4><ul><li>Header plus chargé</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Sous-nav dédiée</h3>
+      <p>Une barre de navigation secondaire sous le header avec icônes : Kanban · Calendrier · (+ autres vues futures).</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Communication — aperçu</div>
+        <div class="mockup-body" style="padding:0">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #333;background:#1a1a2e">
+            <span style="font-size:13px;font-weight:600;color:#f1f1f1">📣 Communication</span>
+          </div>
+          <!-- KPI bar -->
+          <div style="display:flex;gap:16px;padding:8px 14px;background:#111;border-bottom:1px solid #333;font-size:11px;color:#888">
+            <span>📈 MRR <b style="color:#fff">4 200€/mois</b></span>
+            <span>👥 Abonnés <b style="color:#fff">3</b></span>
+          </div>
+          <!-- Sub nav -->
+          <div style="display:flex;gap:0;padding:0 14px;background:#0f0f1a;border-bottom:1px solid #333">
+            <div style="padding:8px 14px;font-size:11px;font-weight:600;color:#7c3aed;border-bottom:2px solid #7c3aed">🗂 Kanban</div>
+            <div style="padding:8px 14px;font-size:11px;color:#aaa;border-bottom:2px solid transparent">📅 Calendrier</div>
+            <div style="padding:8px 14px;font-size:11px;color:#555;border-bottom:2px solid transparent">+ Vue future</div>
+          </div>
+          <div style="padding:16px;font-size:11px;color:#555;text-align:center">Contenu de la vue active</div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>Pour</h4><ul><li>Extensible facilement</li><li>Clair et ordonné</li></ul></div>
+        <div class="cons"><h4>Contre</h4><ul><li>Une ligne de nav en plus</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
