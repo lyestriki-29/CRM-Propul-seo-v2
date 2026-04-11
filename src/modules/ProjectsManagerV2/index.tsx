@@ -16,7 +16,7 @@ import { cn } from '../../lib/utils'
 import type { ProjectV2, ProjectStatusV2, PrestaType } from '../../types/project-v2'
 import { EditProjectModal } from './components/EditProjectModal'
 import { GmailConnectButton } from './components/GmailConnectButton'
-import { MOCK_USERS } from './mocks/mockUsers'
+import { supabase } from '../../lib/supabase'
 
 const EMPTY_FORM = {
   name: '',
@@ -47,6 +47,13 @@ function ProjectsManagerV2Inner() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingProject, setEditingProject] = useState<ProjectV2 | null>(null)
   const [filterUser, setFilterUser] = useState<string>('')
+  const [dbUsers, setDbUsers] = useState<{ id: string; name: string }[]>([])
+
+  useEffect(() => {
+    supabase.from('users').select('id, name').order('name').then(({ data }) => {
+      if (data) setDbUsers(data as { id: string; name: string }[])
+    })
+  }, [])
 
   useEffect(() => {
     if (navigationContext?.projectId) {
@@ -86,7 +93,7 @@ function ProjectsManagerV2Inner() {
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name) { toast.error('Le nom est obligatoire'); return }
-    const user = MOCK_USERS.find(u => u.id === form.assigned_to)
+    const user = dbUsers.find(u => u.id === form.assigned_to)
     const result = await addProject({
       user_id: null, client_id: null, client_name: '',
       name: form.name, description: form.description || null,
@@ -166,7 +173,7 @@ function ProjectsManagerV2Inner() {
               className="bg-surface-2 border border-border rounded-md px-3 py-1.5 text-sm text-foreground"
             >
               <option value="">Tous les responsables</option>
-              {MOCK_USERS.map(u => (
+              {dbUsers.map(u => (
                 <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </select>
@@ -281,7 +288,7 @@ function ProjectsManagerV2Inner() {
                   <select value={form.assigned_to} onChange={e => setForm({ ...form, assigned_to: e.target.value })}
                     className="w-full p-2 border border-border rounded-md bg-surface-2 text-foreground text-sm">
                     <option value="">Non assigné</option>
-                    {MOCK_USERS.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                    {dbUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                   </select>
                 </div>
               </div>
