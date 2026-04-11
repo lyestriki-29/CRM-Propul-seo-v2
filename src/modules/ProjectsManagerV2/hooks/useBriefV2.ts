@@ -156,6 +156,7 @@ export function useBriefByToken(token: string) {
   // Fix 2: use data.projectId directly — no redundant re-fetch
   const submitBrief = useCallback(async (fields: BriefFields): Promise<boolean> => {
     if (!data) return false
+
     const payload = {
       ...fields,
       project_id: data.projectId,
@@ -163,18 +164,46 @@ export function useBriefByToken(token: string) {
       submitted_at: new Date().toISOString(),
     }
 
+    let dbError: unknown
     if (data.brief) {
-      const { error } = await supabaseAnon
+      const result = await supabaseAnon
         .from('project_briefs_v2')
         .update(payload)
         .eq('id', data.brief.id)
-      return !error
+      dbError = result.error
     } else {
-      const { error } = await supabaseAnon
+      const result = await supabaseAnon
         .from('project_briefs_v2')
         .insert(payload)
-      return !error
+      dbError = result.error
     }
+
+    if (dbError) return false
+
+    // Fire-and-forget — appel Edge Function pour notif email (non bloquant)
+    fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-brief-notification`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          projectName: data.projectName,
+          fields: {
+            objective: fields.objective,
+            target_audience: fields.target_audience,
+            pages: fields.pages,
+            techno: fields.techno,
+            design_references: fields.design_references,
+            notes: fields.notes,
+          },
+        }),
+      }
+    ).catch(() => {/* silencieux — email est best-effort */})
+
+    return true
   }, [data])
 
   return { data, loading, error, submitBrief }
