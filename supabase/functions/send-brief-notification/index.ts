@@ -16,6 +16,14 @@ const FIELD_LABELS: Record<string, string> = {
   notes: "Notes complémentaires",
 };
 
+function escapeHtml(str: string): string {
+  return str.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]!));
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -42,8 +50,11 @@ Deno.serve(async (req) => {
 
     const to = [
       "lyestriki@gmail.com",
-      ...(extraEmails ?? []).map((r: { email: string }) => r.email),
+      ...(extraEmails ?? [])
+        .map((r: { email: string }) => r.email.trim())
+        .filter(isValidEmail),
     ];
+    console.log(`[send-brief-notification] project="${projectName}" recipients=${to.length}`);
 
     // Construire le corps HTML
     const fieldsHtml = Object.entries(fields)
@@ -53,7 +64,7 @@ Deno.serve(async (req) => {
           <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:1px;">
             ${FIELD_LABELS[key] ?? key}
           </p>
-          <p style="margin:0;font-size:14px;color:#1e293b;line-height:1.6;white-space:pre-wrap;">${val}</p>
+          <p style="margin:0;font-size:14px;color:#1e293b;line-height:1.6;white-space:pre-wrap;">${escapeHtml(val ?? '')}</p>
         </div>
       `).join("");
 
@@ -61,7 +72,7 @@ Deno.serve(async (req) => {
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#f8fafc;border-radius:12px;overflow:hidden;">
         <div style="background:linear-gradient(135deg,#6366f1,#a855f7);padding:24px 28px;">
           <p style="margin:0;color:rgba(255,255,255,0.8);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Nouveau brief reçu</p>
-          <h1 style="margin:6px 0 0;color:#fff;font-size:22px;font-weight:800;">${projectName}</h1>
+          <h1 style="margin:6px 0 0;color:#fff;font-size:22px;font-weight:800;">${escapeHtml(projectName)}</h1>
         </div>
         <div style="padding:24px 28px;background:#fff;">
           ${fieldsHtml}
@@ -95,6 +106,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
+    console.error("[send-brief-notification] error:", (err as Error).message);
     return new Response(
       JSON.stringify({ ok: false, error: (err as Error).message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
