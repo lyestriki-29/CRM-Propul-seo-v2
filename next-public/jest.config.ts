@@ -6,7 +6,7 @@ const config: Config = {
     '^.+\\.tsx?$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }],
   },
   moduleNameMapper: { '^@/(.*)$': '<rootDir>/$1' },
-  setupFilesAfterFramework: ['@testing-library/jest-dom'],
+  setupFilesAfterEnv: ['@testing-library/jest-dom'],
 }
 
 export default config
