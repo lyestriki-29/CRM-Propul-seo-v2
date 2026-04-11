@@ -164,9 +164,14 @@ function FieldCard({ field, index, value, onChange }: FieldCardProps) {
 /* ── Styles globaux ── */
 const PAGE_BG: React.CSSProperties = {
   background: 'linear-gradient(180deg,#0a0118 0%,#0d0520 55%,#0a0118 100%)',
+  backgroundAttachment: 'fixed',
   minHeight: '100vh',
   position: 'relative',
-  overflow: 'hidden',
+}
+
+// Injecte la couleur de fond sur <html> pour l'overscroll
+if (typeof document !== 'undefined') {
+  document.documentElement.style.backgroundColor = '#0a0118'
 }
 
 /* ── Composant principal ── */
