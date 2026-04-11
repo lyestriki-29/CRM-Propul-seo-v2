@@ -27,7 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_projects_v2_portal_short_code
 DROP POLICY IF EXISTS "anon_read_by_short_code" ON public.brief_invitations;
 CREATE POLICY "anon_read_by_short_code" ON public.brief_invitations
   FOR SELECT TO anon
-  USING (short_code IS NOT NULL);
+  USING (short_code IS NOT NULL AND status IN ('pending', 'submitted'));
 
 -- 4. RLS : anon lit projects_v2 via brief_short_code
 DROP POLICY IF EXISTS "brief_read_by_short_code" ON public.projects_v2;
