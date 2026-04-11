@@ -1,20 +1,25 @@
-# Session State — 2026-04-11 18:30
+# Session State — 2026-04-11 19:05
 
 ## Branch
 main
 
 ## Completed This Session
-- brief-link: formulaire public /brief/:token — migration Supabase appliquée via MCP, lien fonctionnel
-- brief-pdf: génération PDF côté client (@react-pdf/renderer) — formulaire vierge + récapitulatif rempli dans l'onglet Brief
+- Brief V2 UI: Réécriture complète ClientBriefPage.tsx en glassmorphism (Framer Motion, cascade, badge ✓)
+- Email notification: Edge Function send-brief-notification via Resend (clé dans secrets Supabase)
+- useBriefV2: Appel fire-and-forget Edge Function après submitBrief
+- useNotificationEmails: Hook CRUD sur table notification_emails
+- BriefNotificationsModal: Modale shadcn/ui pour gérer les destinataires
+- DashboardV2: Bouton ⚙️ + modale dans le header
+- Fix DB: CHECK constraint — ajout 'submitted' aux valeurs autorisées (migration 20260411_brief_status_check.sql)
 
 ## Next Task
-Retravailler l'UI/UX du formulaire public `/brief/:token` (ClientBriefPage.tsx) — nouvelle session brainstorming + implémentation
+Aucun — sprint terminé. Prochain sprint à définir.
 
 ## Blockers
 None
 
 ## Key Context
-- Migration `brief_token` appliquée sur Supabase projet `wftozvnvstxzvfplveyz` (MCP) — colonnes + RLS en place
-- `ClientBriefPage.tsx` : `src/modules/ClientBrief/ClientBriefPage.tsx` — page publique sans auth, fond blanc, 6 champs
-- `BriefPDFDocument.tsx` : `src/modules/ProjectDetailsV2/components/BriefPDFDocument.tsx` — `lineHeight: 15` (valeur absolue react-pdf, ne pas remettre 1.5)
-- vendor-pdf chunk séparé dans vite.config.ts manualChunks — @react-pdf/renderer ~1.5MB isolé
+- Resend API key définie dans Supabase dashboard (Settings → Edge Functions → secrets)
+- Adresse fixe: lyestriki@gmail.com (hardcodée dans Edge Function send-brief-notification)
+- supabaseAnon (persistSession:false) dans src/lib/supabase.ts pour accès public brief
+- CHECK constraint manquait 'submitted' — corrigée via migration 20260411_brief_status_check.sql
