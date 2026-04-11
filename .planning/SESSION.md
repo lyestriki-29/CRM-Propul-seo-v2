@@ -1,25 +1,20 @@
-# Session State — 2026-04-10 01:15
+# Session State — 2026-04-11 10:55
 
 ## Branch
 main
 
 ## Completed This Session
-- fix(checklist): checklist vide pour projets mock — useMockChecklist réécrit en hook smart (local state pour sw-/erp-/comm-, Supabase sinon)
-- fix(nav): clic projet → fiche ProjectDetailsV2 HubSpot-style pour SiteWeb, ERP, Comm
-- fix(hooks): "Rendered fewer hooks" — useMemo déplacé avant early return dans SiteWeb + Comm
-- fix(context): ProjectsV2Provider wrappé dans Layout.tsx pour les 3 nouveaux modules
-- feat(erp-kanban): refonte visuelle ERPManager kanban — même style que SiteWeb (headers colorés, sans select, sans side panel)
+- brainstorm(comm-calendar): exploration du module CommunicationManager existant + brainstorming design calendrier avec le pôle comm
 
 ## Next Task
-Rien de bloquant. Tester en dev (`npm run dev`) les 3 modules + checklist.
-Prochaine étape possible : brancher sur Supabase (remplacer les mocks).
+Finaliser le brainstorming : l'utilisateur n'a pas encore choisi entre option A (Timeline grille projets×jours) et option B (Liste groupée accordéon) pour la vue "Par projet". Relancer le serveur visual companion (`bash /Users/trikilyes/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh --project-dir "/Users/trikilyes/Desktop/Privé/CRMPropulseo-main"`), recharger le mockup `par-projet-views.html` et obtenir le choix, puis écrire le design doc + plan d'implémentation.
 
 ## Blockers
 None
 
 ## Key Context
-- useMockChecklist.ts est désormais un vrai hook (plus alias). Détecte isMockProject() → local state (MOCK_SITEWEB_CHECKLISTS + MOCK_ERP_CHECKLISTS) ou Supabase.
-- comm- projects : checklist vide → template "Communication" proposé automatiquement.
-- ERPManager : plus de <select> ni side panel sur le kanban. Clic → ProjectDetailsV2 plein écran.
-- Les 3 modules wrappés dans ProjectsV2Provider dans Layout.tsx (nécessaire pour useProjectsV2Context dans les enfants).
-- MOCK_COMM_BRIEFS = BriefComm[] (array). ERPBriefTab supprimé du side panel ERP.
+- Module cible : `src/modules/CommunicationManager/index.tsx` (kanban pipeline comm)
+- Décisions validées : (1) sous-nav dédiée Kanban/Calendrier sous le header, (2) 3 vues : Semaine · Mois · Par projet, (3) tâches avec statut (à faire/en cours/terminé) + importance (faible/moyenne/haute/critique) + nom projet, (4) drag&drop entre jours ET réordonnancement au sein d'un même jour
+- En attente : choix vue "Par projet" → A=Timeline grille ou B=Liste groupée accordéon (mockup dans `.superpowers/brainstorm/`)
+- Mockups visuels dans `.superpowers/brainstorm/` (sessions 54412 et 59644)
+- Après choix : écrire spec dans `docs/superpowers/specs/2026-04-11-comm-calendar-design.md` puis invoquer writing-plans
