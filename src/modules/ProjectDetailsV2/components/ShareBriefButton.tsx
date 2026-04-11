@@ -14,7 +14,7 @@ export function ShareBriefButton({ projectId }: ShareBriefButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const briefUrl = briefToken && tokenEnabled
-    ? `${window.location.origin}/brief/${briefToken}`
+    ? `https://suivi.propulseo.fr/brief/${briefToken}`
     : null
 
   const handleGenerate = async () => {

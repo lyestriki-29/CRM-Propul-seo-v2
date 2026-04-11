@@ -17,7 +17,7 @@ export function SharePortalButton({ project, onRefresh }: SharePortalButtonProps
   const [copied, setCopied] = useState(false)
 
   const portalUrl = project.portal_token && project.portal_enabled
-    ? `${window.location.origin}/portal/${project.portal_token}`
+    ? `https://suivi.propulseo.fr/portal/${project.portal_token}`
     : null
 
   const handleGenerate = async () => {

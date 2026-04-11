@@ -25,8 +25,7 @@ export function BriefInviteModal({ onClose }: BriefInviteModalProps) {
 
     setGenerating(false)
     if (!error && data) {
-      const base = window.location.origin
-      setLink(`${base}/brief-invite/${data.short_code ?? data.token}`)
+      setLink(`https://suivi.propulseo.fr/brief-invite/${data.short_code ?? data.token}`)
     }
   }
 
