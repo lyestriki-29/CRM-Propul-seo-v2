@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Propul'SEO <no-reply@propulseo-site.com>",
+        from: "Propul'SEO <onboarding@resend.dev>",
         to,
         subject: `[Brief] Nouveau brief reçu — ${projectName}`,
         html,
