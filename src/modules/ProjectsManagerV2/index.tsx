@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { Plus, Briefcase, ChevronRight, Users } from 'lucide-react'
+import { Plus, Briefcase, ChevronRight, Users, Link } from 'lucide-react'
 import { toast } from 'sonner'
 import { EmptyState } from '../../components/common/EmptyState'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
@@ -16,6 +16,7 @@ import { cn } from '../../lib/utils'
 import type { ProjectV2, ProjectStatusV2, PrestaType } from '../../types/project-v2'
 import { EditProjectModal } from './components/EditProjectModal'
 import { GmailConnectButton } from './components/GmailConnectButton'
+import { BriefInviteModal } from './components/BriefInviteModal'
 import { supabase } from '../../lib/supabase'
 
 const EMPTY_FORM = {
@@ -48,6 +49,7 @@ function ProjectsManagerV2Inner() {
   const [editingProject, setEditingProject] = useState<ProjectV2 | null>(null)
   const [filterUser, setFilterUser] = useState<string>('')
   const [dbUsers, setDbUsers] = useState<{ id: string; name: string }[]>([])
+  const [showBriefInvite, setShowBriefInvite] = useState(false)
 
   useEffect(() => {
     supabase.from('users').select('id, name').order('name').then(({ data }) => {
@@ -154,6 +156,13 @@ function ProjectsManagerV2Inner() {
             </div>
             <div className="flex items-center gap-3">
               <GmailConnectButton />
+              <button
+                onClick={() => setShowBriefInvite(true)}
+                className="flex items-center gap-2 border border-primary/40 text-primary px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors text-sm font-medium"
+              >
+                <Link className="h-4 w-4" />
+                Via brief client
+              </button>
               <button
                 onClick={() => setShowAddProject(true)}
                 className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
@@ -328,6 +337,8 @@ function ProjectsManagerV2Inner() {
       )}
 
       {isMobile && <FAB icon={Plus} onClick={() => setShowAddProject(true)} label="Nouveau projet" color="purple" />}
+
+      {showBriefInvite && <BriefInviteModal onClose={() => setShowBriefInvite(false)} />}
     </div>
   )
 }

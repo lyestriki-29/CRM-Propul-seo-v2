@@ -12,10 +12,15 @@ const ClientBriefPage = lazy(() =>
   import('./modules/ClientBrief/ClientBriefPage').then(m => ({ default: m.ClientBriefPage }))
 );
 
+const ClientBriefInvitePage = lazy(() =>
+  import('./modules/ClientBrief/ClientBriefInvitePage').then(m => ({ default: m.ClientBriefInvitePage }))
+);
+
 // Détection de la route publique avant tout rendu
 const pathname = window.location.pathname;
 const portalMatch = pathname.match(/^\/portal\/([a-f0-9-]{36})$/i);
 const briefMatch = pathname.match(/^\/brief\/([a-f0-9-]{36})$/i);
+const briefInviteMatch = pathname.match(/^\/brief-invite\/([a-f0-9-]{36})$/i);
 
 function App() {
   const { setCurrentUser } = useStore();
@@ -48,6 +53,16 @@ function App() {
       <ErrorBoundary>
         <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-slate-400">Chargement...</div>}>
           <ClientBriefPage token={briefMatch[1]} />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
+  if (briefInviteMatch) {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-slate-400">Chargement...</div>}>
+          <ClientBriefInvitePage token={briefInviteMatch[1]} />
         </Suspense>
       </ErrorBoundary>
     );
