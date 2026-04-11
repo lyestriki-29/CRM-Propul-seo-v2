@@ -1,13 +1,10 @@
 -- supabase/migrations/20260411_brief_token.sql
---
--- IMPORTANT: This migration must be manually executed in the Supabase Dashboard SQL Editor.
--- It cannot be auto-applied via CLI migrations.
---
--- This migration adds brief_token support for public brief submission links:
--- - Adds brief_token and brief_token_enabled columns to projects_v2
--- - Adds submitted_at column to project_briefs_v2
--- - Creates RLS policies for anonymous users to read/write briefs via token
---
+-- ============================================================
+-- BRIEF TOKEN — Formulaire de brief client
+-- ============================================================
+-- À appliquer MANUELLEMENT via le Dashboard Supabase → SQL Editor
+-- Copier-coller ce fichier dans l'éditeur SQL et exécuter.
+-- ============================================================
 
 -- 1. Colonnes brief_token sur projects_v2
 ALTER TABLE public.projects_v2
@@ -23,14 +20,20 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_v2_brief_token
 ALTER TABLE public.project_briefs_v2
   ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ DEFAULT NULL;
 
--- 4. Politique RLS — lecture publique (anon) du projet via brief_token (nom du projet uniquement)
+-- 4. DROP POLICY IF EXISTS (sécurité re-exécution)
+DROP POLICY IF EXISTS "brief_read_project_name"        ON public.projects_v2;
+DROP POLICY IF EXISTS "brief_read_project_briefs_v2"   ON public.project_briefs_v2;
+DROP POLICY IF EXISTS "brief_insert_project_briefs_v2" ON public.project_briefs_v2;
+DROP POLICY IF EXISTS "brief_update_project_briefs_v2" ON public.project_briefs_v2;
+
+-- 5. RLS — lecture publique (anon) du projet via brief_token
 CREATE POLICY "brief_read_project_name"
   ON public.projects_v2
   FOR SELECT
   TO anon
   USING (brief_token IS NOT NULL AND brief_token_enabled = TRUE);
 
--- 5. Politique RLS — lecture publique du brief via brief_token
+-- 6. RLS — lecture publique du brief via brief_token
 CREATE POLICY "brief_read_project_briefs_v2"
   ON public.project_briefs_v2
   FOR SELECT
@@ -42,7 +45,7 @@ CREATE POLICY "brief_read_project_briefs_v2"
     )
   );
 
--- 6. Politique RLS — écriture publique (anon) dans project_briefs_v2 via brief_token (INSERT)
+-- 7. RLS — insertion publique (anon) dans project_briefs_v2 via brief_token
 CREATE POLICY "brief_insert_project_briefs_v2"
   ON public.project_briefs_v2
   FOR INSERT
@@ -54,12 +57,18 @@ CREATE POLICY "brief_insert_project_briefs_v2"
     )
   );
 
--- 7. Politique RLS — écriture publique (anon) dans project_briefs_v2 via brief_token (UPDATE)
+-- 8. RLS — mise à jour publique (anon) dans project_briefs_v2 via brief_token
 CREATE POLICY "brief_update_project_briefs_v2"
   ON public.project_briefs_v2
   FOR UPDATE
   TO anon
   USING (
+    project_id IN (
+      SELECT id FROM public.projects_v2
+      WHERE brief_token IS NOT NULL AND brief_token_enabled = TRUE
+    )
+  )
+  WITH CHECK (
     project_id IN (
       SELECT id FROM public.projects_v2
       WHERE brief_token IS NOT NULL AND brief_token_enabled = TRUE
