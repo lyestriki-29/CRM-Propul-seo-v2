@@ -5,6 +5,7 @@ import type { BriefStatus } from '../../../types/project-v2'
 
 const STATUS_CONFIG: Record<BriefStatus, { label: string; color: string }> = {
   draft:     { label: 'Brouillon',  color: 'bg-gray-500/20 text-gray-400' },
+  submitted: { label: 'Reçu',       color: 'bg-blue-500/20 text-blue-300' },
   validated: { label: 'Validé',     color: 'bg-green-500/20 text-green-300' },
   frozen:    { label: 'Figé',       color: 'bg-blue-500/20 text-blue-300' },
 }

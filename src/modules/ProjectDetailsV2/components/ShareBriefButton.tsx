@@ -2,21 +2,38 @@ import { useState, useEffect } from 'react'
 import { Link2, Link2Off, Copy, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import { useBriefV2 } from '@/modules/ProjectsManagerV2/hooks/useBriefV2'
-import type { ProjectV2 } from '@/types/project-v2'
 
 interface ShareBriefButtonProps {
-  project: ProjectV2
-  onRefresh: () => void
+  projectId: string
 }
 
-export function ShareBriefButton({ project, onRefresh }: ShareBriefButtonProps) {
-  const { enableBriefToken, disableBriefToken } = useBriefV2(project.id)
+export function ShareBriefButton({ projectId }: ShareBriefButtonProps) {
+  const { enableBriefToken, disableBriefToken } = useBriefV2(projectId)
+  const [briefToken, setBriefToken] = useState<string | null>(null)
+  const [tokenEnabled, setTokenEnabled] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const briefUrl = project.brief_token && project.brief_token_enabled
-    ? `${window.location.origin}/brief/${project.brief_token}`
+  useEffect(() => {
+    supabase
+      .from('projects_v2')
+      .select('brief_token, brief_token_enabled')
+      .eq('id', projectId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setBriefToken(data.brief_token ?? null)
+          setTokenEnabled(data.brief_token_enabled ?? false)
+        }
+        setInitialLoading(false)
+      })
+  }, [projectId])
+
+  const briefUrl = briefToken && tokenEnabled
+    ? `${window.location.origin}/brief/${briefToken}`
     : null
 
   const handleGenerate = async () => {
@@ -24,8 +41,9 @@ export function ShareBriefButton({ project, onRefresh }: ShareBriefButtonProps) 
     const token = await enableBriefToken()
     setLoading(false)
     if (token) {
+      setBriefToken(token)
+      setTokenEnabled(true)
       toast.success('Lien de brief généré')
-      onRefresh()
     } else {
       toast.error('Erreur lors de la génération du lien')
     }
@@ -36,8 +54,9 @@ export function ShareBriefButton({ project, onRefresh }: ShareBriefButtonProps) 
     const ok = await disableBriefToken()
     setLoading(false)
     if (ok) {
+      setBriefToken(null)
+      setTokenEnabled(false)
       toast.success('Lien désactivé')
-      onRefresh()
     } else {
       toast.error('Erreur lors de la désactivation')
     }
@@ -60,6 +79,8 @@ export function ShareBriefButton({ project, onRefresh }: ShareBriefButtonProps) 
     }
   }
 
+  if (initialLoading) return null
+
   if (loading) {
     return (
       <Button variant="outline" size="sm" disabled>
@@ -72,12 +93,7 @@ export function ShareBriefButton({ project, onRefresh }: ShareBriefButtonProps) 
   if (briefUrl) {
     return (
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleCopy}
-          className="flex items-center gap-2"
-        >
+        <Button variant="outline" size="sm" onClick={handleCopy} className="flex items-center gap-2">
           {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
           {copied ? 'Copié !' : 'Copier le lien'}
         </Button>
@@ -95,12 +111,7 @@ export function ShareBriefButton({ project, onRefresh }: ShareBriefButtonProps) 
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleGenerate}
-      className="flex items-center gap-2"
-    >
+    <Button variant="outline" size="sm" onClick={handleGenerate} className="flex items-center gap-2">
       <Link2 className="w-4 h-4" />
       Partager le formulaire
     </Button>
