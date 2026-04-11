@@ -25,3 +25,9 @@ create policy "auth_all" on brief_invitations
   to authenticated
   using (true)
   with check (true);
+
+-- Anon peut insérer (l'app n'utilise pas l'auth Supabase JWT)
+create policy "anon_insert" on brief_invitations
+  for insert
+  to anon
+  with check (true);
