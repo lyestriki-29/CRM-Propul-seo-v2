@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, supabaseAnon } from '@/lib/supabase'
+import { generateShortCode } from '@/lib/shortCode'
 import type { ProjectBrief } from '../../../types/project-v2'
 
 // Fix 1: BriefFields exported at module scope
@@ -82,14 +83,15 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
   // Fix 5: no projectId parameter — uses outer projectId from closure
   const enableBriefToken = useCallback(async (): Promise<string | null> => {
     const token = crypto.randomUUID()
+    const shortCode = generateShortCode()
     const { error } = await supabase
       .from('projects_v2')
-      .update({ brief_token: token, brief_token_enabled: true })
+      .update({ brief_token: token, brief_token_enabled: true, brief_short_code: shortCode })
       .eq('id', projectId)
     if (error) return null
     setBriefToken(token)
     setTokenEnabled(true)
-    return token
+    return shortCode
   }, [projectId])
 
   // Fix 5: no projectId parameter — uses outer projectId from closure

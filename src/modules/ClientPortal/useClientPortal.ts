@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { supabase, isDemoMode } from '@/lib/supabase'
+import { generateShortCode } from '@/lib/shortCode'
 import type { ProjectV2, ChecklistItemV2 } from '@/types/project-v2'
 
 // Client anon explicite — pas de session utilisateur
@@ -124,13 +125,20 @@ export function useClientPortal() {
   // Génère un token et active le portail (client authentifié)
   const generateToken = useCallback(async (projectId: string): Promise<string | null> => {
     const token = crypto.randomUUID()
+    const shortCode = generateShortCode()
+    const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
     const { error } = await supabase
       .from('projects_v2')
-      .update({ portal_token: token, portal_enabled: true })
+      .update({
+        portal_token: token,
+        portal_enabled: true,
+        portal_short_code: shortCode,
+        portal_expires_at: expiresAt,
+      })
       .eq('id', projectId)
 
     if (error) return null
-    return token
+    return shortCode
   }, [])
 
   // Désactive le portail et efface le token (client authentifié)
