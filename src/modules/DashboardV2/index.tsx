@@ -1,8 +1,9 @@
 // src/modules/DashboardV2/index.tsx
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Zap } from 'lucide-react'
+import { Zap, Settings } from 'lucide-react'
+import { BriefNotificationsModal } from './components/BriefNotificationsModal'
 import { MOCK_SITEWEB_PROJECTS } from '../SiteWebManager/mocks'
 import { MOCK_ERP_PROJECTS } from '../ERPManager/mocks'
 import { MOCK_COMM_PROJECTS, MOCK_COMM_BRIEFS } from '../CommunicationManager/mocks'
@@ -31,6 +32,8 @@ export function DashboardV2() {
   const onRefresh = useCallback(() => {}, [])
 
   const { isConnected, lastUpdatedAt } = useDashboardRealtime(onRefresh)
+
+  const [showNotifModal, setShowNotifModal] = useState(false)
 
   const handleNavigateToAllProjects = useCallback(
     () => navigateWithContext('projects-v2', {}),
@@ -113,6 +116,21 @@ export function DashboardV2() {
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6 h-full overflow-auto">
+      {/* Bouton paramètres notifications brief */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => setShowNotifModal(true)}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-2"
+          title="Paramètres notifications brief"
+        >
+          <Settings className="w-3.5 h-3.5" />
+          Notifications brief
+        </button>
+      </div>
+      <BriefNotificationsModal
+        open={showNotifModal}
+        onClose={() => setShowNotifModal(false)}
+      />
       {/* Bandeau realtime déconnecté — visible seulement si on était connecté puis déconnecté */}
       {!isConnected && lastUpdatedAt && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-surface-2 border border-border/50 rounded-xl px-3 py-2">
