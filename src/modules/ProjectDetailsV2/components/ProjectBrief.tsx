@@ -1,14 +1,11 @@
-import { useState, useEffect, lazy } from 'react'
+import { useState, useEffect } from 'react'
 import { FileSpreadsheet, Save, CheckCircle2, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import type { BriefStatus } from '../../../types/project-v2'
 import { useBriefV2 } from '../../ProjectsManagerV2/hooks/useBriefV2'
 import { ShareBriefButton } from './ShareBriefButton'
-
-const BriefPDFDocument = lazy(() =>
-  import('./BriefPDFDocument').then(m => ({ default: m.BriefPDFDocument }))
-)
+import { BriefPDFDocument } from './BriefPDFDocument'
 
 const STATUS_CONFIG: Record<BriefStatus, { label: string; color: string }> = {
   draft:     { label: 'Brouillon',  color: 'bg-gray-500/20 text-gray-400' },
