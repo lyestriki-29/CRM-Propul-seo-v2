@@ -9,19 +9,19 @@ interface ShareBriefButtonProps {
 }
 
 export function ShareBriefButton({ projectId }: ShareBriefButtonProps) {
-  const { briefToken, tokenEnabled, loading: hookLoading, enableBriefToken, disableBriefToken } = useBriefV2(projectId)
+  const { briefShortCode, tokenEnabled, loading: hookLoading, enableBriefToken, disableBriefToken } = useBriefV2(projectId)
   const [actionLoading, setActionLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const briefUrl = briefToken && tokenEnabled
-    ? `${window.location.origin}/brief/${briefToken}`
+  const briefUrl = briefShortCode && tokenEnabled
+    ? `https://suivi.propulseo.fr/brief/${briefShortCode}`
     : null
 
   const handleGenerate = async () => {
     setActionLoading(true)
-    const token = await enableBriefToken()
+    const shortCode = await enableBriefToken()
     setActionLoading(false)
-    if (token) {
+    if (shortCode) {
       toast.success('Lien de brief généré')
     } else {
       toast.error('Erreur lors de la génération du lien')

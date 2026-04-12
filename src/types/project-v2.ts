@@ -52,9 +52,12 @@ export interface ProjectV2 {
   // === PORTAIL CLIENT ===
   portal_token: string | null
   portal_enabled: boolean
+  portal_short_code?: string | null
+  portal_expires_at?: string | null
   // === BRIEF TOKEN ===
   brief_token: string | null
   brief_token_enabled: boolean
+  brief_short_code?: string | null
   created_at: string
   updated_at: string
 }

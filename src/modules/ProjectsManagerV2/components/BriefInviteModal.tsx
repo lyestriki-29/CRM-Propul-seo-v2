@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Copy, Check, Link, X, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { generateShortCode } from '@/lib/shortCode'
 
 interface BriefInviteModalProps {
   onClose: () => void
@@ -15,16 +16,16 @@ export function BriefInviteModal({ onClose }: BriefInviteModalProps) {
 
   const handleGenerate = async () => {
     setGenerating(true)
+    const shortCode = generateShortCode()
     const { data, error } = await supabase
       .from('brief_invitations')
-      .insert({ company_name: companyName.trim() || null })
-      .select('token')
+      .insert({ company_name: companyName.trim() || null, short_code: shortCode })
+      .select('token, short_code')
       .single()
 
     setGenerating(false)
     if (!error && data) {
-      const base = window.location.origin
-      setLink(`${base}/brief-invite/${data.token}`)
+      setLink(`https://suivi.propulseo.fr/brief-invite/${data.short_code ?? data.token}`)
     }
   }
 

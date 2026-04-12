@@ -1,0 +1,75 @@
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { createSupabaseServer } from '@/lib/supabase-server'
+import { PortalView } from './PortalView'
+import type { PortalData } from './PortalView'
+
+type Props = { params: Promise<{ code: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { code } = await params
+  const supabase = createSupabaseServer()
+  const { data } = await supabase
+    .from('projects_v2')
+    .select('name, client_name')
+    .eq('portal_short_code', code)
+    .eq('portal_enabled', true)
+    .single()
+  return {
+    title: `Suivi projet — ${data?.client_name ?? data?.name ?? 'Propulseo'}`,
+    robots: 'noindex, nofollow',
+  }
+}
+
+export default async function PortalPage({ params }: Props) {
+  const { code } = await params
+  const supabase = createSupabaseServer()
+  const now = new Date().toISOString()
+
+  // 1. Projet (vérifie short_code + enabled + non expiré)
+  const { data: project } = await supabase
+    .from('projects_v2')
+    .select('id, name, client_name, client_id, status, progress, completion_score, next_action_label, next_action_due, presta_type, start_date, end_date, budget, ai_summary, portal_expires_at')
+    .eq('portal_short_code', code)
+    .eq('portal_enabled', true)
+    .or(`portal_expires_at.is.null,portal_expires_at.gt.${now}`)
+    .single()
+
+  if (!project) notFound()
+
+  // 2. Checklist (tâches racines seulement)
+  const { data: checklist } = await supabase
+    .from('checklist_items_v2')
+    .select('id, title, phase, status')
+    .eq('project_id', project.id)
+    .is('parent_task_id', null)
+    .order('sort_order', { ascending: true })
+
+  // 3. Factures (envoyées, payées, en retard)
+  const { data: invoices } = await supabase
+    .from('project_invoices_v2')
+    .select('id, label, amount, status, date, due_date')
+    .eq('project_id', project.id)
+    .in('status', ['sent', 'paid', 'overdue'])
+    .order('date', { ascending: false })
+
+  // 4. Contact client
+  let contact = null
+  if (project.client_id) {
+    const { data: clientData } = await supabase
+      .from('clients')
+      .select('name, email, phone, address, sector')
+      .eq('id', project.client_id)
+      .single()
+    if (clientData) contact = clientData
+  }
+
+  const portalData: PortalData = {
+    project,
+    checklist: checklist ?? [],
+    invoices: invoices ?? [],
+    contact,
+  }
+
+  return <PortalView data={portalData} />
+}
