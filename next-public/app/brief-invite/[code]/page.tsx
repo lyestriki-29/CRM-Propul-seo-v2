@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { PageShell } from '@/components/PageShell'
 import { Logo } from '@/components/Logo'
-import { BriefInviteForm } from './BriefInviteForm'
+import { BriefInviteFormV1 as BriefInviteForm } from './BriefInviteFormV1'
 
 type Props = { params: Promise<{ code: string }> }
 

@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       .eq("active", true);
 
     const to = [
-      "lyestriki@gmail.com",
+      "team@propulseo-site.com",
       ...(extraEmails ?? [])
         .map((r: { email: string }) => r.email.trim())
         .filter(isValidEmail),
