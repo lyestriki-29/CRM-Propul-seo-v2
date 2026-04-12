@@ -1,20 +1,25 @@
-# Session State — 2026-04-12 12:15
+# Session State — 2026-04-12 16:30
 
 ## Branch
 main
 
 ## Completed This Session
-- Réorganisation navigation sidebar : V2 Beta devient la navigation principale, tous les anciens modules regroupés en "CRM v1" replié par défaut
-- Page d'accueil : Dashboard V2 remplace l'ancien Tableau de bord
-- Push & déploiement : commit b722a1c pushé sur origin/main (Vercel déploie automatiquement)
+- Refonte UI Bento Studio : formulaire brief client V5 (grille 3 cols, indigo/violet, fonts Outfit + IBM Plex Mono via next/font)
+- Page "déjà soumis" + confirmation : redesign Bento complet
+- Nettoyage : suppression V1-V4, V6-V7, routes legacy brief-invite-v2/v3, previews HTML d'origine
+- Logo Propulseo : intégré partout (form, confirmations, previews HTML)
+- Dark Indigo V3 : appliqué à tout le système brief (formulaire, pages, PDF, 2 fonctions email Supabase)
+- BriefPDFDocument.tsx : palette dark V3 complète (#0e0b1e/#16122e/#2d2654)
+- Previews HTML : preview_form_bento_final.html, preview_confirmation_bento.html, preview_submitted_bento.html, preview_pdf_dark_v3.html
 
 ## Next Task
-Aucune tâche en cours — vérifier le déploiement Vercel et valider les changements en production
+Aucune tâche en cours — valider le rendu en prod sur brief-propulseo.vercel.app avec un vrai lien brief
 
 ## Blockers
 None
 
 ## Key Context
-- Sidebar : section "✦ V2 Beta" en haut (Dashboard V2, Site Web & SEO, ERP Sur Mesure, Communication, Projets V2, Mois en cours)
-- Section "CRM v1" contient : Tableau de bord, CRM Principal, Bot One, CRM ERP, Projets actifs, Terminés, Production, KPI, Clients — repliée par défaut
-- Layout.tsx : redirige vers 'dashboard-v2' si activeModule est absent ou === 'dashboard'
+- Système brief = next-public/app/brief-invite/[code]/ (form + page.tsx) + src/modules/ProjectDetailsV2/components/BriefPDFDocument.tsx + supabase/functions/create-project-from-brief + supabase/functions/send-brief-notification
+- Palette V3 Dark Indigo : bg #0e0b1e, cards #16122e, borders #2d2654, text #ede9fe, labels #6b5fa0, accent #a78bfa
+- CRM principal (Vite) : déjà en dark violet neon — non touché (hors scope)
+- next/font : Outfit (--font-outfit) + IBM_Plex_Mono (--font-mono) ajoutés dans next-public/app/layout.tsx
