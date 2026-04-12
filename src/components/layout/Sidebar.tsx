@@ -55,7 +55,8 @@ export function Sidebar() {
   const { getUserByAuthId } = useUsers();
   const [currentUserData, setCurrentUserData] = useState<any>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['dashboard', 'crm', 'projects', 'communication', 'finance', 'admin', 'perso', 'v2'])
+    new Set(['finance', 'admin', 'perso', 'v2'])
+    // 'crm-v1' absent intentionnellement → replié par défaut
   );
 
   const isCollapsed = sidebarCollapsed;
@@ -113,33 +114,15 @@ export function Sidebar() {
     ...persoSection,
     v2Section,
     {
-      section: 'dashboard',
-      title: 'Général',
+      section: 'crm-v1',
+      title: 'CRM v1',
       items: [
-        { id: 'dashboard', label: 'Tableau de bord', icon: Home, permission: 'can_view_dashboard' }
-      ]
-    },
-    {
-      section: 'crm',
-      title: 'CRM',
-      items: [
+        { id: 'dashboard', label: 'Tableau de bord', icon: Home, permission: 'can_view_dashboard' },
         { id: 'crm', label: 'CRM Principal', icon: Database, permission: 'can_view_leads' },
         { id: 'crm-bot-one', label: 'Bot One', icon: Bot, permission: 'can_view_crm_bot_one' },
-        { id: 'crm-erp', label: 'CRM ERP', icon: UserCheck, permission: 'can_view_crm_erp' }
-      ]
-    },
-    {
-      section: 'projects',
-      title: 'Projets',
-      items: [
+        { id: 'crm-erp', label: 'CRM ERP', icon: UserCheck, permission: 'can_view_crm_erp' },
         { id: 'projects', label: 'Projets actifs', icon: Briefcase, permission: 'can_view_projects' },
-        { id: 'completed-projects', label: 'Terminés', icon: Archive, permission: 'can_view_projects' }
-      ]
-    },
-    {
-      section: 'communication',
-      title: 'Communication',
-      items: [
+        { id: 'completed-projects', label: 'Terminés', icon: Archive, permission: 'can_view_projects' },
         { id: 'communication', label: 'Production', icon: Megaphone, permission: 'can_view_communication' },
         { id: 'communication-kpi', label: 'KPI', icon: BarChart3, permission: 'can_view_communication' },
         { id: 'communication-clients', label: 'Clients', icon: Users, permission: 'can_view_communication' }

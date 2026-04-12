@@ -53,11 +53,10 @@ export function Layout() {
   const [loading, setLoading] = useState(true);
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // Set dashboard as default module when component mounts
+  // Dashboard V2 est la nouvelle page d'accueil
   useEffect(() => {
-    if (!activeModule) {
-      console.log('🔄 Premier chargement - redirection vers dashboard...');
-      setActiveModule('dashboard');
+    if (!activeModule || activeModule === 'dashboard') {
+      setActiveModule('dashboard-v2');
     }
   }, []);
 
