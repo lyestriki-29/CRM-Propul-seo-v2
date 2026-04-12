@@ -17,7 +17,7 @@ export function SharePortalButton({ project, onRefresh }: SharePortalButtonProps
   const [copied, setCopied] = useState(false)
 
   const portalUrl = project.portal_short_code && project.portal_enabled
-    ? `https://suivi.propulseo.fr/portal/${project.portal_short_code}`
+    ? `https://brief-propulseo.vercel.app/portal/${project.portal_short_code}`
     : null
 
   const handleGenerate = async () => {

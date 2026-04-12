@@ -25,7 +25,7 @@ export function BriefInviteModal({ onClose }: BriefInviteModalProps) {
 
     setGenerating(false)
     if (!error && data) {
-      setLink(`https://suivi.propulseo.fr/brief-invite/${data.short_code ?? data.token}`)
+      setLink(`https://brief-propulseo.vercel.app/brief-invite/${data.short_code ?? data.token}`)
     }
   }
 
