@@ -12,129 +12,131 @@ export interface BriefPDFDocumentProps {
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
-    backgroundColor: '#ffffff',
-    paddingBottom: 36,
+    backgroundColor: '#f8fafc',
+    paddingBottom: 40,
   },
   header: {
-    backgroundColor: '#6366f1',
-    padding: 20,
+    backgroundColor: '#ffffff',
+    padding: 40,
+    borderBottomWidth: 3,
+    borderBottomColor: '#0f172a',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   headerLeft: {
+    flexDirection: 'column',
+  },
+  logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
   },
-  logoBox: {
-    width: 30,
-    height: 30,
-    backgroundColor: '#818cf8',
-    borderRadius: 6,
+  logoCircle: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#6366f1',
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: 12,
   },
-  logoLetter: {
+  logoP: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'Helvetica-Bold',
   },
-  headerCompany: {
-    color: '#ffffff',
-    fontSize: 13,
+  headerBrand: {
+    color: '#0f172a',
+    fontSize: 18,
     fontFamily: 'Helvetica-Bold',
+    letterSpacing: 2,
   },
-  headerSubtitle: {
-    color: '#c7d2fe',
-    fontSize: 9,
-    marginTop: 2,
+  headerTagline: {
+    color: '#6366f1',
+    fontSize: 24,
+    fontFamily: 'Helvetica-Bold',
+    marginTop: 6,
   },
-  headerDate: {
-    color: '#e0e7ff',
-    fontSize: 9,
+  headerMeta: {
+    textAlign: 'right',
   },
-  projectBand: {
-    backgroundColor: '#eef2ff',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  metaLabel: {
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 6,
   },
-  projectName: {
-    color: '#4f46e5',
+  metaValue: {
     fontSize: 11,
     fontFamily: 'Helvetica-Bold',
-  },
-  submittedBadge: {
     color: '#6366f1',
-    fontSize: 9,
   },
   content: {
-    paddingHorizontal: 20,
-    paddingTop: 14,
+    padding: 30,
+    flex: 1,
   },
-  section: {
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderStyle: 'solid',
-    borderRadius: 4,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    margin: -10,
+  },
+  bentoBox: {
+    width: '100%',
     padding: 10,
+  },
+  bentoBoxHalf: {
+    width: '50%',
+    padding: 10,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    minHeight: 120,
   },
   sectionLabel: {
     fontSize: 9,
     fontFamily: 'Helvetica-Bold',
-    color: '#374151',
-    marginBottom: 6,
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 12,
   },
-  emptyBox: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderStyle: 'solid',
-    borderRadius: 3,
-    backgroundColor: '#f9fafb',
-  },
-  filledText: {
-    fontSize: 10,
-    color: '#111827',
-    lineHeight: 15,
-  },
-  emptyAnswer: {
-    fontSize: 10,
-    color: '#9ca3af',
+  sectionValue: {
+    fontSize: 13,
+    color: '#0f172a',
+    lineHeight: 1.6,
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#f9fafb',
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-    borderTopStyle: 'solid',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    padding: 30,
+    textAlign: 'center',
+    borderTopWidth: 1.5,
+    borderTopColor: '#e2e8f0',
+    backgroundColor: '#ffffff',
   },
   footerText: {
-    fontSize: 8,
-    color: '#9ca3af',
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 3,
   },
 })
 
 type BriefFieldKey = 'objective' | 'target_audience' | 'pages' | 'techno' | 'design_references' | 'notes'
 
-const FIELDS: Array<{ key: BriefFieldKey; label: string; required: boolean }> = [
-  { key: 'objective',         label: 'Objectif du projet',             required: true  },
-  { key: 'target_audience',   label: 'Cible / utilisateurs',           required: false },
-  { key: 'pages',             label: 'Pages / Fonctionnalités attendues', required: false },
-  { key: 'techno',            label: 'Technologie / stack',            required: false },
-  { key: 'design_references', label: 'Références design',              required: false },
-  { key: 'notes',             label: 'Notes complémentaires',          required: false },
+const FIELDS: Array<{ key: BriefFieldKey; label: string; required: boolean; half?: boolean; minHeight?: number }> = [
+  { key: 'objective',         label: '01 — Vision & Objectif',         required: true,  half: false, minHeight: 160 },
+  { key: 'target_audience',   label: '02 — Audience Cible',           required: false, half: true,  minHeight: 120 },
+  { key: 'techno',            label: '03 — Environnement Techno',     required: false, half: true,  minHeight: 120 },
+  { key: 'pages',             label: '04 — Structure & Fonctions',    required: false, half: false, minHeight: 160 },
+  { key: 'design_references', label: '05 — Références Visuelles',     required: false, half: true,  minHeight: 120 },
+  { key: 'notes',             label: '06 — Notes Libres',             required: false, half: true,  minHeight: 120 },
 ]
 
 export function BriefPDFDocument({ projectName, brief, mode, submittedAt }: BriefPDFDocumentProps) {
@@ -146,54 +148,54 @@ export function BriefPDFDocument({ projectName, brief, mode, submittedAt }: Brie
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoLetter}>P</Text>
-            </View>
-            <View>
-              <Text style={styles.headerCompany}>Propul'SEO</Text>
-              <Text style={styles.headerSubtitle}>
-                {mode === 'blank' ? 'Formulaire de brief client' : 'Récapitulatif brief client'}
-              </Text>
-            </View>
-          </View>
-          <Text style={styles.headerDate}>{today}</Text>
-        </View>
-
-        {/* Project band */}
-        <View style={styles.projectBand}>
-          <Text style={styles.projectName}>{projectName}</Text>
-          {mode === 'filled' && submittedAt && (
-            <Text style={styles.submittedBadge}>
-              Brief reçu le {new Date(submittedAt).toLocaleDateString('fr-FR')}
-            </Text>
-          )}
-        </View>
-
-        {/* Fields */}
-        <View style={styles.content}>
-          {FIELDS.map(field => {
-            const value = brief?.[field.key] as string | undefined
-            return (
-              <View key={field.key} style={styles.section}>
-                <Text style={styles.sectionLabel}>
-                  {field.label}{field.required ? ' *' : ''}
-                </Text>
-                {mode === 'blank' ? (
-                  <View style={styles.emptyBox} />
-                ) : value ? (
-                  <Text style={styles.filledText}>{value}</Text>
-                ) : (
-                  <Text style={styles.emptyAnswer}>—</Text>
-                )}
+            <View style={styles.logoRow}>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoP}>P</Text>
               </View>
-            )
-          })}
+              <Text style={styles.headerBrand}>PROPULSEO STUDIO</Text>
+            </View>
+            <Text style={styles.headerTagline}>{projectName.toUpperCase()}</Text>
+          </View>
+          <View style={styles.headerMeta}>
+            <Text style={styles.metaLabel}>Généré le</Text>
+            <Text style={styles.metaValue}>{today}</Text>
+            {mode === 'filled' && submittedAt && (
+              <View style={{ marginTop: 12 }}>
+                <Text style={styles.metaLabel}>Brief Reçu le</Text>
+                <Text style={styles.metaValue}>
+                  {new Date(submittedAt).toLocaleDateString('fr-FR')}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
-        {/* Footer fixe */}
+        {/* Content */}
+        <View style={styles.content}>
+          <View style={styles.grid}>
+            {FIELDS.map(field => {
+              const value = brief?.[field.key] as string | undefined
+              return (
+                <View key={field.key} style={field.half ? styles.bentoBoxHalf : styles.bentoBox}>
+                  <View style={[styles.card, { minHeight: field.minHeight }]}>
+                    <Text style={styles.sectionLabel}>{field.label}</Text>
+                    {mode === 'blank' ? (
+                      <View style={{ flex: 1 }} />
+                    ) : value ? (
+                      <Text style={styles.sectionValue}>{value}</Text>
+                    ) : (
+                      <Text style={[styles.sectionValue, { color: '#cbd5e1', fontStyle: 'italic' }]}>Non renseigné par le client</Text>
+                    )}
+                  </View>
+                </View>
+              )
+            })}
+          </View>
+        </View>
+
+        {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>propulseo-site.com</Text>
-          <Text style={styles.footerText}>contact@propulseo-site.com</Text>
+          <Text style={styles.footerText}>Propulseo Studio · Excellence Digitale</Text>
         </View>
       </Page>
     </Document>
