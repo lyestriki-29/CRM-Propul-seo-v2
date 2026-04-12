@@ -22,7 +22,6 @@ const FIELDS = [
 const CYAN = '#22d3ee'
 const CYAN_DIM = 'rgba(34,211,238,0.15)'
 const BG = '#070d14'
-const CARD = 'rgba(255,255,255,0.03)'
 const BORDER = 'rgba(255,255,255,0.07)'
 const BORDER_ACTIVE = 'rgba(34,211,238,0.35)'
 
