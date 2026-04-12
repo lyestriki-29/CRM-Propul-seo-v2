@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createSupabaseServer } from '@/lib/supabase-server'
+import { Logo } from '@/components/Logo'
 import { BriefInviteFormV5 } from './BriefInviteFormV5'
 
 type Props = { params: Promise<{ code: string }> }
@@ -40,13 +41,16 @@ export default async function BriefInvitePage({ params }: Props) {
           background: '#fff', borderRadius: 32, padding: 64,
           border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(99,102,241,0.10)',
         }}>
+          <div style={{ marginBottom: 28 }}>
+            <Logo size={140} />
+          </div>
           <div style={{
-            width: 72, height: 72,
+            width: 64, height: 64,
             background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-            borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 28px',
+            borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px',
           }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 6 9 17l-5-5"/>
             </svg>
           </div>

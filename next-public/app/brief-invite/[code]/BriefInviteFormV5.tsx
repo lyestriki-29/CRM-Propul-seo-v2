@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { submitBriefInvite } from './actions'
+import { Logo } from '@/components/Logo'
 
 const BENTO_FONTS = `
   body { font-family: var(--font-outfit, var(--font-outfit, 'Outfit', sans-serif)); }
@@ -176,15 +177,18 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
           animate={{ opacity: 1, scale: 1 }}
           style={{ maxWidth: 480, textAlign: 'center', background: '#fff', borderRadius: 32, padding: 64, border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(99,102,241,0.12)' }}
         >
-          <div style={{
-            width: 72, height: 72,
-            background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-            borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 28px',
-          }}>
-            <CheckCircle2 size={36} color="#fff" />
+          <div style={{ marginBottom: 28 }}>
+            <Logo size={140} />
           </div>
-          <p style={{ fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))", fontSize: 10, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: 12 }}>
+          <div style={{
+            width: 64, height: 64,
+            background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+            borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px',
+          }}>
+            <CheckCircle2 size={32} color="#fff" />
+          </div>
+          <p style={{ fontFamily: "var(--font-mono, 'IBM Plex Mono', monospace)", fontSize: 10, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: 12 }}>
             Brief reçu
           </p>
           <h2 style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em', marginBottom: 16 }}>
@@ -270,9 +274,11 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
         {/* Header */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, borderBottom: '2px solid #e2e8f0', paddingBottom: 40, flexWrap: 'wrap', gap: 24 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div style={{ width: 44, height: 44, background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 18, fontWeight: 800 }}>P</div>
-              <span style={{ fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))", fontSize: 10, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.3em' }}>Briefing System v3.0</span>
+            <div style={{ marginBottom: 12 }}>
+              <Logo size={120} />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <span style={{ fontFamily: "var(--font-mono, 'IBM Plex Mono', monospace)", fontSize: 10, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.3em' }}>Briefing System v3.0</span>
             </div>
             <h1 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, margin: 0 }}>
               PARLONS DE VOTRE{' '}
