@@ -2,7 +2,8 @@ import { useEffect, lazy, Suspense } from 'react';
 import { Toaster } from 'sonner';
 import { Layout } from './components/layout/Layout';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
-import { useStore } from './store/useStore';
+import { useAuth } from './hooks/useAuth';
+import { LoginPage } from './components/auth/LoginPage';
 
 const ClientPortalPage = lazy(() =>
   import('./modules/ClientPortal/ClientPortalPage').then(m => ({ default: m.ClientPortalPage }))
@@ -23,18 +24,11 @@ const briefMatch = pathname.match(/^\/brief\/([a-f0-9-]{36})$/i);
 const briefInviteMatch = pathname.match(/^\/brief-invite\/([a-f0-9-]{36})$/i);
 
 function App() {
-  const { setCurrentUser } = useStore();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     // Force dark mode
     document.documentElement.classList.add('dark');
-    // Utilisateur admin injecté directement (auth désactivée)
-    setCurrentUser({
-      id: 'dev-user',
-      email: 'team@propulseo-site.com',
-      name: 'Dev Admin',
-      role: 'admin',
-    });
   }, []);
 
   // Route publique — ne pas passer par le Layout authentifié
@@ -64,6 +58,24 @@ function App() {
         <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-slate-400">Chargement...</div>}>
           <ClientBriefInvitePage token={briefInviteMatch[1]} />
         </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
+  // Chargement session Supabase
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0814] flex items-center justify-center">
+        <div className="h-6 w-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Non connecté → page login
+  if (!user) {
+    return (
+      <ErrorBoundary>
+        <LoginPage />
       </ErrorBoundary>
     );
   }
