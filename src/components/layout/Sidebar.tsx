@@ -55,7 +55,7 @@ export function Sidebar() {
   const { getUserByAuthId } = useUsers();
   const [currentUserData, setCurrentUserData] = useState<any>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['finance', 'admin', 'perso', 'v2'])
+    new Set(['finance', 'admin', 'perso', 'v2', 'en-cours'])
     // 'crm-v1' absent intentionnellement → replié par défaut
   );
 
@@ -101,18 +101,26 @@ export function Sidebar() {
     section: 'v2',
     title: '✦ V2 Beta',
     items: [
-      { id: 'dashboard-v2',      label: 'Dashboard V2',   icon: LayoutDashboard, permission: 'can_view_dashboard' },
-      { id: 'site-web',          label: 'Site Web & SEO', icon: Globe,           permission: 'can_view_projects' },
-      { id: 'erp-manager',       label: 'ERP Sur Mesure', icon: Settings2,       permission: 'can_view_projects' },
-      { id: 'comm-manager',      label: 'Communication',  icon: Megaphone,       permission: 'can_view_projects' },
-      { id: 'projects-v2',       label: 'Projets V2',     icon: Sparkles,        permission: 'can_view_projects' },
-      { id: 'monthly-dashboard', label: 'Mois en cours',  icon: BarChart3,       permission: 'can_view_projects' },
+      { id: 'dashboard-v2',      label: 'Dashboard V2',        icon: LayoutDashboard, permission: 'can_view_dashboard' },
+      { id: 'projects-v2',       label: 'Gestion des projets', icon: Sparkles,        permission: 'can_view_projects' },
+      { id: 'monthly-dashboard', label: 'Mois en cours',       icon: BarChart3,       permission: 'can_view_projects' },
+    ]
+  };
+
+  const enCoursSection: NavSection = {
+    section: 'en-cours',
+    title: 'En cours',
+    items: [
+      { id: 'comm-manager', label: 'Communication',  icon: Megaphone, permission: 'can_view_projects' },
+      { id: 'erp-manager',  label: 'ERP Sur Mesure', icon: Settings2, permission: 'can_view_projects' },
+      { id: 'site-web',     label: 'Site Web & SEO', icon: Globe,     permission: 'can_view_projects' },
     ]
   };
 
   const navigationItems: NavSection[] = [
     ...persoSection,
     v2Section,
+    enCoursSection,
     {
       section: 'crm-v1',
       title: 'CRM v1',
