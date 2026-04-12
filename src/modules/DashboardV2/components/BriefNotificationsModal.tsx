@@ -58,7 +58,7 @@ export function BriefNotificationsModal({ open, onClose }: BriefNotificationsMod
             </p>
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50 border border-indigo-100">
               <Mail className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-              <span className="text-sm font-medium text-indigo-700 flex-1">lyestriki@gmail.com</span>
+              <span className="text-sm font-medium text-indigo-700 flex-1">team@propulseo-site.com</span>
               <span className="text-[10px] font-bold text-indigo-400 bg-indigo-100 px-2 py-0.5 rounded-full">
                 Toujours notifié
               </span>
