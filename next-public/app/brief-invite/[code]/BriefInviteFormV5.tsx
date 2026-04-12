@@ -118,13 +118,14 @@ function FieldCard({
           {field.required && (
             <span style={{
               fontSize: 10,
-              background: focused ? 'rgba(255,255,255,0.2)' : '#eef2ff',
-              color: focused ? '#fff' : '#6366f1',
+              background: focused ? 'rgba(255,255,255,0.2)' : 'rgba(99,102,241,0.2)',
+              color: focused ? '#fff' : '#a78bfa',
               padding: '3px 8px',
               borderRadius: 4,
               fontWeight: 700,
               textTransform: 'uppercase' as const,
               fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))",
+              border: focused ? 'none' : '1px solid rgba(99,102,241,0.4)',
             }}>
               Requis
             </span>
@@ -170,12 +171,12 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
 
   if (submitted) {
     return (
-      <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, fontFamily: "var(--font-outfit, var(--font-outfit, 'Outfit', sans-serif))" }}>
+      <div style={{ minHeight: '100vh', background: '#0e0b1e', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, fontFamily: "var(--font-outfit, var(--font-outfit, 'Outfit', sans-serif))" }}>
         <style>{BENTO_FONTS}</style>
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          style={{ maxWidth: 480, textAlign: 'center', background: '#fff', borderRadius: 32, padding: 64, border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(99,102,241,0.12)' }}
+          style={{ maxWidth: 480, textAlign: 'center', background: '#16122e', borderRadius: 32, padding: 64, border: '1px solid #2d2654', boxShadow: '0 20px 60px rgba(99,102,241,0.12)' }}
         >
           <div style={{ marginBottom: 28 }}>
             <Logo size={140} />
@@ -188,17 +189,17 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
           }}>
             <CheckCircle2 size={32} color="#fff" />
           </div>
-          <p style={{ fontFamily: "var(--font-mono, 'IBM Plex Mono', monospace)", fontSize: 10, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: 12 }}>
+          <p style={{ fontFamily: "var(--font-mono, 'IBM Plex Mono', monospace)", fontSize: 10, fontWeight: 600, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: 12 }}>
             Brief reçu
           </p>
-          <h2 style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, color: '#ede9fe', letterSpacing: '-0.03em', marginBottom: 16 }}>
             MERCI !
           </h2>
-          <p style={{ color: '#64748b', lineHeight: 1.7, fontSize: 16 }}>
+          <p style={{ color: '#6b5fa0', lineHeight: 1.7, fontSize: 16 }}>
             Votre brief est entre les mains de nos experts.<br />
-            Nous vous recontactons sous <strong>24h</strong>.
+            Nous vous recontactons sous <strong style={{ color: '#ede9fe' }}>24h</strong>.
           </p>
-          <p style={{ marginTop: 40, fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))", fontSize: 9, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.4em' }}>
+          <p style={{ marginTop: 40, fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))", fontSize: 9, color: '#3d3168', textTransform: 'uppercase', letterSpacing: '0.4em' }}>
             Propulseo Studio · Excellence Digitale
           </p>
         </motion.div>
@@ -207,7 +208,7 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', color: '#0f172a', padding: '48px 24px', fontFamily: "var(--font-outfit, var(--font-outfit, 'Outfit', sans-serif))" }}>
+    <div style={{ minHeight: '100vh', background: '#0e0b1e', color: '#ede9fe', padding: '48px 24px', fontFamily: "var(--font-outfit, var(--font-outfit, 'Outfit', sans-serif))" }}>
       <style>{BENTO_FONTS}</style>
       <style>{`
         .bento-grid {
@@ -219,8 +220,8 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
         .bento-col-2     { grid-column: span 2 / span 2; }
         .bento-col-1     { grid-column: span 1 / span 1; }
         .bento-card {
-          background: #fff;
-          border: 1px solid #e2e8f0;
+          background: #16122e;
+          border: 1px solid #2d2654;
           border-radius: 24px;
           padding: 28px;
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -230,19 +231,19 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
         }
         .bento-card:hover:not(.bento-focused) {
           transform: translateY(-3px);
-          box-shadow: 0 20px 25px -5px rgba(99,102,241,0.1);
-          border-color: #6366f1;
+          box-shadow: 0 20px 25px -5px rgba(124,58,237,0.2);
+          border-color: #7c3aed;
         }
         .bento-focused {
           background: #6366f1 !important;
           border-color: #6366f1 !important;
-          box-shadow: 0 20px 25px -5px rgba(99,102,241,0.3) !important;
+          box-shadow: 0 20px 25px -5px rgba(99,102,241,0.4) !important;
         }
         .bento-label {
           font-family: var(--font-mono, 'IBM Plex Mono', monospace);
           font-size: 10px;
           font-weight: 600;
-          color: #94a3b8;
+          color: #6b5fa0;
           text-transform: uppercase;
           letter-spacing: 0.15em;
         }
@@ -252,7 +253,7 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
           border: none;
           outline: none;
           width: 100%;
-          color: #0f172a;
+          color: #ede9fe;
           font-size: 17px;
           font-family: var(--font-outfit, 'Outfit', sans-serif);
           font-weight: 500;
@@ -262,7 +263,7 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
           margin-top: 8px;
         }
         .bento-focused .bento-textarea { color: #fff; }
-        .bento-textarea::placeholder { color: #cbd5e1; }
+        .bento-textarea::placeholder { color: #3d3168; }
         .bento-focused .bento-textarea::placeholder { color: rgba(255,255,255,0.35); }
         @media (max-width: 768px) {
           .bento-grid { grid-template-columns: 1fr; }
@@ -272,15 +273,15 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
 
       <div style={{ maxWidth: '960px', margin: '0 auto' }}>
         {/* Header */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, borderBottom: '2px solid #e2e8f0', paddingBottom: 40, flexWrap: 'wrap', gap: 24 }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, borderBottom: '2px solid #2d2654', paddingBottom: 40, flexWrap: 'wrap', gap: 24 }}>
           <div>
             <div style={{ marginBottom: 12 }}>
               <Logo size={120} />
             </div>
             <div style={{ marginBottom: 16 }}>
-              <span style={{ fontFamily: "var(--font-mono, 'IBM Plex Mono', monospace)", fontSize: 10, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.3em' }}>Briefing System v3.0</span>
+              <span style={{ fontFamily: "var(--font-mono, 'IBM Plex Mono', monospace)", fontSize: 10, fontWeight: 600, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.3em' }}>Briefing System v3.0</span>
             </div>
-            <h1 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, margin: 0 }}>
+            <h1 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, margin: 0, color: '#ede9fe' }}>
               PARLONS DE VOTRE{' '}
               <span style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 PROJET.
@@ -288,10 +289,10 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
             </h1>
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div style={{ fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))", fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>
-              Complétion : <span style={{ color: '#6366f1' }}>{progress}%</span>
+            <div style={{ fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))", fontSize: 10, fontWeight: 600, color: '#6b5fa0', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>
+              Complétion : <span style={{ color: '#a78bfa' }}>{progress}%</span>
             </div>
-            <div style={{ width: 200, height: 10, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
+            <div style={{ width: 200, height: 10, background: '#16122e', border: '1px solid #2d2654', borderRadius: 99, overflow: 'hidden' }}>
               <motion.div
                 animate={{ width: `${progress}%` }}
                 style={{ height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7)', borderRadius: 99 }}
@@ -309,10 +310,10 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
           >
             <div style={{
               width: 56, height: 56, flexShrink: 0,
-              background: companyFocused ? 'rgba(255,255,255,0.2)' : '#eef2ff',
+              background: companyFocused ? 'rgba(255,255,255,0.2)' : 'rgba(124,58,237,0.2)',
               borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={companyFocused ? '#fff' : '#6366f1'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={companyFocused ? '#fff' : '#a78bfa'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/>
               </svg>
             </div>
@@ -326,7 +327,7 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
                 placeholder="Comment se nomme votre structure ?"
                 style={{
                   display: 'block', width: '100%', background: 'transparent', border: 'none', outline: 'none',
-                  fontSize: 22, fontWeight: 700, color: companyFocused ? '#fff' : '#0f172a',
+                  fontSize: 22, fontWeight: 700, color: companyFocused ? '#fff' : '#ede9fe',
                   fontFamily: "var(--font-outfit, var(--font-outfit, 'Outfit', sans-serif))", marginTop: 6,
                 }}
               />
@@ -373,7 +374,7 @@ export function BriefInviteFormV5({ code, companyName }: { code: string; company
           <p style={{ color: '#ef4444', marginTop: 16, fontWeight: 600, fontSize: 14, textAlign: 'center' }}>{error}</p>
         )}
 
-        <footer style={{ marginTop: 64, textAlign: 'center', fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))", fontSize: 9, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.4em' }}>
+        <footer style={{ marginTop: 64, textAlign: 'center', fontFamily: "var(--font-mono, var(--font-mono, 'IBM Plex Mono', monospace))", fontSize: 9, color: '#3d3168', textTransform: 'uppercase', letterSpacing: '0.4em' }}>
           Propulseo Studio · Excellence Digitale
         </footer>
       </div>

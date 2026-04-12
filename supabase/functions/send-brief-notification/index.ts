@@ -60,25 +60,25 @@ Deno.serve(async (req) => {
     const fieldsHtml = Object.entries(fields)
       .filter(([, val]) => val && val.trim().length > 0)
       .map(([key, val]) => `
-        <div style="margin-bottom:16px;">
-          <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:1px;">
+        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #2d2654;">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:1.5px;">
             ${FIELD_LABELS[key] ?? key}
           </p>
-          <p style="margin:0;font-size:14px;color:#1e293b;line-height:1.6;white-space:pre-wrap;">${escapeHtml(val ?? '')}</p>
+          <p style="margin:0;font-size:14px;color:#ede9fe;line-height:1.7;white-space:pre-wrap;">${escapeHtml(val ?? '')}</p>
         </div>
       `).join("");
 
     const html = `
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#f8fafc;border-radius:12px;overflow:hidden;">
-        <div style="background:linear-gradient(135deg,#6366f1,#a855f7);padding:24px 28px;">
-          <p style="margin:0;color:rgba(255,255,255,0.8);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Nouveau brief reçu</p>
-          <h1 style="margin:6px 0 0;color:#fff;font-size:22px;font-weight:800;">${escapeHtml(projectName)}</h1>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#0e0b1e;border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#6366f1,#9333ea);padding:32px 28px;">
+          <p style="margin:0;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Nouveau brief reçu</p>
+          <h1 style="margin:8px 0 0;color:#fff;font-size:24px;font-weight:800;letter-spacing:-0.02em;">${escapeHtml(projectName)}</h1>
         </div>
-        <div style="padding:24px 28px;background:#fff;">
+        <div style="padding:28px;background:#16122e;border-top:1px solid #2d2654;">
           ${fieldsHtml}
         </div>
-        <div style="padding:16px 28px;background:#f8fafc;text-align:center;font-size:11px;color:#94a3b8;">
-          Propul'SEO · Notification automatique
+        <div style="padding:16px 28px;background:#0e0b1e;text-align:center;font-size:11px;color:#6b5fa0;border-top:1px solid #2d2654;letter-spacing:2px;text-transform:uppercase;">
+          Propulseo Studio · Notification automatique
         </div>
       </div>
     `;

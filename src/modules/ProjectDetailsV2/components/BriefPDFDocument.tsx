@@ -12,14 +12,14 @@ export interface BriefPDFDocumentProps {
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#0e0b1e',
     paddingBottom: 40,
   },
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#16122e',
     padding: 40,
-    borderBottomWidth: 3,
-    borderBottomColor: '#0f172a',
+    borderBottomWidth: 2,
+    borderBottomColor: '#2d2654',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -47,13 +47,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
   },
   headerBrand: {
-    color: '#0f172a',
+    color: '#ede9fe',
     fontSize: 18,
     fontFamily: 'Helvetica-Bold',
     letterSpacing: 2,
   },
   headerTagline: {
-    color: '#6366f1',
+    color: '#a78bfa',
     fontSize: 24,
     fontFamily: 'Helvetica-Bold',
     marginTop: 6,
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   metaLabel: {
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
-    color: '#94a3b8',
+    color: '#6b5fa0',
     textTransform: 'uppercase',
     letterSpacing: 1.5,
     marginBottom: 6,
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   metaValue: {
     fontSize: 11,
     fontFamily: 'Helvetica-Bold',
-    color: '#6366f1',
+    color: '#a78bfa',
   },
   content: {
     padding: 30,
@@ -92,37 +92,37 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#16122e',
     borderRadius: 20,
     padding: 24,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: '#2d2654',
     minHeight: 120,
   },
   sectionLabel: {
     fontSize: 9,
     fontFamily: 'Helvetica-Bold',
-    color: '#94a3b8',
+    color: '#6b5fa0',
     textTransform: 'uppercase',
     letterSpacing: 1.5,
     marginBottom: 12,
   },
   sectionValue: {
     fontSize: 13,
-    color: '#0f172a',
+    color: '#ede9fe',
     lineHeight: 1.6,
   },
   footer: {
     padding: 30,
     textAlign: 'center',
     borderTopWidth: 1.5,
-    borderTopColor: '#e2e8f0',
-    backgroundColor: '#ffffff',
+    borderTopColor: '#2d2654',
+    backgroundColor: '#16122e',
   },
   footerText: {
     fontSize: 9,
     fontFamily: 'Helvetica-Bold',
-    color: '#94a3b8',
+    color: '#6b5fa0',
     textTransform: 'uppercase',
     letterSpacing: 3,
   },
@@ -184,7 +184,7 @@ export function BriefPDFDocument({ projectName, brief, mode, submittedAt }: Brie
                     ) : value ? (
                       <Text style={styles.sectionValue}>{value}</Text>
                     ) : (
-                      <Text style={[styles.sectionValue, { color: '#cbd5e1', fontStyle: 'italic' }]}>Non renseigné par le client</Text>
+                      <Text style={[styles.sectionValue, { color: '#3d3168', fontStyle: 'italic' }]}>Non renseigné par le client</Text>
                     )}
                   </View>
                 </View>
