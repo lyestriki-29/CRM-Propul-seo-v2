@@ -1,26 +1,20 @@
-# Session State — 2026-04-11 22:45
+# Session State — 2026-04-12 12:15
 
 ## Branch
 main
 
 ## Completed This Session
-- feat(brief-invite): table brief_invitations + RLS + Edge Function create-project-from-brief
-- feat(brief-invite): hook useBriefInvitation + page ClientBriefInvitePage + route App.tsx + BriefInviteModal
-- fix(brief-invite): RLS anon INSERT manquant — lien ne s'affichait pas
-- design: redesign Dark Premium (fond #0a0118, orbes, glassmorphism, shimmer)
-- fix: overscroll blanc + scroll horizontal supprimé
+- Réorganisation navigation sidebar : V2 Beta devient la navigation principale, tous les anciens modules regroupés en "CRM v1" replié par défaut
+- Page d'accueil : Dashboard V2 remplace l'ancien Tableau de bord
+- Push & déploiement : commit b722a1c pushé sur origin/main (Vercel déploie automatiquement)
 
 ## Next Task
-Créer mini-projet Next.js séparé (next-public/) pour pages publiques clients :
-- /brief-invite/[token], /brief/[token], /portal/[token]
-Déployer sur Vercel indépendamment. CRM Vite reste inchangé.
+Aucune tâche en cours — vérifier le déploiement Vercel et valider les changements en production
 
 ## Blockers
-- Domaine app-propulseo.vercel.app : à configurer manuellement depuis dashboard Vercel (crm-v2s-projects)
+None
 
 ## Key Context
-- Projet Vercel actif : crm-v2 (prj_cgIsTg95qHNLyK33BicCCLHlpAHu) team crm-v2s-projects — PAS crm-propulseo-v2
-- Supabase project_id : wftozvnvstxzvfplveyz
-- Email Resend : onboarding@resend.dev (envoie uniquement à lyestriki@gmail.com)
-- App = React 18 + Vite SPA — pas Next.js
-- Dark Premium design : src/modules/ClientBrief/ClientBriefInvitePage.tsx
+- Sidebar : section "✦ V2 Beta" en haut (Dashboard V2, Site Web & SEO, ERP Sur Mesure, Communication, Projets V2, Mois en cours)
+- Section "CRM v1" contient : Tableau de bord, CRM Principal, Bot One, CRM ERP, Projets actifs, Terminés, Production, KPI, Clients — repliée par défaut
+- Layout.tsx : redirige vers 'dashboard-v2' si activeModule est absent ou === 'dashboard'
