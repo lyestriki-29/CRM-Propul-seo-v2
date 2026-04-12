@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function Home() {
-  redirect('https://propulseo.fr')
+  redirect('https://www.propulseo-site.com/')
 }
