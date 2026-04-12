@@ -1,9 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createSupabaseServer } from '@/lib/supabase-server'
-import { PageShell } from '@/components/PageShell'
-import { Logo } from '@/components/Logo'
-import { BriefInviteFormV1 as BriefInviteForm } from './BriefInviteFormV1'
+import { BriefInviteFormV5 } from './BriefInviteFormV5'
 
 type Props = { params: Promise<{ code: string }> }
 
@@ -36,23 +34,42 @@ export default async function BriefInvitePage({ params }: Props) {
 
   if (invitation.status === 'submitted') {
     return (
-      <PageShell>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 24, padding: 24 }}>
-          <Logo size={56} />
-          <h1 style={{ color: 'white', fontSize: 20, fontWeight: 600, textAlign: 'center' }}>
-            Brief déjà envoyé
+      <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, fontFamily: "var(--font-outfit, 'Outfit', sans-serif)" }}>
+        <div style={{
+          maxWidth: 480, width: '100%', textAlign: 'center',
+          background: '#fff', borderRadius: 32, padding: 64,
+          border: '1px solid #e2e8f0', boxShadow: '0 20px 60px rgba(99,102,241,0.10)',
+        }}>
+          <div style={{
+            width: 72, height: 72,
+            background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+            borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 28px',
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </div>
+          <p style={{ fontFamily: "var(--font-mono, 'IBM Plex Mono', monospace)", fontSize: 10, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: 12 }}>
+            Brief reçu
+          </p>
+          <h1 style={{ fontSize: 36, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em', margin: '0 0 16px' }}>
+            DÉJÀ TRANSMIS.
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', maxWidth: 320 }}>
+          <p style={{ color: '#64748b', lineHeight: 1.7, fontSize: 16, margin: 0 }}>
             Votre brief a bien été reçu par l&apos;équipe Propulseo.<br />
             Nous reviendrons vers vous très prochainement.
           </p>
+          <p style={{ marginTop: 40, fontFamily: "var(--font-mono, 'IBM Plex Mono', monospace)", fontSize: 9, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.4em' }}>
+            Propulseo Studio · Excellence Digitale
+          </p>
         </div>
-      </PageShell>
+      </div>
     )
   }
 
   return (
-    <BriefInviteForm
+    <BriefInviteFormV5
       code={code}
       companyName={invitation.company_name ?? ''}
     />
