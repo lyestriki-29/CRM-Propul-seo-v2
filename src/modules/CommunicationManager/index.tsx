@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { Megaphone, TrendingUp, Users, Award, DollarSign } from 'lucide-react'
 import { useMockCommProjects } from './hooks/useMockCommProjects'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
-import { CommCalendarView } from './components/CommCalendarView'
+import { CommTaskBoard } from './components/CommTaskBoard'
 import { MOCK_COMM_BRIEFS } from './mocks'
 import type { StatusComm, ProjectV2 } from '../../types/project-v2'
 
@@ -258,8 +258,8 @@ export function CommunicationManager() {
         )}
         </div>{/* fin ligne kanban */}
 
-        {/* Calendrier des projets */}
-        <CommCalendarView projects={projects} onProjectClick={handleProjectClick} />
+        {/* Tableau des tâches communication */}
+        <CommTaskBoard projects={projects} />
       </div>
     </div>
   )
