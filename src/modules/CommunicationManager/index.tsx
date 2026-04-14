@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Megaphone, TrendingUp, Users, Award, DollarSign } from 'lucide-react'
+import { Megaphone, TrendingUp, Users, Award, DollarSign, LayoutGrid, CalendarDays } from 'lucide-react'
 import { useMockCommProjects } from './hooks/useMockCommProjects'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import { CommTaskBoard } from './components/CommTaskBoard'
@@ -26,6 +26,7 @@ export function CommunicationManager() {
   const [selectedProject, setSelectedProject] = useState<CommProject | null>(null)
   const [activeTab, setActiveTab] = useState<DetailTab>('brief')
   const [showDetails, setShowDetails] = useState(false)
+  const [mainView, setMainView] = useState<'projet' | 'calendrier'>('projet')
 
   const kpis = useMemo(() => {
     const mrr = MOCK_COMM_BRIEFS
@@ -119,10 +120,36 @@ export function CommunicationManager() {
         </div>
       </div>
 
+      {/* Onglets Vue Projet / Vue Calendrier */}
+      <div className="flex items-center gap-1 px-6 py-2 border-b border-border bg-surface-1">
+        <button
+          onClick={() => setMainView('projet')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            mainView === 'projet'
+              ? 'bg-surface-3 text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-2'
+          }`}
+        >
+          <LayoutGrid className="w-4 h-4" />
+          Vue Projet
+        </button>
+        <button
+          onClick={() => setMainView('calendrier')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            mainView === 'calendrier'
+              ? 'bg-surface-3 text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-2'
+          }`}
+        >
+          <CalendarDays className="w-4 h-4" />
+          Vue Calendrier
+        </button>
+      </div>
+
       {/* Main content */}
       <div className="flex-1 overflow-auto flex flex-col">
         {/* Kanban + panneau de détail (côte à côte) */}
-        <div className="flex overflow-hidden" style={{ minHeight: '350px' }}>
+        {mainView === 'projet' && <div className="flex overflow-hidden" style={{ minHeight: '350px' }}>
         {/* Kanban */}
         <div className="flex-1 overflow-auto p-4">
           <div className="flex gap-4 overflow-x-auto pb-4" style={{ minWidth: `${COMM_COLUMNS.length * 220}px` }}>
@@ -256,10 +283,10 @@ export function CommunicationManager() {
             </div>
           </div>
         )}
-        </div>{/* fin ligne kanban */}
+        </div>}{/* fin ligne kanban */}
 
-        {/* Tableau des tâches communication */}
-        <CommTaskBoard projects={projects} />
+        {/* Vue Calendrier */}
+        {mainView === 'calendrier' && <CommTaskBoard projects={projects} />}
       </div>
     </div>
   )
