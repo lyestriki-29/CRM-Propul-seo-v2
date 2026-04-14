@@ -388,3 +388,22 @@ export interface FollowUpEntry {
   assigned_name: string | null
   created_at: string
 }
+
+// ===== TÂCHES COMMUNICATION =====
+
+export type CommTaskStatus   = 'todo' | 'in_progress' | 'done'
+export type CommTaskPriority = 'faible' | 'moyenne' | 'haute' | 'critique'
+
+export interface CommTask {
+  id: string
+  title: string
+  project_id: string
+  project_name: string
+  project_color: string
+  status: CommTaskStatus
+  priority: CommTaskPriority
+  due_date: string        // 'YYYY-MM-DD'
+  assigned_to?: string
+  created_at: string
+  updated_at: string
+}
