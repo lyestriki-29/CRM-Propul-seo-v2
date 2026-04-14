@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Fin de sprint** : à la fin de chaque sprint, effectuer un code review (`/review`) puis sauvegarder la session avec `/token-saver fin`.
 - **Suivi du contexte** : surveiller en permanence l'utilisation du contexte. Dès que le contexte atteint **50%**, prévenir immédiatement l'utilisateur avec ce message : `⚠️ Contexte à 50% — je sauvegarde la session et on repart à neuf.`, puis exécuter automatiquement `/token-saver fin` sans attendre de confirmation.
+- **V2 uniquement** : toutes les modifications UI/fonctionnelles doivent être apportées aux modules **V2** (`CommunicationManager`, `ERPManager`, `SiteWebManager`, `ProjectsManagerV2`, `DashboardV2`, etc.). Ne jamais modifier les anciens modules (`Communication`, `CRM`, `ProjectsManager`, `Dashboard`, etc.) sauf demande explicite.
 
 ## Commands
 

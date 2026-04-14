@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { Megaphone, TrendingUp, Users, Award, DollarSign } from 'lucide-react'
 import { useMockCommProjects } from './hooks/useMockCommProjects'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
+import { CommCalendarView } from './components/CommCalendarView'
 import { MOCK_COMM_BRIEFS } from './mocks'
 import type { StatusComm, ProjectV2 } from '../../types/project-v2'
 
@@ -119,7 +120,9 @@ export function CommunicationManager() {
       </div>
 
       {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto flex flex-col">
+        {/* Kanban + panneau de détail (côte à côte) */}
+        <div className="flex overflow-hidden" style={{ minHeight: '350px' }}>
         {/* Kanban */}
         <div className="flex-1 overflow-auto p-4">
           <div className="flex gap-4 overflow-x-auto pb-4" style={{ minWidth: `${COMM_COLUMNS.length * 220}px` }}>
@@ -253,6 +256,10 @@ export function CommunicationManager() {
             </div>
           </div>
         )}
+        </div>{/* fin ligne kanban */}
+
+        {/* Calendrier des projets */}
+        <CommCalendarView projects={projects} onProjectClick={handleProjectClick} />
       </div>
     </div>
   )
