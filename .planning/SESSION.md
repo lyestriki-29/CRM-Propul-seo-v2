@@ -1,25 +1,24 @@
-# Session State — 2026-04-14 18:45
+# Session State — 2026-04-14 19:05
 
 ## Branch
 main
 
 ## Completed This Session
-- règle V2 : ajout dans CLAUDE.md — toujours modifier les modules V2, jamais les anciens
-- CommCalendarView (rapide) : ajouté sous le kanban de CommunicationManager (à remplacer par le vrai)
-- brainstorm calendrier premium : spec validée + plan d'implémentation complet écrit
-- spec : docs/superpowers/specs/2026-04-14-calendar-communication-design.md
-- plan : docs/superpowers/plans/2026-04-14-calendar-communication.md
+- CommTaskBoard : implémentation complète 10 tâches (types, mock, hook, config, Card, Chip, Modal, Filters, Project, Month, Week, index)
+- Onglets Vue Projet / Vue Calendrier dans CommunicationManager/index.tsx
 
 ## Next Task
-Exécuter le plan d'implémentation `docs/superpowers/plans/2026-04-14-calendar-communication.md`
-— choisir entre Subagent-Driven ou Inline Execution pour démarrer Task 1
+Vérification visuelle complète dans le navigateur (http://localhost:5173 → Communication) :
+- [ ] Onglet "Vue Projet" → kanban par statut
+- [ ] Onglet "Vue Calendrier" → CommTaskBoard avec vues Projets/Mois/Semaine
+- [ ] DnD fonctionnel en vue Mois et vue Semaine
+- [ ] Modal création/édition tâche
 
 ## Blockers
-Mock tasks (comm-004/005/006) ne correspondent pas aux IDs de MOCK_COMM_PROJECTS (comm-001/002/003)
-→ au Task 1 Step 2, aligner les IDs ou ajouter les projets manquants dans mockCommProjects.ts
+Screenshots inaccessibles (chemin /var/folders/... non lisible) — utiliser Cmd+Ctrl+Shift+4 pour coller dans le chat
 
 ## Key Context
-- Module cible : CommunicationManager (src/modules/CommunicationManager/)
-- CommCalendarView.tsx existant est à supprimer (remplacé par CommTaskBoard)
-- dnd-kit déjà installé : @dnd-kit/core ^6.3.1, @dnd-kit/sortable ^10.0.0
-- Design validé : vue Projets (défaut) → Mois → Semaine, dark theme, chips colorées par priorité
+- CommunicationManager/index.tsx : state `mainView` ('projet'|'calendrier'), onglets sous le bandeau KPI
+- CommTaskBoard dans src/modules/CommunicationManager/components/CommTaskBoard/
+- Mock data : projets comm-001 à comm-006 (Murmure, Studio Deus, Docadoca, La Clé, Locagame, Etienne Perso)
+- TypeScript build : exit code 0 sur toute la session
