@@ -88,22 +88,23 @@ export function CommTaskBoardProject({ tasks, projects, onMoveTask, onClickTask,
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto p-4 pb-6">
+      <div
+        className="grid gap-3 p-4 pb-6"
+        style={{ gridTemplateColumns: `repeat(${activeProjects.length}, minmax(0, 1fr))` }}
+      >
         {activeProjects.map(proj => {
           const color = PROJECT_COLORS[proj.id] ?? '#6366f1'
           const colTasks = tasks.filter(t => t.project_id === proj.id)
           return (
-            <div key={proj.id} className="flex-shrink-0 w-56">
+            <div key={proj.id} className="min-w-0">
               {/* Header colonne */}
               <div
-                className="flex items-center justify-between px-3 py-2 rounded-t-lg"
+                className="flex items-center gap-2 px-3 py-2 rounded-t-lg overflow-hidden"
                 style={{ background: color + '22', borderBottom: `2px solid ${color}` }}
               >
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-                  <span className="text-xs font-bold truncate" style={{ color }}>{proj.name}</span>
-                </div>
-                <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full" style={{ background: color + '33', color }}>
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                <span className="text-xs font-bold truncate min-w-0" style={{ color }}>{proj.name}</span>
+                <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ml-auto" style={{ background: color + '33', color }}>
                   {colTasks.length}
                 </span>
               </div>

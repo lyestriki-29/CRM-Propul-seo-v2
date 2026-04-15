@@ -1,5 +1,5 @@
 import type { ProjectV2, StatusComm } from '../../../../types/project-v2'
-import { useCommTasks } from './useCommTasks'
+import { useCommTasks, type CommTaskView } from './useCommTasks'
 import { CommTaskFilters } from './CommTaskFilters'
 import { CommTaskBoardProject } from './CommTaskBoardProject'
 import { CommTaskBoardMonth } from './CommTaskBoardMonth'
@@ -10,16 +10,17 @@ type CommProject = ProjectV2 & { comm_status: StatusComm }
 
 interface CommTaskBoardProps {
   projects: CommProject[]
+  initialView?: CommTaskView
 }
 
-export function CommTaskBoard({ projects }: CommTaskBoardProps) {
+export function CommTaskBoard({ projects, initialView = 'project' }: CommTaskBoardProps) {
   const {
     tasks, view, setView, filters, setFilters,
     currentDate, setCurrentDate,
     modalOpen, editingTask, defaultDate,
     createTask, updateTask, deleteTask, moveTask,
     openCreate, openEdit, closeModal,
-  } = useCommTasks()
+  } = useCommTasks(initialView)
 
   const handlePrev = () => {
     const d = new Date(currentDate)

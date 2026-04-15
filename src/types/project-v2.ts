@@ -403,6 +403,7 @@ export interface CommTask {
   status: CommTaskStatus
   priority: CommTaskPriority
   due_date: string        // 'YYYY-MM-DD'
+  due_hour?: number       // 9-18, heure sur la grille semaine
   assigned_to?: string
   created_at: string
   updated_at: string

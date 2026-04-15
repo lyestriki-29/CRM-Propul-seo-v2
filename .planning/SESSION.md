@@ -1,24 +1,29 @@
-# Session State — 2026-04-14 19:05
+# Session State — 2026-04-15 17:00
 
 ## Branch
 main
 
 ## Completed This Session
-- CommTaskBoard : implémentation complète 10 tâches (types, mock, hook, config, Card, Chip, Modal, Filters, Project, Month, Week, index)
-- Onglets Vue Projet / Vue Calendrier dans CommunicationManager/index.tsx
+- CommTaskBoardWeek : refonte Glass variant (gradients + glassmorphism + ligne now + today gradient + gestion chevauchement chips multi-tâches)
+- Preview 3 variantes agenda créé puis supprimé après choix variante C
+- Supabase MCP : reconnecté au bon compte (projet wftozvnvstxzvfplveyz)
+- Users créés en base : Etienne (admin@propulseo.com, admin), Lyes (lyestriki@yahoo.fr, admin), Pierre (pierreperraut.pp@gmail.com, marketing) — sans login actif
+- Colonne `comm_status` ajoutée à projects_v2
+- 9 projets comm insérés : A. Chaligné, CoproFlex, Lutins Farceurs, DocaGora, Etienne Perso, La Clé, Locagame, Murmure, Propul'SEO (tous en_production, rattachés à Pierre, budget NULL)
 
 ## Next Task
-Vérification visuelle complète dans le navigateur (http://localhost:5173 → Communication) :
-- [ ] Onglet "Vue Projet" → kanban par statut
-- [ ] Onglet "Vue Calendrier" → CommTaskBoard avec vues Projets/Mois/Semaine
-- [ ] DnD fonctionnel en vue Mois et vue Semaine
-- [ ] Modal création/édition tâche
+Intégration Supabase réelle du module Communication :
+1. Créer table `comm_tasks` (id, project_id FK projects_v2, title, description, priority, status, due_date, due_hour, assigned_to FK users, timestamps)
+2. Réécrire `useMockCommProjects.ts` → `useCommProjects.ts` (fetch Supabase avec filter category='communication')
+3. Réécrire `useCommTasks.ts` : remplacer MOCK_COMM_TASKS par fetch/CRUD Supabase
+4. Adapter les types ProjectV2 pour inclure comm_status depuis la DB
+5. Supprimer les fichiers mocks une fois validé
 
 ## Blockers
-Screenshots inaccessibles (chemin /var/folders/... non lisible) — utiliser Cmd+Ctrl+Shift+4 pour coller dans le chat
+None
 
 ## Key Context
-- CommunicationManager/index.tsx : state `mainView` ('projet'|'calendrier'), onglets sous le bandeau KPI
-- CommTaskBoard dans src/modules/CommunicationManager/components/CommTaskBoard/
-- Mock data : projets comm-001 à comm-006 (Murmure, Studio Deus, Docadoca, La Clé, Locagame, Etienne Perso)
-- TypeScript build : exit code 0 sur toute la session
+- FK projects_v2.user_id → auth.users(id) (PAS public.users.id) — utiliser auth_user_id
+- Trigger handle_new_user auto-crée public.users à chaque INSERT auth.users (lit name/role depuis raw_user_meta_data)
+- Pierre auth_user_id récupérable via `SELECT auth_user_id FROM public.users WHERE email='pierreperraut.pp@gmail.com'`
+- Variante Glass pluggée comme vue Semaine principale, preview retirée

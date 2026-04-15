@@ -41,6 +41,7 @@ export function CommTaskModal({ open, task, projects, defaultDate, onSave, onDel
   const [title, setTitle]         = useState('')
   const [projectId, setProjectId] = useState('')
   const [dueDate, setDueDate]     = useState('')
+  const [dueHour, setDueHour]     = useState<number | ''>('')
   const [priority, setPriority]   = useState<CommTaskPriority>('moyenne')
   const [status, setStatus]       = useState<CommTaskStatus>('todo')
 
@@ -49,12 +50,14 @@ export function CommTaskModal({ open, task, projects, defaultDate, onSave, onDel
       setTitle(task.title)
       setProjectId(task.project_id)
       setDueDate(task.due_date)
+      setDueHour(task.due_hour ?? '')
       setPriority(task.priority)
       setStatus(task.status)
     } else {
       setTitle('')
       setProjectId(projects[0]?.id ?? '')
       setDueDate(defaultDate ?? '')
+      setDueHour('')
       setPriority('moyenne')
       setStatus('todo')
     }
@@ -71,6 +74,7 @@ export function CommTaskModal({ open, task, projects, defaultDate, onSave, onDel
       project_name: proj?.name ?? projectId,
       project_color: PROJECT_COLORS[proj?.id ?? ''] ?? '#6366f1',
       status, priority, due_date: dueDate,
+      ...(dueHour !== '' ? { due_hour: dueHour } : {}),
     })
     onClose()
   }
@@ -110,15 +114,30 @@ export function CommTaskModal({ open, task, projects, defaultDate, onSave, onDel
             </select>
           </div>
 
-          {/* Date */}
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Date</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={e => setDueDate(e.target.value)}
-              className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
-            />
+          {/* Date + Horaire */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Date</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
+                className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+              />
+            </div>
+            <div className="w-24">
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Heure</label>
+              <select
+                value={dueHour}
+                onChange={e => setDueHour(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+                className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+              >
+                <option value="">—</option>
+                {Array.from({ length: 10 }, (_, i) => i + 9).map(h => (
+                  <option key={h} value={h}>{h}h00</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Priorité */}

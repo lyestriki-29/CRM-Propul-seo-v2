@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react'
-import { Megaphone, TrendingUp, Users, Award, DollarSign, LayoutGrid, CalendarDays } from 'lucide-react'
+import { Megaphone, TrendingUp, Users, Award, DollarSign, ChevronDown, ChevronUp, LayoutGrid, FolderKanban, CalendarDays, CalendarRange, Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useMockCommProjects } from './hooks/useMockCommProjects'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import { CommTaskBoard } from './components/CommTaskBoard'
+import { CommNewProjectModal } from './components/CommNewProjectModal'
 import { MOCK_COMM_BRIEFS } from './mocks'
 import type { StatusComm, ProjectV2 } from '../../types/project-v2'
 
@@ -19,14 +21,24 @@ const COMM_COLUMNS: { id: StatusComm; label: string; color: string }[] = [
   { id: 'perdu',         label: 'Perdu',         color: 'bg-red-500' },
 ]
 
+type MainView = 'pipeline' | 'project' | 'month' | 'week'
+const NAV_ITEMS: { id: MainView; label: string; icon: React.ReactNode }[] = [
+  { id: 'pipeline', label: 'Pipeline',  icon: <LayoutGrid className="w-3.5 h-3.5" /> },
+  { id: 'project',  label: 'Projets',   icon: <FolderKanban className="w-3.5 h-3.5" /> },
+  { id: 'month',    label: 'Mois',      icon: <CalendarDays className="w-3.5 h-3.5" /> },
+  { id: 'week',     label: 'Semaine',   icon: <CalendarRange className="w-3.5 h-3.5" /> },
+]
+
 type DetailTab = 'brief' | 'suivi'
 
 export function CommunicationManager() {
-  const { projects, updateStatus } = useMockCommProjects()
+  const { projects, updateStatus, addProject } = useMockCommProjects()
   const [selectedProject, setSelectedProject] = useState<CommProject | null>(null)
   const [activeTab, setActiveTab] = useState<DetailTab>('brief')
   const [showDetails, setShowDetails] = useState(false)
-  const [mainView, setMainView] = useState<'projet' | 'calendrier'>('projet')
+  const [mainView, setMainView] = useState<MainView>('pipeline')
+  const [showKpi, setShowKpi] = useState(false)
+  const [showNewProject, setShowNewProject] = useState(false)
 
   const kpis = useMemo(() => {
     const mrr = MOCK_COMM_BRIEFS
@@ -87,76 +99,93 @@ export function CommunicationManager() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-border">
-        <Megaphone className="w-5 h-5 text-rose-400" />
-        <h1 className="text-lg font-semibold text-foreground">Communication</h1>
-      </div>
+      {/* Header compact : titre + nav + toggle KPI */}
+      <div className="flex items-center gap-4 px-6 py-2.5 border-b border-border">
+        <div className="flex items-center gap-2.5">
+          <Megaphone className="w-5 h-5 text-rose-400" />
+          <h1 className="text-base font-semibold text-foreground">Communication</h1>
+        </div>
 
-      {/* KPI bandeau */}
-      <div className="flex gap-4 px-6 py-3 border-b border-border bg-surface-2 flex-wrap">
-        <div className="flex items-center gap-2 text-sm">
-          <TrendingUp className="w-4 h-4 text-emerald-500" />
-          <span className="text-muted-foreground">MRR</span>
-          <span className="font-semibold text-foreground">{kpis.mrr.toLocaleString('fr-FR')}€/mois</span>
+        {/* Navigation unifiée */}
+        <div className="flex items-center gap-0.5 bg-surface-2 rounded-lg p-0.5 ml-4">
+          {NAV_ITEMS.map(item => (
+            <button
+              key={item.id}
+              onClick={() => setMainView(item.id)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                mainView === item.id
+                  ? 'bg-surface-3 text-primary shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
         </div>
-        <div className="w-px bg-border" />
-        <div className="flex items-center gap-2 text-sm">
-          <Users className="w-4 h-4 text-blue-500" />
-          <span className="text-muted-foreground">Abonnés actifs</span>
-          <span className="font-semibold text-foreground">{kpis.nbAbonnes}</span>
-        </div>
-        <div className="w-px bg-border" />
-        <div className="flex items-center gap-2 text-sm">
-          <Award className="w-4 h-4 text-amber-500" />
-          <span className="text-muted-foreground">Pack le + vendu</span>
-          <span className="font-semibold text-foreground">{kpis.topPackLabel}</span>
-        </div>
-        <div className="w-px bg-border" />
-        <div className="flex items-center gap-2 text-sm">
-          <DollarSign className="w-4 h-4 text-violet-500" />
-          <span className="text-muted-foreground">CA one-shot ce mois</span>
-          <span className="font-semibold text-foreground">{kpis.caOneShot.toLocaleString('fr-FR')}€</span>
-        </div>
-      </div>
 
-      {/* Onglets Vue Projet / Vue Calendrier */}
-      <div className="flex items-center gap-1 px-6 py-2 border-b border-border bg-surface-1">
+        {/* Bouton nouveau projet (pipeline seulement) */}
+        {mainView === 'pipeline' && (
+          <button
+            onClick={() => setShowNewProject(true)}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" /> Nouveau projet
+          </button>
+        )}
+
+        {/* Toggle KPI */}
         <button
-          onClick={() => setMainView('projet')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            mainView === 'projet'
-              ? 'bg-surface-3 text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-surface-2'
-          }`}
+          onClick={() => setShowKpi(v => !v)}
+          className={cn(mainView !== 'pipeline' && 'ml-auto', 'flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors')}
         >
-          <LayoutGrid className="w-4 h-4" />
-          Vue Projet
-        </button>
-        <button
-          onClick={() => setMainView('calendrier')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            mainView === 'calendrier'
-              ? 'bg-surface-3 text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-surface-2'
-          }`}
-        >
-          <CalendarDays className="w-4 h-4" />
-          Vue Calendrier
+          <TrendingUp className="w-3.5 h-3.5" />
+          KPI
+          {showKpi ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
       </div>
+
+      {/* KPI bandeau — repliable */}
+      {showKpi && (
+        <div className="flex gap-4 px-6 py-2 border-b border-border bg-surface-2/50 flex-wrap">
+          <div className="flex items-center gap-2 text-xs">
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="text-muted-foreground">MRR</span>
+            <span className="font-semibold text-foreground">{kpis.mrr.toLocaleString('fr-FR')}€/mois</span>
+          </div>
+          <div className="w-px bg-border" />
+          <div className="flex items-center gap-2 text-xs">
+            <Users className="w-3.5 h-3.5 text-blue-500" />
+            <span className="text-muted-foreground">Abonnés actifs</span>
+            <span className="font-semibold text-foreground">{kpis.nbAbonnes}</span>
+          </div>
+          <div className="w-px bg-border" />
+          <div className="flex items-center gap-2 text-xs">
+            <Award className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-muted-foreground">Pack le + vendu</span>
+            <span className="font-semibold text-foreground">{kpis.topPackLabel}</span>
+          </div>
+          <div className="w-px bg-border" />
+          <div className="flex items-center gap-2 text-xs">
+            <DollarSign className="w-3.5 h-3.5 text-violet-500" />
+            <span className="text-muted-foreground">CA one-shot</span>
+            <span className="font-semibold text-foreground">{kpis.caOneShot.toLocaleString('fr-FR')}€</span>
+          </div>
+        </div>
+      )}
 
       {/* Main content */}
       <div className="flex-1 overflow-auto flex flex-col">
-        {/* Kanban + panneau de détail (côte à côte) */}
-        {mainView === 'projet' && <div className="flex overflow-hidden" style={{ minHeight: '350px' }}>
+        {/* Kanban pipeline + panneau de détail */}
+        {mainView === 'pipeline' && <div className="flex overflow-hidden" style={{ minHeight: '350px' }}>
         {/* Kanban */}
         <div className="flex-1 overflow-auto p-4">
-          <div className="flex gap-4 overflow-x-auto pb-4" style={{ minWidth: `${COMM_COLUMNS.length * 220}px` }}>
+          <div className="grid gap-3 pb-4" style={{ gridTemplateColumns: `repeat(${COMM_COLUMNS.length}, minmax(0, 1fr))` }}>
             {COMM_COLUMNS.map(col => {
               const colProjects = projects.filter(p => p.comm_status === col.id)
               return (
-                <div key={col.id} className="flex-shrink-0 w-52">
+                <div key={col.id} className="min-w-0">
                   <div className={`flex items-center gap-2 px-3 py-2 rounded-t-lg ${col.color} text-white`}>
                     <span className="text-xs font-semibold truncate">{col.label}</span>
                     <span className="text-xs opacity-80 ml-auto">{colProjects.length}</span>
@@ -285,9 +314,18 @@ export function CommunicationManager() {
         )}
         </div>}{/* fin ligne kanban */}
 
-        {/* Vue Calendrier */}
-        {mainView === 'calendrier' && <CommTaskBoard projects={projects} />}
+        {/* Vues tâches (project / month / week) — toujours monté pour garder le state */}
+        <div className={mainView === 'pipeline' ? 'hidden' : 'flex flex-col flex-1'}>
+          <CommTaskBoard projects={projects} initialView={mainView === 'pipeline' ? 'project' : mainView} />
+        </div>
       </div>
+
+      {/* Modal nouveau projet */}
+      <CommNewProjectModal
+        open={showNewProject}
+        onSave={(data) => addProject(data)}
+        onClose={() => setShowNewProject(false)}
+      />
     </div>
   )
 }

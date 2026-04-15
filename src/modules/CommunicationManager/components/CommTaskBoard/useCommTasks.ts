@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { MOCK_COMM_TASKS } from '../../mocks/mockCommTasks'
 import type { CommTask, CommTaskStatus, CommTaskPriority } from '../../../../types/project-v2'
 
@@ -10,9 +10,12 @@ export interface CommTaskFiltersState {
   projectIds: string[]
 }
 
-export function useCommTasks() {
+export function useCommTasks(initialView: CommTaskView = 'project') {
   const [tasks, setTasks] = useState<CommTask[]>(MOCK_COMM_TASKS)
-  const [view, setView] = useState<CommTaskView>('project')
+  const [view, setView] = useState<CommTaskView>(initialView)
+
+  // Sync si le parent change la vue
+  useEffect(() => { setView(initialView) }, [initialView])
   const [filters, setFilters] = useState<CommTaskFiltersState>({
     priorities: ['faible', 'moyenne', 'haute', 'critique'],
     statuses: ['todo', 'in_progress', 'done'],
@@ -46,7 +49,7 @@ export function useCommTasks() {
     setTasks(prev => prev.filter(t => t.id !== id))
   }, [])
 
-  const moveTask = useCallback((id: string, patch: { due_date?: string; project_id?: string; project_name?: string; project_color?: string }) => {
+  const moveTask = useCallback((id: string, patch: { due_date?: string; due_hour?: number; project_id?: string; project_name?: string; project_color?: string }) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...patch, updated_at: new Date().toISOString() } : t))
   }, [])
 
