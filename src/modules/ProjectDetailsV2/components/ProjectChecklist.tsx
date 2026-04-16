@@ -190,7 +190,7 @@ export function ProjectChecklist({ project }: ProjectChecklistProps) {
       assigned_to:    user?.id ?? null,
       assigned_name:  user?.name ?? null,
       due_date:       null,
-      sort_order:     items.length + 1,
+      position:     items.length + 1,
     })
     setNewTitle('')
     setNewAssignedTo('')
@@ -212,7 +212,7 @@ export function ProjectChecklist({ project }: ProjectChecklistProps) {
       assigned_to:    null,
       assigned_name:  null,
       due_date:       null,
-      sort_order:     items.length + 1,
+      position:     items.length + 1,
     })
     setSubTaskTitle('')
     setSubTaskOpen(null)
@@ -240,7 +240,7 @@ export function ProjectChecklist({ project }: ProjectChecklistProps) {
         assigned_to:    null,
         assigned_name:  null,
         due_date:       null,
-        sort_order:     idx + 1,
+        position:     idx + 1,
       })
     })
     Promise.resolve().then(() => setIsApplyingTemplate(false))

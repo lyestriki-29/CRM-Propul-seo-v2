@@ -99,15 +99,20 @@ export function CommunicationManager() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header compact : titre + nav + toggle KPI */}
-      <div className="flex items-center gap-4 px-6 py-2.5 border-b border-border">
-        <div className="flex items-center gap-2.5">
-          <Megaphone className="w-5 h-5 text-rose-400" />
-          <h1 className="text-base font-semibold text-foreground">Communication</h1>
+      {/* Header : titre | onglets centrés | boutons */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface-1 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
+            <Megaphone className="w-4 h-4 text-rose-400" />
+          </div>
+          <div>
+            <h1 className="text-base font-semibold text-foreground">Communication</h1>
+            <p className="text-xs text-muted-foreground">{projects.length} projet{projects.length > 1 ? 's' : ''}</p>
+          </div>
         </div>
 
-        {/* Navigation unifiée */}
-        <div className="flex items-center gap-0.5 bg-surface-2 rounded-lg p-0.5 ml-4">
+        {/* Navigation 4 vues — centrée */}
+        <div className="flex items-center gap-1 bg-surface-2 rounded-lg p-0.5 border border-border">
           {NAV_ITEMS.map(item => (
             <button
               key={item.id}
@@ -115,8 +120,8 @@ export function CommunicationManager() {
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
                 mainView === item.id
-                  ? 'bg-surface-3 text-primary shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-surface-3'
               )}
             >
               {item.icon}
@@ -125,55 +130,49 @@ export function CommunicationManager() {
           ))}
         </div>
 
-        {/* Bouton nouveau projet (pipeline seulement) */}
-        {mainView === 'pipeline' && (
+        {mainView === 'pipeline' ? (
           <button
             onClick={() => setShowNewProject(true)}
-            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" /> Nouveau projet
           </button>
-        )}
-
-        {/* Toggle KPI */}
-        <button
-          onClick={() => setShowKpi(v => !v)}
-          className={cn(mainView !== 'pipeline' && 'ml-auto', 'flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors')}
-        >
-          <TrendingUp className="w-3.5 h-3.5" />
-          KPI
-          {showKpi ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-        </button>
+        ) : <div />}
       </div>
 
-      {/* KPI bandeau — repliable */}
-      {showKpi && (
-        <div className="flex gap-4 px-6 py-2 border-b border-border bg-surface-2/50 flex-wrap">
-          <div className="flex items-center gap-2 text-xs">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-muted-foreground">MRR</span>
-            <span className="font-semibold text-foreground">{kpis.mrr.toLocaleString('fr-FR')}€/mois</span>
+      {/* KPIs repliables */}
+      <div className="border-b border-border bg-surface-1 shrink-0">
+        <button
+          onClick={() => setShowKpi(v => !v)}
+          className="flex items-center gap-1.5 px-6 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors w-full"
+        >
+          {showKpi ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          KPIs
+        </button>
+        {showKpi && (
+          <div className="flex gap-4 px-6 pb-3 flex-wrap">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">MRR</span>
+              <span className="text-sm font-semibold text-foreground">{kpis.mrr.toLocaleString('fr-FR')}€/mois</span>
+            </div>
+            <div className="w-px bg-border" />
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">Abonnés actifs</span>
+              <span className="text-sm font-semibold text-foreground">{kpis.nbAbonnes}</span>
+            </div>
+            <div className="w-px bg-border" />
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">Pack le + vendu</span>
+              <span className="text-sm font-semibold text-foreground">{kpis.topPackLabel}</span>
+            </div>
+            <div className="w-px bg-border" />
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">CA one-shot</span>
+              <span className="text-sm font-semibold text-foreground">{kpis.caOneShot.toLocaleString('fr-FR')}€</span>
+            </div>
           </div>
-          <div className="w-px bg-border" />
-          <div className="flex items-center gap-2 text-xs">
-            <Users className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-muted-foreground">Abonnés actifs</span>
-            <span className="font-semibold text-foreground">{kpis.nbAbonnes}</span>
-          </div>
-          <div className="w-px bg-border" />
-          <div className="flex items-center gap-2 text-xs">
-            <Award className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-muted-foreground">Pack le + vendu</span>
-            <span className="font-semibold text-foreground">{kpis.topPackLabel}</span>
-          </div>
-          <div className="w-px bg-border" />
-          <div className="flex items-center gap-2 text-xs">
-            <DollarSign className="w-3.5 h-3.5 text-violet-500" />
-            <span className="text-muted-foreground">CA one-shot</span>
-            <span className="font-semibold text-foreground">{kpis.caOneShot.toLocaleString('fr-FR')}€</span>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Main content */}
       <div className="flex-1 overflow-auto flex flex-col">

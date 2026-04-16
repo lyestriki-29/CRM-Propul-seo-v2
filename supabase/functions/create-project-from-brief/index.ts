@@ -56,9 +56,10 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const v2 = supabase.schema("v2");
 
     // 1. Valider le token ou short_code
-    const invQuery = supabase
+    const invQuery = v2
       .from("brief_invitations")
       .select("id, status, company_name");
 
@@ -83,8 +84,8 @@ Deno.serve(async (req) => {
     }
 
     // 2. Créer le projet
-    const { data: project, error: projErr } = await supabase
-      .from("projects_v2")
+    const { data: project, error: projErr } = await v2
+      .from("projects")
       .insert({
         name: companyName.trim(),
         status: "brief_received",
@@ -103,8 +104,8 @@ Deno.serve(async (req) => {
     }
 
     // 3. Créer le brief
-    const { error: briefErr } = await supabase
-      .from("project_briefs_v2")
+    const { error: briefErr } = await v2
+      .from("project_briefs")
       .insert({
         project_id: project.id,
         status: "submitted",
@@ -122,7 +123,7 @@ Deno.serve(async (req) => {
     }
 
     // 4. Marquer l'invitation comme soumise
-    await supabase
+    await v2
       .from("brief_invitations")
       .update({
         status: "submitted",

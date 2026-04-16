@@ -74,7 +74,7 @@ export function useClientPortal() {
       .select('id, title, phase, status')
       .eq('project_id', project.id)
       .is('parent_task_id', null)
-      .order('sort_order', { ascending: true })
+      .order('position', { ascending: true })
 
     // 3. Factures (envoyées, payées, en retard)
     const { data: invoices } = await v2Anon

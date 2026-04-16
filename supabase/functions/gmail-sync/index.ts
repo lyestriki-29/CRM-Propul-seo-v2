@@ -6,6 +6,7 @@ const GOOGLE_ID     = Deno.env.get('GOOGLE_CLIENT_ID')!
 const GOOGLE_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET')!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+const v2 = supabase.schema('v2')
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -284,8 +285,8 @@ Deno.serve(async (req) => {
       if (matchedProjects.length === 0) { skipped++; continue }
 
       // Check for already-synced message
-      const { count } = await supabase
-        .from('project_activities_v2')
+      const { count } = await v2
+        .from('project_activities')
         .select('id', { count: 'exact', head: true })
         .eq('metadata->gmail_message_id', msg.id)
 
@@ -349,11 +350,10 @@ Deno.serve(async (req) => {
         if (meetingMeta.location) metadata.location = meetingMeta.location
 
         for (const projectId of matchedProjects) {
-          await supabase.from('project_activities_v2').insert({
+          await v2.from('project_activities').insert({
             project_id:  projectId,
             type:        'meeting',
-            content:     meetingMeta.title || subject,
-            author_name: from,
+            title:       meetingMeta.title || subject,
             is_auto:     true,
             metadata,
           })
@@ -371,11 +371,10 @@ Deno.serve(async (req) => {
         }
 
         for (const projectId of matchedProjects) {
-          await supabase.from('project_activities_v2').insert({
+          await v2.from('project_activities').insert({
             project_id:  projectId,
             type:        'email',
-            content:     `Email reçu : ${subject}`,
-            author_name: from,
+            title:       `Email reçu : ${subject}`,
             is_auto:     true,
             metadata,
           })

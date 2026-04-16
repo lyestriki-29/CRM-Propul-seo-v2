@@ -1,6 +1,6 @@
 // src/modules/ProjectsManagerV2/hooks/useBriefInvitation.ts
 import { useState, useEffect, useCallback } from 'react'
-import { supabaseAnon } from '@/lib/supabase'
+import { v2Anon } from '@/lib/supabase'
 
 interface InvitationData {
   id: string
@@ -30,7 +30,7 @@ export function useBriefInvitation(token: string): UseBriefInvitationReturn {
     setAlreadySubmitted(false)
     setLoading(true)
 
-    supabaseAnon
+    v2Anon
       .from('brief_invitations')
       .select('id, token, company_name, status')
       .eq('token', token)

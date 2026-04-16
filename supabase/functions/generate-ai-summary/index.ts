@@ -48,10 +48,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
+    const v2 = supabase.schema('v2')
 
     // 1. Charger le projet
-    const { data: project, error: projectError } = await supabase
-      .from('projects_v2')
+    const { data: project, error: projectError } = await v2
+      .from('projects')
       .select('*')
       .eq('id', project_id)
       .single()
@@ -64,26 +65,26 @@ serve(async (req) => {
     }
 
     // 2. Charger les 7 dernières activités
-    const { data: activities } = await supabase
-      .from('project_activities_v2')
-      .select('type, content, created_at')
+    const { data: activities } = await v2
+      .from('project_activities')
+      .select('type, title, created_at')
       .eq('project_id', project_id)
       .order('created_at', { ascending: false })
       .limit(7)
 
     // 3. Charger les tâches checklist non terminées (max 10)
-    const { data: checklist } = await supabase
-      .from('checklist_items_v2')
+    const { data: checklist } = await v2
+      .from('checklist_items')
       .select('title, phase, status, priority')
       .eq('project_id', project_id)
       .neq('status', 'done')
-      .order('sort_order')
+      .order('position')
       .limit(10)
 
     // 4. Construire le prompt
     const activitiesText = (activities ?? [])
-      .map((a: { type: string; content: string; created_at: string }) =>
-        `- [${a.type}] ${a.content}`)
+      .map((a: { type: string; title: string; created_at: string }) =>
+        `- [${a.type}] ${a.title}`)
       .join('\n') || 'Aucune activité enregistrée.'
 
     const checklistText = (checklist ?? [])
@@ -164,8 +165,8 @@ Réponds UNIQUEMENT en JSON strict, sans texte avant ni après :
     }
 
     // 6. Persister le résumé
-    const { error: updateError, count } = await supabase
-      .from('projects_v2')
+    const { error: updateError, count } = await v2
+      .from('projects')
       .update({
         ai_summary: summary,
         ai_summary_generated_at: new Date().toISOString(),

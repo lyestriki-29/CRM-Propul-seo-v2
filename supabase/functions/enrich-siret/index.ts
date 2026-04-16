@@ -65,9 +65,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
+    const v2 = supabase.schema('v2')
 
-    const { error: updateError, count } = await supabase
-      .from('projects_v2')
+    const { error: updateError, count } = await v2
+      .from('projects')
       .update({
         siret: cleanSiret,
         company_data: companyData,

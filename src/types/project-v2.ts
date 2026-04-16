@@ -72,21 +72,25 @@ export type ChecklistPhase =
   | 'post_livraison'
   | 'general'
 
-export type ChecklistStatus = 'todo' | 'in_progress' | 'done'
+export type ChecklistStatus = 'todo' | 'in_progress' | 'done' | 'skipped'
 
 export interface ChecklistItemV2 {
   id: string
   project_id: string
-  parent_task_id: string | null
+  template_id?: string | null
+  parent_task_id?: string | null
   title: string
   description?: string | null
   phase: ChecklistPhase
   status: ChecklistStatus
-  priority: 'low' | 'medium' | 'high'
+  priority: 'low' | 'medium' | 'high' | 'urgent'
   assigned_to?: string | null
   assigned_name?: string | null
   due_date?: string | null
-  sort_order: number
+  completed_at?: string | null
+  estimated_hours?: number | null
+  actual_hours?: number | null
+  position: number
   created_at: string
   updated_at: string
 }
@@ -260,14 +264,14 @@ export interface BriefComm {
   updated_at: string
 }
 
-// ===== CYCLES MENSUELS COMMUNICATION =====
+// ===== CYCLES MENSUELS COMMUNICATION (V1 — compat mock) =====
 export type CycleStatus = 'en_cours' | 'termine'
 
 export interface CommMonthlyCycle {
   id: string
   project_id: string
-  mois: string          // format YYYY-MM-DD (1er du mois)
-  label: string         // ex: "Avril 2026"
+  mois: string
+  label: string
   status: CycleStatus
   created_at: string
 }
@@ -279,6 +283,43 @@ export interface CommCycleTask {
   title: string
   done: boolean
   sort_order: number
+}
+
+// ===== CYCLES MENSUELS COMMUNICATION (V2) =====
+export type CommCycleStatus = 'planning' | 'in_progress' | 'review' | 'completed'
+
+export interface CommCycle {
+  id: string
+  project_id: string
+  month: number
+  year: number
+  status: CommCycleStatus
+  objectives?: string | null
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ===== POSTS RÉSEAUX SOCIAUX =====
+export type CommPostPlatform = 'instagram' | 'linkedin' | 'facebook' | 'tiktok'
+export type CommPostType = 'image' | 'carousel' | 'reel' | 'story' | 'article'
+export type CommPostStatus = 'draft' | 'ready' | 'scheduled' | 'published'
+
+export interface CommPost {
+  id: string
+  project_id: string
+  cycle_id?: string | null
+  platform: CommPostPlatform
+  post_type?: CommPostType | null
+  caption?: string | null
+  hashtags?: string[] | null
+  media_urls?: string[] | null
+  scheduled_at?: string | null
+  published_at?: string | null
+  status: CommPostStatus
+  notes?: string | null
+  created_at: string
+  updated_at: string
 }
 
 // ===== STATUTS KANBAN PAR MODULE =====
@@ -312,6 +353,22 @@ export type StatusComm =
 
 // ===== TEMPLATES CHECKLIST =====
 
+export interface ChecklistTemplate {
+  id: string
+  name: string
+  presta_type: string
+  phase: ChecklistPhase
+  title: string
+  description?: string | null
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  estimated_hours?: number | null
+  position: number
+  is_active: boolean
+  created_at: string
+  created_by?: string | null
+}
+
+/** @deprecated Utiliser ChecklistTemplate */
 export interface TaskTemplate {
   id: string
   project_type: PrestaType
@@ -323,14 +380,22 @@ export interface TaskTemplate {
 
 // ===== NOTIFICATIONS =====
 
+export type NotificationType =
+  | 'brief_received'
+  | 'invoice_overdue'
+  | 'task_assigned'
+  | 'milestone_reached'
+  | 'access_expired'
+  | 'status_changed'
+
 export interface ProjectNotification {
   id: string
   user_id: string
   project_id?: string | null
-  type: string
+  type: NotificationType | string
   title: string
-  body?: string | null
-  read: boolean
+  message?: string | null
+  is_read: boolean
   link?: string | null
   created_at: string
 }
@@ -391,20 +456,149 @@ export interface FollowUpEntry {
 
 // ===== TÂCHES COMMUNICATION =====
 
-export type CommTaskStatus   = 'todo' | 'in_progress' | 'done'
-export type CommTaskPriority = 'faible' | 'moyenne' | 'haute' | 'critique'
+export type CommTaskStatus   = 'todo' | 'in_progress' | 'review' | 'done'
+export type CommTaskPriority = 'low' | 'medium' | 'high' | 'urgent' | 'faible' | 'moyenne' | 'haute' | 'critique'
+export type CommTaskCategory = 'creation' | 'shooting' | 'montage' | 'redaction' | 'publication'
 
 export interface CommTask {
   id: string
-  title: string
   project_id: string
-  project_name: string
-  project_color: string
+  cycle_id?: string | null
+  title: string
+  description?: string | null
   status: CommTaskStatus
   priority: CommTaskPriority
-  due_date: string        // 'YYYY-MM-DD'
-  due_hour?: number       // 9-18, heure sur la grille semaine
-  assigned_to?: string
+  assigned_to?: string | null
+  due_date?: string | null
+  due_hour?: string | null
+  category?: CommTaskCategory | null
+  post_id?: string | null
+  position: number
+  // Champs calculés / joints
+  project_name?: string
+  project_color?: string
   created_at: string
   updated_at: string
+}
+
+// ===== FACTURATION ENRICHIE =====
+
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+export type PaymentMethod = 'virement' | 'cb' | 'cheque'
+
+export interface InvoiceV2 {
+  id: string
+  project_id: string
+  title: string
+  invoice_number?: string | null
+  amount: number
+  tax_rate: number
+  amount_ttc?: number | null
+  status: InvoiceStatus
+  due_date?: string | null
+  paid_at?: string | null
+  paid_amount?: number | null
+  payment_method?: PaymentMethod | null
+  notes?: string | null
+  pdf_url?: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ===== JALONS DE PAIEMENT =====
+
+export type MilestoneStatus = 'pending' | 'invoiced' | 'paid'
+
+export interface PaymentMilestone {
+  id: string
+  project_id: string
+  label: string
+  percentage: number
+  amount?: number | null
+  invoice_id?: string | null
+  status: MilestoneStatus
+  trigger_phase?: string | null
+  due_date?: string | null
+  position: number
+  created_at: string
+  updated_at: string
+}
+
+// ===== BIBLIOTHÈQUE DE FEATURES =====
+
+export interface FeatureTemplate {
+  id: string
+  name: string
+  description?: string | null
+  category: string
+  subcategory?: string | null
+  code_snippet?: string | null
+  repo_url?: string | null
+  tech_stack?: string[] | null
+  estimated_hours?: number | null
+  price?: number | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  created_by?: string | null
+}
+
+export type ProjectFeatureStatus = 'planned' | 'in_progress' | 'done' | 'cancelled'
+
+export interface ProjectFeature {
+  id: string
+  project_id: string
+  template_id: string
+  status: ProjectFeatureStatus
+  custom_price?: number | null
+  custom_hours?: number | null
+  notes?: string | null
+  completed_at?: string | null
+  created_at: string
+  updated_at: string
+  // Joint
+  template?: FeatureTemplate | null
+}
+
+// ===== AUDIT LOGS =====
+
+export type AuditAction = 'insert' | 'update' | 'delete'
+
+export interface AuditLog {
+  id: string
+  user_id?: string | null
+  project_id?: string | null
+  table_name: string
+  record_id: string
+  action: AuditAction
+  old_data?: Record<string, unknown> | null
+  new_data?: Record<string, unknown> | null
+  ip_address?: string | null
+  created_at: string
+}
+
+// ===== KPI VUES MATÉRIALISÉES =====
+
+export interface KpiOverview {
+  total_ca: number | null
+  mrr_comm: number | null
+  ca_siteweb: number | null
+  ca_erp: number | null
+  projects_active: number
+  projects_delivered: number
+  invoices_pending: number
+  invoices_overdue: number
+  completion_avg: number | null
+  refreshed_at: string
+}
+
+export interface KpiMonthly {
+  month: number
+  year: number
+  ca_siteweb: number | null
+  ca_erp: number | null
+  ca_comm: number | null
+  new_projects: number
+  delivered_projects: number
+  refreshed_at: string
 }
