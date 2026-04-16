@@ -1,15 +1,8 @@
 // src/modules/ClientPortal/useClientPortal.ts
 import { useState, useCallback } from 'react'
-import { createClient } from '@supabase/supabase-js'
-import { supabase, isDemoMode } from '@/lib/supabase'
+import { supabaseAnon, v2, v2Anon } from '@/lib/supabase'
 import { generateShortCode } from '@/lib/shortCode'
 import type { ProjectV2, ChecklistItemV2 } from '@/types/project-v2'
-
-// Client anon explicite — pas de session utilisateur
-const supabaseAnon = createClient(
-  isDemoMode ? 'https://demo.supabase.co' : import.meta.env.VITE_SUPABASE_URL,
-  isDemoMode ? 'demo-key' : import.meta.env.VITE_SUPABASE_ANON_KEY
-)
 
 export interface PortalInvoice {
   id: string
@@ -62,8 +55,8 @@ export function useClientPortal() {
     setData(null)
 
     // 1. Projet par token
-    const { data: project, error: projectError } = await supabaseAnon
-      .from('projects_v2')
+    const { data: project, error: projectError } = await v2Anon
+      .from('projects')
       .select('id, name, client_name, client_id, status, progress, completion_score, next_action_label, next_action_due, presta_type, start_date, end_date, budget, ai_summary')
       .eq('portal_token', token)
       .eq('portal_enabled', true)
@@ -76,16 +69,16 @@ export function useClientPortal() {
     }
 
     // 2. Checklist (tâches principales seulement)
-    const { data: checklist } = await supabaseAnon
-      .from('checklist_items_v2')
+    const { data: checklist } = await v2Anon
+      .from('checklist_items')
       .select('id, title, phase, status')
       .eq('project_id', project.id)
       .is('parent_task_id', null)
       .order('sort_order', { ascending: true })
 
     // 3. Factures (envoyées, payées, en retard)
-    const { data: invoices } = await supabaseAnon
-      .from('project_invoices_v2')
+    const { data: invoices } = await v2Anon
+      .from('invoices')
       .select('id, label, amount, status, date, due_date')
       .eq('project_id', project.id)
       .in('status', ['sent', 'paid', 'overdue'])
@@ -127,8 +120,8 @@ export function useClientPortal() {
     const token = crypto.randomUUID()
     const shortCode = generateShortCode()
     const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
-    const { error } = await supabase
-      .from('projects_v2')
+    const { error } = await v2
+      .from('projects')
       .update({
         portal_token: token,
         portal_enabled: true,
@@ -143,8 +136,8 @@ export function useClientPortal() {
 
   // Désactive le portail et efface le token (client authentifié)
   const revokeToken = useCallback(async (projectId: string): Promise<boolean> => {
-    const { error } = await supabase
-      .from('projects_v2')
+    const { error } = await v2
+      .from('projects')
       .update({ portal_token: null, portal_enabled: false, portal_short_code: null, portal_expires_at: null })
       .eq('id', projectId)
 

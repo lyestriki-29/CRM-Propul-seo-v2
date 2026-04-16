@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase'
+import { v2 } from '../lib/supabase'
 import type { ProjectStatusV2 } from '../types/project-v2'
 
 const AUTOMATION_RULES: Array<{
@@ -53,24 +53,24 @@ export async function triggerStatusAutomations(
 
   for (const rule of matchingRules) {
     for (const task of rule.tasks) {
-      const { error: taskErr } = await supabase.from('checklist_items_v2').insert({
+      const { error: taskErr } = await v2.from('checklist_items').insert({
         project_id: projectId,
         title: task.title,
         phase: task.phase,
         status: 'todo',
         priority: task.priority,
         parent_task_id: null,
-        sort_order: 9999,
+        position: 9999,
       })
       if (taskErr) console.error('[automation] checklist insert failed:', taskErr.message)
       actionsExecuted.push({ type: 'checklist_task', title: task.title })
     }
 
     for (const entry of rule.journal) {
-      const { error: actErr } = await supabase.from('project_activities_v2').insert({
+      const { error: actErr } = await v2.from('project_activities').insert({
         project_id: projectId,
         type: 'status',
-        content: entry.content,
+        title: entry.content,
         is_auto: true,
         metadata: {
           automation: 'status_change',
@@ -83,7 +83,7 @@ export async function triggerStatusAutomations(
     }
   }
 
-  await supabase.from('automation_logs').insert({
+  await v2.from('automation_logs').insert({
     project_id: projectId,
     trigger_type: 'status_change',
     from_value: fromStatus,

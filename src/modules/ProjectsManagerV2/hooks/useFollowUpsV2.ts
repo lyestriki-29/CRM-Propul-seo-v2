@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 import type { FollowUpEntry, FollowUpType } from '../../../types/project-v2'
 
 interface UseFollowUpsV2Return {
@@ -18,8 +18,8 @@ export function useFollowUpsV2(projectId: string): UseFollowUpsV2Return {
   useEffect(() => {
     if (!projectId) return
     setLoading(true)
-    supabase
-      .from('project_follow_ups_v2')
+    v2
+      .from('follow_ups')
       .select('*')
       .eq('project_id', projectId)
       .order('date', { ascending: false })
@@ -30,8 +30,8 @@ export function useFollowUpsV2(projectId: string): UseFollowUpsV2Return {
   }, [projectId])
 
   const addFollowUp = useCallback(async (data: Omit<FollowUpEntry, 'id' | 'created_at'>) => {
-    const { data: created, error } = await supabase
-      .from('project_follow_ups_v2')
+    const { data: created, error } = await v2
+      .from('follow_ups')
       .insert({ ...data, project_id: projectId })
       .select()
       .single()
@@ -39,8 +39,8 @@ export function useFollowUpsV2(projectId: string): UseFollowUpsV2Return {
   }, [projectId])
 
   const updateFollowUp = useCallback(async (id: string, updates: Partial<FollowUpEntry>) => {
-    const { data, error } = await supabase
-      .from('project_follow_ups_v2')
+    const { data, error } = await v2
+      .from('follow_ups')
       .update(updates)
       .eq('id', id)
       .select()
@@ -49,7 +49,7 @@ export function useFollowUpsV2(projectId: string): UseFollowUpsV2Return {
   }, [])
 
   const deleteFollowUp = useCallback(async (id: string) => {
-    const { error } = await supabase.from('project_follow_ups_v2').delete().eq('id', id)
+    const { error } = await v2.from('follow_ups').delete().eq('id', id)
     if (!error) setFollowUps(prev => prev.filter(f => f.id !== id))
   }, [])
 

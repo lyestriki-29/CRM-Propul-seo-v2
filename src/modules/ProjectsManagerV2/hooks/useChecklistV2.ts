@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 import type { ChecklistItemV2, ChecklistPhase, ChecklistStatus } from '../../../types/project-v2'
 
 interface UseChecklistV2Return {
@@ -20,11 +20,11 @@ export function useChecklistV2(projectId: string): UseChecklistV2Return {
   useEffect(() => {
     if (!projectId) return
     setLoading(true)
-    supabase
-      .from('checklist_items_v2')
+    v2
+      .from('checklist_items')
       .select('*')
       .eq('project_id', projectId)
-      .order('sort_order', { ascending: true })
+      .order('position', { ascending: true })
       .then(({ data, error }) => {
         if (!error && data) setItems(data as ChecklistItemV2[])
         setLoading(false)
@@ -54,8 +54,8 @@ export function useChecklistV2(projectId: string): UseChecklistV2Return {
   }, [items])
 
   const addItem = useCallback(async (data: Omit<ChecklistItemV2, 'id' | 'created_at' | 'updated_at'>) => {
-    const { data: created, error } = await supabase
-      .from('checklist_items_v2')
+    const { data: created, error } = await v2
+      .from('checklist_items')
       .insert({ ...data, project_id: projectId })
       .select()
       .single()
@@ -63,8 +63,8 @@ export function useChecklistV2(projectId: string): UseChecklistV2Return {
   }, [projectId])
 
   const updateItem = useCallback(async (id: string, updates: Partial<ChecklistItemV2>) => {
-    const { data, error } = await supabase
-      .from('checklist_items_v2')
+    const { data, error } = await v2
+      .from('checklist_items')
       .update(updates)
       .eq('id', id)
       .select()
@@ -73,7 +73,7 @@ export function useChecklistV2(projectId: string): UseChecklistV2Return {
   }, [])
 
   const deleteItem = useCallback(async (id: string) => {
-    const { error } = await supabase.from('checklist_items_v2').delete().eq('id', id)
+    const { error } = await v2.from('checklist_items').delete().eq('id', id)
     if (!error) setItems(prev => prev.filter(i => i.id !== id && i.parent_task_id !== id))
   }, [])
 

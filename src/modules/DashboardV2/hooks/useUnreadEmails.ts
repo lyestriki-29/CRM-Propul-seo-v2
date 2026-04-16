@@ -1,7 +1,7 @@
 // src/modules/DashboardV2/hooks/useUnreadEmails.ts
-// Emails Gmail reçus non répondus (is_replied !== true) depuis project_activities_v2
+// Emails Gmail reçus non répondus (is_replied !== true) depuis v2.project_activities
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 
 export interface UnreadEmail {
   id: string
@@ -22,8 +22,8 @@ export function useUnreadEmails() {
   const [loading, setLoading] = useState(true)
 
   const fetchEmails = useCallback(async () => {
-    const { data } = await supabase
-      .from('project_activities_v2')
+    const { data } = await v2
+      .from('project_activities')
       .select('id, project_id, content, created_at, metadata')
       .eq('type', 'email')
       .eq('is_auto', true)
@@ -44,8 +44,8 @@ export function useUnreadEmails() {
     // Optimistic update
     setEmails(prev => prev.filter(e => e.id !== id))
 
-    const { data: current } = await supabase
-      .from('project_activities_v2')
+    const { data: current } = await v2
+      .from('project_activities')
       .select('metadata')
       .eq('id', id)
       .single()
@@ -55,11 +55,11 @@ export function useUnreadEmails() {
       is_replied: true,
       is_unread: false,
     }
-    // Le type généré de project_activities_v2 ne déclare pas metadata comme updatable
+    // Le type généré de v2.project_activities ne déclare pas metadata comme updatable
     // → on passe par le client non-typé pour cet update spécifique
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
-      .from('project_activities_v2')
+    await (v2 as any)
+      .from('project_activities')
       .update({ metadata: updatedMetadata })
       .eq('id', id)
   }, [])

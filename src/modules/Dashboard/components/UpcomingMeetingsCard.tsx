@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Calendar, Clock, Users, Video } from 'lucide-react'
 import { format, parseISO, isAfter, startOfDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 import { cn } from '../../../lib/utils'
 import { itemVariants } from '../lib/animations'
 
@@ -28,8 +28,8 @@ export function UpcomingMeetingsCard({ isMobile }: UpcomingMeetingsCardProps) {
   const [meetings, setMeetings] = useState<Meeting[]>([])
 
   useEffect(() => {
-    supabase
-      .from('project_activities_v2')
+    v2
+      .from('project_activities')
       .select('id, content, project_id, metadata')
       .eq('type', 'meeting')
       .order('created_at', { ascending: false })

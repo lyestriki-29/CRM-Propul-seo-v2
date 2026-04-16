@@ -92,6 +92,12 @@ export const supabaseAnon = createClient(
   }
 );
 
+// ===== HELPERS SCHÉMA V2 =====
+// Toutes les tables V2 vivent dans le schéma PostgreSQL 'v2'
+// Usage : v2.from('projects').select('*') au lieu de supabase.from('projects_v2')
+export const v2 = supabase.schema('v2');
+export const v2Anon = supabaseAnon.schema('v2');
+
 // ===== INFO DEBUG (dev only) =====
 if (import.meta.env.DEV) {
   if (isDemoMode) {

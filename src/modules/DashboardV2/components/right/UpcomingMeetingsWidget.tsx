@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Calendar, Clock, Video, Users, AlertTriangle, RefreshCw } from 'lucide-react'
 import { format, parseISO, isAfter, addDays, startOfDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { supabase } from '../../../../lib/supabase'
+import { v2 } from '../../../../lib/supabase'
 import { Skeleton } from '../../../../components/ui/skeleton'
 
 interface Meeting {
@@ -30,8 +30,8 @@ export function UpcomingMeetingsWidget({ onNavigateToProject }: UpcomingMeetings
     setError(null)
     setLoading(true)
     try {
-      const { data, error: fetchError } = await supabase
-        .from('project_activities_v2')
+      const { data, error: fetchError } = await v2
+        .from('project_activities')
         .select('id, content, project_id, metadata')
         .eq('type', 'meeting')
         .order('created_at', { ascending: false })

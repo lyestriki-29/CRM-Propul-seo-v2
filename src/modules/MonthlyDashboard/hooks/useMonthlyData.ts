@@ -1,6 +1,6 @@
 // src/modules/MonthlyDashboard/hooks/useMonthlyData.ts
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 import { startOfMonth, endOfMonth, subDays, addDays } from 'date-fns'
 import type { ProjectV2 } from '../../../types/project-v2'
 import type { InvoiceV2 } from '../../ProjectsManagerV2/hooks/useBillingV2'
@@ -36,16 +36,16 @@ export function useMonthlyData(): MonthlyMetrics & { refetch: () => void } {
     const in14days = addDays(now, 14).toISOString()
 
     // Projets actifs
-    const { data: projects } = await supabase
-      .from('projects_v2')
+    const { data: projects } = await v2
+      .from('projects')
       .select('*')
       .eq('is_archived', false)
       .in('status', ACTIVE_STATUSES)
       .order('last_activity_at', { ascending: false })
 
     // Factures (payées ou en attente)
-    const { data: invoices } = await supabase
-      .from('project_invoices_v2')
+    const { data: invoices } = await v2
+      .from('invoices')
       .select('amount, status, date')
       .or(`status.eq.paid,status.eq.sent,status.eq.overdue`)
 

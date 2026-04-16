@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 import { triggerStatusAutomations } from '../../../services/automationService'
 import type { ProjectV2, ProjectStatusV2 } from '../../../types/project-v2'
 
@@ -20,8 +20,8 @@ export function useProjectsV2(): UseProjectsV2Return {
 
   const fetchProjects = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('projects_v2')
+    const { data, error } = await v2
+      .from('projects')
       .select('*')
       .eq('is_archived', false)
       .order('last_activity_at', { ascending: false })
@@ -35,8 +35,8 @@ export function useProjectsV2(): UseProjectsV2Return {
 
   const updateProjectStatus = useCallback(async (id: string, newStatus: ProjectStatusV2) => {
     const fromStatus = projects.find(p => p.id === id)?.status
-    const { data, error } = await supabase
-      .from('projects_v2')
+    const { data, error } = await v2
+      .from('projects')
       .update({ status: newStatus })
       .eq('id', id)
       .select()
@@ -53,8 +53,8 @@ export function useProjectsV2(): UseProjectsV2Return {
   }, [projects])
 
   const updateProject = useCallback(async (id: string, updates: Partial<ProjectV2>) => {
-    const { data, error } = await supabase
-      .from('projects_v2')
+    const { data, error } = await v2
+      .from('projects')
       .update(updates)
       .eq('id', id)
       .select()
@@ -65,8 +65,8 @@ export function useProjectsV2(): UseProjectsV2Return {
   }, [])
 
   const addProject = useCallback(async (projectData: Omit<ProjectV2, 'id' | 'created_at' | 'updated_at'>): Promise<ProjectV2 | null> => {
-    const { data, error } = await supabase
-      .from('projects_v2')
+    const { data, error } = await v2
+      .from('projects')
       .insert(projectData)
       .select()
       .single()
@@ -82,7 +82,7 @@ export function useProjectsV2(): UseProjectsV2Return {
   }, [])
 
   const deleteProject = useCallback(async (id: string) => {
-    const { error } = await supabase.from('projects_v2').delete().eq('id', id)
+    const { error } = await v2.from('projects').delete().eq('id', id)
     if (!error) setProjects(prev => prev.filter(p => p.id !== id))
   }, [])
 

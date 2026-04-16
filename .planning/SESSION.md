@@ -1,29 +1,29 @@
-# Session State — 2026-04-15 17:00
+# Session State — 2026-04-16 18:00
 
 ## Branch
 main
 
 ## Completed This Session
-- CommTaskBoardWeek : refonte Glass variant (gradients + glassmorphism + ligne now + today gradient + gestion chevauchement chips multi-tâches)
-- Preview 3 variantes agenda créé puis supprimé après choix variante C
-- Supabase MCP : reconnecté au bon compte (projet wftozvnvstxzvfplveyz)
-- Users créés en base : Etienne (admin@propulseo.com, admin), Lyes (lyestriki@yahoo.fr, admin), Pierre (pierreperraut.pp@gmail.com, marketing) — sans login actif
-- Colonne `comm_status` ajoutée à projects_v2
-- 9 projets comm insérés : A. Chaligné, CoproFlex, Lutins Farceurs, DocaGora, Etienne Perso, La Clé, Locagame, Murmure, Propul'SEO (tous en_production, rattachés à Pierre, budget NULL)
+- Spec design : 19 tables + 2 vues matérialisées dans schéma PostgreSQL `v2` (validé)
+- Sprint 0 : schéma v2, pgcrypto, fonctions utilitaires, helpers TS `v2`/`v2Anon`
+- Sprint 1 : 4 migrations (projects, activities, documents, follow_ups) + tous hooks migrés vers `v2.from()`
+- Sprint 2 SQL : 5 migrations (checklist_items, briefs, invoices, accesses chiffrés, comm_tasks)
+- Sprint 3 SQL : 7 migrations (checklist_templates, briefs spécialisés, comm_posts/cycles, payment_milestones, features, notifications, vues matérialisées KPI)
+- Agent background lancé pour migrer hooks Sprint 2 (useChecklistV2, useBillingV2)
 
 ## Next Task
-Intégration Supabase réelle du module Communication :
-1. Créer table `comm_tasks` (id, project_id FK projects_v2, title, description, priority, status, due_date, due_hour, assigned_to FK users, timestamps)
-2. Réécrire `useMockCommProjects.ts` → `useCommProjects.ts` (fetch Supabase avec filter category='communication')
-3. Réécrire `useCommTasks.ts` : remplacer MOCK_COMM_TASKS par fetch/CRUD Supabase
-4. Adapter les types ProjectV2 pour inclure comm_status depuis la DB
-5. Supprimer les fichiers mocks une fois validé
+1. Vérifier que l'agent Sprint 2 hooks a terminé (useChecklistV2 sort_order→position, useBillingV2)
+2. Mettre à jour `src/types/project-v2.ts` avec les nouveaux types (ChecklistTemplate, CommPost, CommCycle, PaymentMilestone, FeatureTemplate, ProjectFeature, AuditLog, KpiOverview, KpiMonthly)
+3. Créer les 12 nouveaux hooks (Sprint 3)
+4. Sprint 4 : pages publiques next-public + edge functions
+5. Sprint 5 : cleanup (drop vues compat, archiver tables, supprimer mocks)
 
 ## Blockers
 None
 
 ## Key Context
-- FK projects_v2.user_id → auth.users(id) (PAS public.users.id) — utiliser auth_user_id
-- Trigger handle_new_user auto-crée public.users à chaque INSERT auth.users (lit name/role depuis raw_user_meta_data)
-- Pierre auth_user_id récupérable via `SELECT auth_user_id FROM public.users WHERE email='pierreperraut.pp@gmail.com'`
-- Variante Glass pluggée comme vue Semaine principale, preview retirée
+- Spec : `docs/superpowers/specs/2026-04-16-v2-database-schema-design.md`
+- Plan : `/Users/trikilyes/.claude/plans/shimmering-inventing-kettle.md`
+- 18 migrations SQL créées dans `supabase/migrations/20260416_*`
+- Build TS passe (vérifié après Sprint 1)
+- `automation_logs` référencé dans automationService.ts pointe vers `v2` mais la table est dans `public` — à migrer ou garder

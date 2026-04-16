@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '../../../lib/utils'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { DocumentCategory } from '../../../types/project-v2'
@@ -96,8 +96,8 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchDocs = async () => {
-    const { data } = await supabase
-      .from('project_documents_v2')
+    const { data } = await v2
+      .from('project_documents')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false })
@@ -145,7 +145,7 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
       .filter(d => d.name.toLowerCase() === file.name.toLowerCase())
       .map(d => parseInt(d.version ?? '1'))
     const version = String(existingVersions.length > 0 ? Math.max(...existingVersions) + 1 : 1)
-    const { error } = await supabase.from('project_documents_v2').insert({
+    const { error } = await v2.from('project_documents').insert({
       project_id: projectId,
       name: file.name,
       category: inferCategory(file.name, file.type),
@@ -161,7 +161,7 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
   }
 
   const handleDelete = async (doc: Doc) => {
-    await supabase.from('project_documents_v2').delete().eq('id', doc.id)
+    await v2.from('project_documents').delete().eq('id', doc.id)
     setDocs(prev => prev.filter(d => d.id !== doc.id))
     setConfirmDeleteId(null)
     toast.success('Document supprimé')

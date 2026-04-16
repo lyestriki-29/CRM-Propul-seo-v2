@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 
@@ -32,8 +32,8 @@ export function useBillingV2(projectId: string): UseBillingV2Return {
   useEffect(() => {
     if (!projectId) return
     setLoading(true)
-    supabase
-      .from('project_invoices_v2')
+    v2
+      .from('invoices')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: true })
@@ -44,8 +44,8 @@ export function useBillingV2(projectId: string): UseBillingV2Return {
   }, [projectId])
 
   const addInvoice = useCallback(async (data: Omit<InvoiceV2, 'id' | 'created_at' | 'updated_at'>) => {
-    const { data: created, error } = await supabase
-      .from('project_invoices_v2')
+    const { data: created, error } = await v2
+      .from('invoices')
       .insert({ ...data, project_id: projectId })
       .select()
       .single()
@@ -53,8 +53,8 @@ export function useBillingV2(projectId: string): UseBillingV2Return {
   }, [projectId])
 
   const updateInvoice = useCallback(async (id: string, updates: Partial<InvoiceV2>) => {
-    const { data, error } = await supabase
-      .from('project_invoices_v2')
+    const { data, error } = await v2
+      .from('invoices')
       .update(updates)
       .eq('id', id)
       .select()
@@ -63,7 +63,7 @@ export function useBillingV2(projectId: string): UseBillingV2Return {
   }, [])
 
   const deleteInvoice = useCallback(async (id: string) => {
-    const { error } = await supabase.from('project_invoices_v2').delete().eq('id', id)
+    const { error } = await v2.from('invoices').delete().eq('id', id)
     if (!error) setInvoices(prev => prev.filter(i => i.id !== id))
   }, [])
 

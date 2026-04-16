@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase, supabaseAnon } from '@/lib/supabase'
+import { supabase, supabaseAnon, v2, v2Anon } from '@/lib/supabase'
 import { generateShortCode } from '@/lib/shortCode'
 import type { ProjectBrief } from '../../../types/project-v2'
 
@@ -37,8 +37,8 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
       return
     }
     setLoading(true)
-    supabase
-      .from('project_briefs_v2')
+    v2
+      .from('project_briefs')
       .select('*')
       .eq('project_id', projectId)
       .maybeSingle()
@@ -46,9 +46,9 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
         if (!error) setBrief(data as ProjectBrief | null)
         setLoading(false)
       })
-    // Fetch token state from projects_v2
-    supabase
-      .from('projects_v2')
+    // Fetch token state from v2.projects
+    v2
+      .from('projects')
       .select('brief_token, brief_short_code, brief_token_enabled, name')
       .eq('id', projectId)
       .single()
@@ -64,8 +64,8 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
 
   const saveBrief = useCallback(async (data: Partial<ProjectBrief>) => {
     if (brief) {
-      const { data: updated, error } = await supabase
-        .from('project_briefs_v2')
+      const { data: updated, error } = await v2
+        .from('project_briefs')
         .update(data)
         .eq('id', brief.id)
         .select()
@@ -73,8 +73,8 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
       if (error) throw new Error(error.message)
       if (updated) setBrief(updated as ProjectBrief)
     } else {
-      const { data: created, error } = await supabase
-        .from('project_briefs_v2')
+      const { data: created, error } = await v2
+        .from('project_briefs')
         .insert({ ...data, project_id: projectId })
         .select()
         .single()
@@ -87,8 +87,8 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
   const enableBriefToken = useCallback(async (): Promise<string | null> => {
     const token = crypto.randomUUID()
     const shortCode = generateShortCode()
-    const { error } = await supabase
-      .from('projects_v2')
+    const { error } = await v2
+      .from('projects')
       .update({ brief_token: token, brief_token_enabled: true, brief_short_code: shortCode })
       .eq('id', projectId)
     if (error) return null
@@ -100,8 +100,8 @@ export function useBriefV2(projectId: string): UseBriefV2Return {
 
   // Fix 5: no projectId parameter — uses outer projectId from closure
   const disableBriefToken = useCallback(async (): Promise<boolean> => {
-    const { error } = await supabase
-      .from('projects_v2')
+    const { error } = await v2
+      .from('projects')
       .update({ brief_token: null, brief_token_enabled: false })
       .eq('id', projectId)
     if (error) return false
@@ -135,8 +135,8 @@ export function useBriefByToken(token: string) {
     setData(null)
     setLoading(true)
 
-    supabaseAnon
-      .from('projects_v2')
+    v2Anon
+      .from('projects')
       .select('id, name')
       .eq('brief_token', token)
       .eq('brief_token_enabled', true)
@@ -148,8 +148,8 @@ export function useBriefByToken(token: string) {
           return
         }
 
-        const { data: brief } = await supabaseAnon
-          .from('project_briefs_v2')
+        const { data: brief } = await v2Anon
+          .from('project_briefs')
           .select('*')
           .eq('project_id', project.id)
           .maybeSingle()
@@ -173,14 +173,14 @@ export function useBriefByToken(token: string) {
 
     let dbError: unknown
     if (data.brief) {
-      const result = await supabaseAnon
-        .from('project_briefs_v2')
+      const result = await v2Anon
+        .from('project_briefs')
         .update(payload)
         .eq('id', data.brief.id)
       dbError = result.error
     } else {
-      const result = await supabaseAnon
-        .from('project_briefs_v2')
+      const result = await v2Anon
+        .from('project_briefs')
         .insert(payload)
       dbError = result.error
     }

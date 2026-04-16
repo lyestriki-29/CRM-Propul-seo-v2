@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { v2 } from '../../../lib/supabase'
 import type { ProjectActivity, ActivityType } from '../../../types/project-v2'
 
 interface UseActivitiesV2Return {
@@ -17,8 +17,8 @@ export function useActivitiesV2(projectId: string): UseActivitiesV2Return {
   const fetchActivities = useCallback(async () => {
     if (!projectId) return
     setLoading(true)
-    const { data, error } = await supabase
-      .from('project_activities_v2')
+    const { data, error } = await v2
+      .from('project_activities')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false })
@@ -37,8 +37,8 @@ export function useActivitiesV2(projectId: string): UseActivitiesV2Return {
     is_auto?: boolean
     metadata?: Record<string, unknown>
   }) => {
-    const { data, error } = await supabase
-      .from('project_activities_v2')
+    const { data, error } = await v2
+      .from('project_activities')
       .insert({ project_id: projectId, type, content, author_name, is_auto, metadata })
       .select()
       .single()
@@ -46,8 +46,8 @@ export function useActivitiesV2(projectId: string): UseActivitiesV2Return {
   }, [projectId])
 
   const updateActivity = useCallback(async (id: string, updates: Partial<Pick<ProjectActivity, 'content' | 'metadata'>>) => {
-    const { data, error } = await supabase
-      .from('project_activities_v2')
+    const { data, error } = await v2
+      .from('project_activities')
       .update(updates)
       .eq('id', id)
       .select()
