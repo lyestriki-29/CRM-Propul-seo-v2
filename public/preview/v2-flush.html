@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V2 — Sections flush</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #020205; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; font-size: 13px; }
+
+  .layout { display: flex; height: 100vh; }
+  .sidebar-left { width: 260px; background: #070512; border-right: 1px solid rgba(139,92,246,0.18); padding: 20px 16px; overflow-y: auto; flex-shrink: 0; transition: width 0.3s; }
+  .sidebar-left.collapsed { width: 40px; padding: 20px 8px; overflow: hidden; }
+  .sidebar-right { width: 280px; background: #070512; border-left: 1px solid rgba(139,92,246,0.18); padding: 20px 16px; overflow-y: auto; flex-shrink: 0; transition: width 0.3s; }
+  .sidebar-right.collapsed { width: 40px; padding: 20px 8px; overflow: hidden; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .collapsed .sidebar-content { display: none; }
+  .toggle-btn { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.25); color: #a78bfa; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 16px; }
+  .toggle-btn:hover { background: rgba(139,92,246,0.3); }
+
+  .breadcrumb { padding: 12px 24px; border-bottom: 1px solid rgba(139,92,246,0.12); display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8; }
+  .breadcrumb a { color: #a78bfa; text-decoration: none; }
+  .breadcrumb .current { color: #e2e8f0; font-weight: 600; }
+
+  .tabs { display: flex; gap: 2px; padding: 8px 24px; border-bottom: 1px solid rgba(139,92,246,0.12); background: #0a0a12; }
+  .tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 500; color: #94a3b8; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+  .tab:hover { color: #e2e8f0; background: rgba(139,92,246,0.08); }
+  .tab.active { background: #7c3aed; color: white; }
+
+  .content { flex: 1; overflow-y: auto; padding: 0; }
+
+  /* Flush sections — no cards, just lines */
+  .section { border-bottom: 1px solid rgba(139,92,246,0.08); }
+  .section-header { padding: 12px 24px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.15s; user-select: none; }
+  .section-header:hover { color: #e2e8f0; background: rgba(139,92,246,0.06); }
+  .section-header .badge { font-size: 10px; background: rgba(100,116,139,0.2); padding: 1px 6px; border-radius: 3px; }
+  .section-header .chevron { margin-left: auto; transition: transform 0.2s; }
+  .section-header .chevron.open { transform: rotate(180deg); }
+  .section-body { padding: 0 24px 16px; }
+
+  /* Métriques flush */
+  .metrics-row { display: flex; padding: 16px 24px; gap: 0; border-bottom: 1px solid rgba(139,92,246,0.08); }
+  .metric-flush { flex: 1; text-align: center; border-right: 1px solid rgba(139,92,246,0.08); padding: 0 12px; }
+  .metric-flush:last-child { border-right: none; }
+  .metric-flush .val { font-size: 20px; font-weight: 700; }
+  .metric-flush .lbl { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* Brief flush */
+  .brief-row { display: flex; padding: 6px 0; }
+  .brief-row .lbl { width: 120px; font-size: 11px; color: #64748b; flex-shrink: 0; }
+  .brief-row .val { font-size: 13px; color: #e2e8f0; }
+
+  /* Access flush */
+  .access-line { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot.ok { background: #22c55e; }
+  .dot.ko { background: #ef4444; }
+  .access-tag { font-size: 10px; color: #475569; margin-left: auto; }
+
+  /* Activity flush */
+  .act-line { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; }
+  .act-line .icon { width: 20px; height: 20px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .act-line .icon.em { background: rgba(59,130,246,0.15); }
+  .act-line .icon.mt { background: rgba(139,92,246,0.15); }
+  .act-line .icon.tk { background: rgba(16,185,129,0.15); }
+  .act-line .icon.iv { background: rgba(234,179,8,0.15); }
+  .act-line .icon.st { background: rgba(249,115,22,0.15); }
+  .act-text { flex: 1; }
+  .act-title { font-size: 12px; }
+  .act-sub { font-size: 11px; color: #475569; }
+  .act-time { font-size: 10px; color: #475569; }
+  .see-all { font-size: 11px; color: #a78bfa; padding: 6px 0; cursor: pointer; }
+  .see-all:hover { text-decoration: underline; }
+
+  /* Sidebar */
+  .sb-section { margin-bottom: 18px; }
+  .sb-title { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .sb-value { font-size: 13px; color: #e2e8f0; margin-bottom: 3px; }
+  .sb-small { font-size: 11px; color: #94a3b8; }
+  .donut-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .donut { width: 52px; height: 52px; border-radius: 50%; background: conic-gradient(#7c3aed 0% 72%, #1e1e2e 72% 100%); display: flex; align-items: center; justify-content: center; }
+  .donut-inner { width: 38px; height: 38px; border-radius: 50%; background: #070512; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #a78bfa; }
+  .progress-bar { height: 3px; background: #1e1e2e; border-radius: 2px; overflow: hidden; margin-top: 3px; }
+  .progress-fill { height: 100%; background: #7c3aed; border-radius: 2px; }
+  .status-badge { display: inline-flex; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .presta-badge { display: inline-flex; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; background: rgba(59,130,246,0.15); color: #60a5fa; margin-left: 4px; }
+  .ai-block { background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.12); border-radius: 8px; padding: 10px; margin-bottom: 6px; }
+  .ai-label { font-size: 9px; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .ai-text { font-size: 11px; color: #cbd5e1; line-height: 1.4; }
+  .share-btn { display: flex; align-items: center; gap: 6px; padding: 7px 10px; background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; color: #a78bfa; font-size: 11px; cursor: pointer; margin-bottom: 5px; width: 100%; }
+  .share-btn:hover { background: rgba(139,92,246,0.15); }
+
+  .version-label { position: fixed; top: 12px; right: 12px; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; z-index: 100; }
+</style>
+</head>
+<body>
+
+<div class="version-label">V2 — Sections flush</div>
+
+<div class="layout">
+  <!-- SIDEBAR GAUCHE -->
+  <div class="sidebar-left" id="sidebarLeft">
+    <button class="toggle-btn" onclick="toggleLeft()">«</button>
+    <div class="sidebar-content">
+      <div class="sb-section">
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px;">Boulangerie Dupont</div>
+        <div style="display:flex;gap:4px;margin-bottom:6px;">
+          <span class="status-badge">En production</span>
+          <span class="presta-badge">site_web</span>
+        </div>
+        <div class="sb-small">Refonte site vitrine + SEO local</div>
+      </div>
+      <div class="donut-wrap">
+        <div class="donut"><div class="donut-inner">72%</div></div>
+        <div><div style="font-size:12px;font-weight:600;">Score</div><div class="sb-small">Complétude</div></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-title">Progression</div>
+        <div class="sb-value">60%</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+      </div>
+      <div class="sb-section"><div class="sb-title">Équipe</div><div class="sb-value">Alice Martin</div></div>
+      <div class="sb-section"><div class="sb-title">Priorité</div><div class="sb-value" style="color:#fb923c;">Haute</div></div>
+      <div class="sb-section"><div class="sb-title">Budget</div><div class="sb-value">1 980 €</div></div>
+      <div class="sb-section"><div class="sb-title">Dates</div><div class="sb-value">15 mars → 30 avril</div><div class="sb-small">Activité : il y a 2h</div></div>
+      <div class="sb-section"><div class="sb-title">Prochaine action</div><div class="sb-value">Livrer maquette mobile</div><div class="sb-small" style="color:#f59e0b;">12 avril</div></div>
+    </div>
+  </div>
+
+  <!-- CONTENU CENTRAL -->
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="#">← Site Web & SEO</a><span>›</span><span class="current">Site vitrine Boulangerie Dupont</span>
+    </div>
+    <div class="tabs">
+      <div class="tab active"><span>📊</span> Synthèse</div>
+      <div class="tab"><span>⚙️</span> Production</div>
+      <div class="tab"><span>💰</span> Finances</div>
+      <div class="tab"><span>💬</span> Échanges</div>
+    </div>
+    <div class="content">
+      <!-- Métriques flush -->
+      <div class="metrics-row">
+        <div class="metric-flush"><div class="val">1 980 €</div><div class="lbl">Budget</div></div>
+        <div class="metric-flush"><div class="val" style="color:#a78bfa;">60%</div><div class="lbl">Progression</div></div>
+        <div class="metric-flush"><div class="val" style="color:#22c55e;">72%</div><div class="lbl">Score</div></div>
+        <div class="metric-flush"><div class="val" style="color:#f59e0b;">30 avr.</div><div class="lbl">Échéance</div></div>
+      </div>
+
+      <!-- Brief -->
+      <div class="section">
+        <div class="section-header" onclick="toggleSection(this)">
+          📋 Brief client <span class="chevron open">▾</span>
+        </div>
+        <div class="section-body">
+          <div class="brief-row"><span class="lbl">Objectif</span><span class="val">Refonte site vitrine + SEO local</span></div>
+          <div class="brief-row"><span class="lbl">Cible</span><span class="val">Clients de quartier, Google Maps</span></div>
+          <div class="brief-row"><span class="lbl">Pack</span><span class="val">Professionnel (5 pages)</span></div>
+          <div class="brief-row"><span class="lbl">Niveau SEO</span><span class="val">Avancé</span></div>
+          <div class="brief-row"><span class="lbl">Plateforme</span><span class="val">WordPress</span></div>
+          <div class="brief-row"><span class="lbl">URL cible</span><span class="val" style="color:#475569;">Non défini</span></div>
+        </div>
+      </div>
+
+      <!-- Accès -->
+      <div class="section">
+        <div class="section-header" onclick="toggleSection(this)">
+          🔐 Accès coffre-fort <span class="badge">5</span> <span class="chevron">▾</span>
+        </div>
+        <div class="section-body" style="display:none;">
+          <div class="access-line"><div class="dot ok"></div> OVH Hébergement <span class="access-tag">hosting</span></div>
+          <div class="access-line"><div class="dot ok"></div> WordPress Admin <span class="access-tag">cms</span></div>
+          <div class="access-line"><div class="dot ok"></div> Google Analytics <span class="access-tag">analytics</span></div>
+          <div class="access-line"><div class="dot ko"></div> Google Ads <span class="access-tag">tools</span></div>
+          <div class="access-line"><div class="dot ok"></div> Canva Pro <span class="access-tag">design</span></div>
+        </div>
+      </div>
+
+      <!-- Activité -->
+      <div class="section">
+        <div class="section-header" onclick="toggleSection(this)">
+          ⚡ Activité récente <span class="chevron open">▾</span>
+        </div>
+        <div class="section-body">
+          <div class="act-line"><div class="icon em">📧</div><div class="act-text"><div class="act-title">Email reçu — M. Dupont</div><div class="act-sub">Validation maquette desktop</div></div><div class="act-time">2h</div></div>
+          <div class="act-line"><div class="icon mt">👥</div><div class="act-text"><div class="act-title">RDV planifié — Alice</div><div class="act-sub">Point hebdomadaire</div></div><div class="act-time">hier</div></div>
+          <div class="act-line"><div class="icon tk">✅</div><div class="act-text"><div class="act-title">SEO on-page terminé</div><div class="act-sub">Meta titles + H1 (5 pages)</div></div><div class="act-time">lun.</div></div>
+          <div class="act-line"><div class="icon iv">💰</div><div class="act-text"><div class="act-title">Facture — Acompte 30%</div><div class="act-sub">594 € — Échéance 20 avril</div></div><div class="act-time">ven.</div></div>
+          <div class="act-line"><div class="icon st">⚙️</div><div class="act-text"><div class="act-title">Statut → En production</div><div class="act-sub">Par Alice Martin</div></div><div class="act-time">jeu.</div></div>
+          <div class="see-all">▶ Tout voir dans Échanges</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DROITE -->
+  <div class="sidebar-right" id="sidebarRight">
+    <button class="toggle-btn" onclick="toggleRight()">»</button>
+    <div class="sidebar-content">
+      <div class="sb-section">
+        <div class="sb-title">Contact client</div>
+        <div class="sb-value">M. Jean Dupont</div>
+        <div class="sb-small">Boulangerie Dupont</div>
+        <div class="sb-small" style="margin-top:4px;">📞 06 12 34 56 78</div>
+        <div class="sb-small">✉️ dupont@boulangerie.fr</div>
+        <div class="sb-small">📍 12 rue du Pain, 75011</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-title">Prochaine action</div>
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:8px;">
+          <div class="sb-value">Livrer maquette mobile</div>
+          <div class="sb-small" style="color:#f59e0b;">📅 12 avril 2026</div>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-title">Résumé IA</div>
+        <div class="ai-block"><div class="ai-label">Situation</div><div class="ai-text">Maquette desktop validée. Dev démarré, intégration responsive en cours.</div></div>
+        <div class="ai-block"><div class="ai-label">Action</div><div class="ai-text">Intégration mobile + SEO technique. Alice sur 5 pages.</div></div>
+        <div class="ai-block"><div class="ai-label">Jalon</div><div class="ai-text">Recette client le 22 avril. Tests cross-browser à planifier.</div></div>
+        <div style="text-align:center;margin-top:6px;"><span style="font-size:10px;color:#a78bfa;cursor:pointer;">🔄 Régénérer</span></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-title">Partage</div>
+        <div class="share-btn">🔗 Portail client</div>
+        <div class="share-btn">📄 Formulaire brief</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  if (body.style.display === 'none') { body.style.display = 'block'; chevron.classList.add('open'); }
+  else { body.style.display = 'none'; chevron.classList.remove('open'); }
+}
+function toggleLeft() { const s = document.getElementById('sidebarLeft'); s.classList.toggle('collapsed'); s.querySelector('.toggle-btn').textContent = s.classList.contains('collapsed') ? '»' : '«'; }
+function toggleRight() { const s = document.getElementById('sidebarRight'); s.classList.toggle('collapsed'); s.querySelector('.toggle-btn').textContent = s.classList.contains('collapsed') ? '«' : '»'; }
+</script>
+</body>
+</html>
