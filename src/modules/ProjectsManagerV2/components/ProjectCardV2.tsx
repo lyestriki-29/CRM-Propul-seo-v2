@@ -32,7 +32,7 @@ export const ProjectCardV2 = memo(function ProjectCardV2({
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
           <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-          {project.presta_type.length > 0 && <PrestaList types={project.presta_type} size="sm" />}
+          {(project.presta_type?.length ?? 0) > 0 && <PrestaList types={project.presta_type} size="sm" />}
         </div>
         <CompletionScore score={project.completion_score} size={32} />
       </div>

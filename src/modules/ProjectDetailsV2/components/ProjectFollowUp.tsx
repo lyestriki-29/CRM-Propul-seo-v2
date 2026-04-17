@@ -3,7 +3,7 @@ import {
   Phone, Video, Mail, MessageSquare, Plus, Pencil, Trash2, Check, X,
   ChevronDown, Clock, CheckCircle2, Circle, Eye, Copy,
   Calendar, MapPin, Users, ChevronRight, Paperclip, Download,
-  Tag, Inbox, FileSpreadsheet, Key, RefreshCw,
+  Tag, Inbox, RefreshCw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format, parseISO, isFuture, isToday } from 'date-fns'
@@ -13,8 +13,6 @@ import type { FollowUpType } from '../../../types/project-v2'
 import { useFollowUpsV2 } from '../../ProjectsManagerV2/hooks/useFollowUpsV2'
 import { useActivitiesV2 } from '../../ProjectsManagerV2/hooks/useActivitiesV2'
 import { useEmailTracking } from '../../ProjectsManagerV2/hooks/useEmailTracking'
-import { ProjectBrief } from './ProjectBrief'
-import { ProjectAccesses } from './ProjectAccesses'
 import type { FollowUpEntry } from '../../../types/project-v2'
 
 // ─── Catégories d'email ───────────────────────────────────────────────────────
@@ -53,7 +51,7 @@ const EMPTY_FORM = {
 
 // ─── Onglets internes ─────────────────────────────────────────────────────────
 
-type SuiviTab = 'rdv' | 'emails' | 'suivi' | 'brief' | 'acces'
+type SuiviTab = 'rdv' | 'emails' | 'suivi'
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
@@ -114,12 +112,6 @@ export function ProjectFollowUp({ projectId }: { projectId: string }) {
             <span className="ml-1 text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded-full">{pendingActions}</span>
           )}
         </TabBtn>
-        <TabBtn active={tab === 'brief'} onClick={() => setTab('brief')} icon={<FileSpreadsheet className="h-3.5 w-3.5" />}>
-          Brief
-        </TabBtn>
-        <TabBtn active={tab === 'acces'} onClick={() => setTab('acces')} icon={<Key className="h-3.5 w-3.5" />}>
-          Accès
-        </TabBtn>
       </div>
 
         {/* Bouton sync Gmail */}
@@ -136,8 +128,6 @@ export function ProjectFollowUp({ projectId }: { projectId: string }) {
         )}
       </div>
 
-      {tab === 'brief'  && <ProjectBrief    key={projectId} projectId={projectId} />}
-      {tab === 'acces'  && <ProjectAccesses key={projectId} projectId={projectId} />}
       {tab === 'rdv'    && <RdvSection    meetings={meetings} />}
       {tab === 'emails' && <EmailsSection emails={emails} updateActivity={updateActivity} />}
       {tab === 'suivi'  && (

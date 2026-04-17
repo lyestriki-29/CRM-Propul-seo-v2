@@ -213,7 +213,7 @@ function ProjectsManagerV2Inner() {
                   {project.client_name && <p className="text-xs text-muted-foreground">{project.client_name}</p>}
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     <ProjectStatusBadge status={project.status} size="sm" />
-                    {project.presta_type.length > 0 && <PrestaList types={project.presta_type} size="sm" />}
+                    {(project.presta_type?.length ?? 0) > 0 && <PrestaList types={project.presta_type} size="sm" />}
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />

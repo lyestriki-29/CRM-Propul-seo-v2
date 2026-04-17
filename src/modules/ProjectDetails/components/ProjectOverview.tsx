@@ -47,7 +47,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
               )}
               <div className="flex flex-wrap items-center gap-2">
                 <ProjectStatusBadge status={project.status} />
-                {project.presta_type.length > 0 && (
+                {(project.presta_type?.length ?? 0) > 0 && (
                   <PrestaList types={project.presta_type} size="md" />
                 )}
               </div>

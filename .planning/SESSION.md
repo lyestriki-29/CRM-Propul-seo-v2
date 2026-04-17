@@ -1,23 +1,24 @@
-# Session State — 2026-04-16 21:00
+# Session State — 2026-04-17 15:00
 
 ## Branch
 main
 
 ## Completed This Session
-- Sprint 3-5 : 12 hooks V2, migrations SQL, edge functions migrées, cleanup
-- SiteWebManager + ERPManager : 4 vues (Pipeline/Projets/Mois/Semaine) avec TaskBoard
-- Header aligné (onglets centrés), Kanban grid sans scroll, ERP mode Hubspot direct
-- 3 previews HTML de la refonte fiche projet créées dans public/preview/
+- Schéma v2 Supabase : créé schema + 10 vues + permissions + check constraints
+- Proxy v2 : contourne PostgREST en mappant v2.from('table') → supabase.from('table_v2')
+- 3 hooks migrés Supabase : useMockSiteWebProjects, useMockERPProjects, useMockCommProjects
+- ProjectStatusBadge : ajout tous statuts modules + fallback
+- Null safety : presta_type?.length (5 fichiers), budget guards vérifiés
+- SyntheseTab : ajout ShareBriefButton + CRUD accès coffre-fort
+- 3 projets test + brief + accès + activités insérés en DB
 
 ## Next Task
-1. Valider le design de la refonte fiche projet : ouvrir http://localhost:3001/preview/ et choisir entre V1 (cards), V2 (flush) ou V3 (grille 2 colonnes)
-2. Une fois le design choisi, créer le plan d'implémentation puis implémenter la refonte de ProjectDetailsV2 (7 onglets → 4 onglets + sidebars repliables)
+Tester le flow complet dans le navigateur : créer un projet depuis SiteWeb/ERP, vérifier persistance au refresh, cliquer pour ouvrir les détails, tester ajout accès et génération lien brief
 
 ## Blockers
 None
 
 ## Key Context
-- Previews : `public/preview/` (index.html, v1-cards.html, v2-flush.html, v3-grid.html)
-- Design validé : 4 onglets (Synthèse/Production/Finances/Échanges) + sidebars repliables
-- Plan détaillé : `.claude/plans/cuddly-tinkering-melody.md`
-- Lancer `npm run dev -- --port 3001` pour voir les previews
+- PostgREST Supabase hébergé ne supporte PAS `ALTER ROLE authenticator SET pgrst.db_schemas` → proxy dans supabase.ts à la place
+- 13 tables v2 n'existent pas encore (kpi, notifications, features, etc.) — hooks échouent silencieusement, à créer au fur et à mesure
+- Column rename : project_accesses_v2.service_name → label

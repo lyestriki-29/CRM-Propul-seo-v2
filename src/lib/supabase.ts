@@ -93,10 +93,34 @@ export const supabaseAnon = createClient(
 );
 
 // ===== HELPERS SCHÉMA V2 =====
-// Toutes les tables V2 vivent dans le schéma PostgreSQL 'v2'
-// Usage : v2.from('projects').select('*') au lieu de supabase.from('projects_v2')
-export const v2 = supabase.schema('v2');
-export const v2Anon = supabaseAnon.schema('v2');
+// Proxy qui mappe v2.from('table') → supabase.from('table_v2') dans le schéma public
+// Contourne la limitation PostgREST de Supabase hébergé (schéma custom non exposable via SQL)
+const V2_TABLE_MAP: Record<string, string> = {
+  projects: 'projects_v2',
+  project_briefs: 'project_briefs_v2',
+  project_accesses: 'project_accesses_v2',
+  project_activities: 'project_activities_v2',
+  project_documents: 'project_documents_v2',
+  follow_ups: 'project_follow_ups_v2',
+  invoices: 'project_invoices_v2',
+  checklist_items: 'checklist_items_v2',
+  // Tables sans suffixe _v2 dans public
+  comm_tasks: 'comm_tasks',
+  brief_invitations: 'brief_invitations',
+}
+
+function createV2Proxy(client: SupabaseClient<Database>) {
+  return {
+    from: (table: string) => {
+      const realTable = V2_TABLE_MAP[table] || `${table}_v2`
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return client.from(realTable as any)
+    },
+  }
+}
+
+export const v2 = createV2Proxy(supabase);
+export const v2Anon = createV2Proxy(supabaseAnon);
 
 // ===== INFO DEBUG (dev only) =====
 if (import.meta.env.DEV) {

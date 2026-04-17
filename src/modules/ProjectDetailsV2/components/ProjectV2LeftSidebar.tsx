@@ -67,7 +67,7 @@ export function ProjectV2LeftSidebar({ project }: { project: ProjectV2 }) {
 
         <div className="flex flex-wrap gap-1.5 mb-3">
           <ProjectStatusBadge status={project.status} />
-          {project.presta_type.length > 0 && <PrestaList types={project.presta_type} size="sm" />}
+          {(project.presta_type?.length ?? 0) > 0 && <PrestaList types={project.presta_type} size="sm" />}
         </div>
 
         {project.description && (

@@ -276,14 +276,14 @@ export function ProjectChecklist({ project }: ProjectChecklistProps) {
         </p>
       </div>
 
-      {items.length === 0 && project.presta_type.length > 0 && (
+      {items.length === 0 && (project.presta_type?.length ?? 0) > 0 && (
         <div className="bg-surface-2 border border-border rounded-lg p-4 space-y-3">
           <p className="text-sm font-medium text-foreground">Appliquer un template</p>
           <p className="text-xs text-muted-foreground">
             Initialise la checklist à partir du type de prestation du projet.
           </p>
           <div className="flex flex-wrap gap-2">
-            {project.presta_type.map(type => (
+            {(project.presta_type ?? []).map(type => (
               <button
                 key={type}
                 onClick={() => applyTemplate(type)}

@@ -61,4 +61,26 @@ export const MOCK_ACTIVITIES: Record<string, ProjectActivity[]> = {
     { id: 'act-010b', project_id: 'proj-010', user_id: 'user-alice', author_name: 'Alice Martin', type: 'invoice', is_auto: true, content: 'Dernière facture réglée — Projet entièrement soldé', created_at: d(-60) },
     { id: 'act-010c', project_id: 'proj-010', user_id: 'user-alice', author_name: 'Alice Martin', type: 'email', is_auto: false, content: 'Email bilan final envoyé. ROI : +340% trafic organique sur 12 mois. Client très satisfait, potentiel de renouvellement SEO.', created_at: d(-59) },
   ],
+  'proj-test-siteweb': [
+    { id: 'act-ts-1', project_id: 'proj-test-siteweb', user_id: 'user-alice', author_name: 'Alice Martin', type: 'email', is_auto: false, content: 'Email reçu — M. Dupont valide la maquette desktop. Demande ajustement sur le footer.', created_at: d(-0.1) },
+    { id: 'act-ts-2', project_id: 'proj-test-siteweb', user_id: 'user-alice', author_name: 'Alice Martin', type: 'meeting', is_auto: false, content: 'Point hebdomadaire — Revue avancement, maquette mobile prioritaire.', metadata: { start: d(-1), end: d(-1) }, created_at: d(-1) },
+    { id: 'act-ts-3', project_id: 'proj-test-siteweb', user_id: 'user-alice', author_name: 'Alice Martin', type: 'task', is_auto: true, content: 'Tâche terminée : SEO on-page — Meta titles + H1 optimisés sur 5 pages.', created_at: d(-3) },
+    { id: 'act-ts-4', project_id: 'proj-test-siteweb', user_id: null, author_name: null, type: 'invoice', is_auto: true, content: 'Facture envoyée — Acompte 30% : 594 €', metadata: { amount: 594 }, created_at: d(-5) },
+    { id: 'act-ts-5', project_id: 'proj-test-siteweb', user_id: 'user-alice', author_name: 'Alice Martin', type: 'decision', is_auto: false, content: 'Palette couleurs validée par M. Dupont — bleu marine + doré.', created_at: d(-6) },
+    { id: 'act-ts-6', project_id: 'proj-test-siteweb', user_id: 'user-alice', author_name: 'Alice Martin', type: 'status', is_auto: true, content: 'Statut changé → En production', metadata: { from: 'brief_received', to: 'in_progress' }, created_at: d(-7) },
+  ],
+  'proj-test-erp': [
+    { id: 'act-te-1', project_id: 'proj-test-erp', user_id: 'user-bob', author_name: 'Bob Lefèvre', type: 'task', is_auto: true, content: 'Sprint 2 terminé — Module gestion flotte véhicules livré.', created_at: d(-1) },
+    { id: 'act-te-2', project_id: 'proj-test-erp', user_id: 'user-bob', author_name: 'Bob Lefèvre', type: 'call', is_auto: false, content: 'Démo Sprint 2 — Client satisfait, demande ajout géolocalisation temps réel.', created_at: d(-2) },
+    { id: 'act-te-3', project_id: 'proj-test-erp', user_id: 'user-bob', author_name: 'Bob Lefèvre', type: 'decision', is_auto: false, content: 'Architecture validée — Laravel + Vue.js, hébergement dédié OVH.', created_at: d(-10) },
+    { id: 'act-te-4', project_id: 'proj-test-erp', user_id: null, author_name: null, type: 'invoice', is_auto: true, content: 'Facture émise : Acompte 30% — 3 600 €', metadata: { amount: 3600 }, created_at: d(-15) },
+    { id: 'act-te-5', project_id: 'proj-test-erp', user_id: 'user-bob', author_name: 'Bob Lefèvre', type: 'status', is_auto: true, content: 'Projet passé en statut "En cours"', metadata: { from: 'quote_sent', to: 'in_progress' }, created_at: d(-30) },
+  ],
+  'proj-test-comm': [
+    { id: 'act-tc-1', project_id: 'proj-test-comm', user_id: 'user-carol', author_name: 'Carol Petit', type: 'task', is_auto: true, content: 'Publication Instagram — Carrousel recette bio de saison (8 slides).', created_at: d(-0.5) },
+    { id: 'act-tc-2', project_id: 'proj-test-comm', user_id: 'user-carol', author_name: 'Carol Petit', type: 'email', is_auto: false, content: 'Rapport mensuel avril envoyé — +12% engagement, 45 nouveaux abonnés.', created_at: d(-2) },
+    { id: 'act-tc-3', project_id: 'proj-test-comm', user_id: 'user-carol', author_name: 'Carol Petit', type: 'meeting', is_auto: false, content: 'Point mensuel client — Validation calendrier éditorial mai.', metadata: { start: d(-5) }, created_at: d(-5) },
+    { id: 'act-tc-4', project_id: 'proj-test-comm', user_id: 'user-carol', author_name: 'Carol Petit', type: 'task', is_auto: true, content: 'Shooting photo produits — 25 visuels livrés.', created_at: d(-8) },
+    { id: 'act-tc-5', project_id: 'proj-test-comm', user_id: 'user-carol', author_name: 'Carol Petit', type: 'status', is_auto: true, content: 'Projet passé en statut "En cours"', metadata: { from: 'brief_received', to: 'in_progress' }, created_at: d(-20) },
+  ],
 }
