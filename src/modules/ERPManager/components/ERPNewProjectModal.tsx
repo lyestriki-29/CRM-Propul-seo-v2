@@ -48,7 +48,7 @@ export function ERPNewProjectModal({ open, onSave, onClose }: ERPNewProjectModal
     onSave({
       user_id: null,
       client_id: null,
-      client_name: clientName.trim() || null,
+      client_name: clientName.trim(),
       name: name.trim(),
       description: description.trim() || name.trim(),
       status: 'in_progress',

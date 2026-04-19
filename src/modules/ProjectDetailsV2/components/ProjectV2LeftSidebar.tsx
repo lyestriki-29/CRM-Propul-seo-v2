@@ -3,7 +3,7 @@ import { Building2, User, Euro, Calendar, Tag, Zap } from 'lucide-react'
 import { format, parseISO, formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
-import { ProjectStatusBadge } from '../../ProjectsManagerV2/components/ProjectStatusBadge'
+import { ProjectStatusSelector } from './ProjectStatusSelector'
 import { PrestaList } from '../../ProjectsManagerV2/components/PrestaBadge'
 import { CompletionScore } from '../../ProjectsManagerV2/components/CompletionScore'
 import type { ProjectV2 } from '../../../types/project-v2'
@@ -66,7 +66,7 @@ export function ProjectV2LeftSidebar({ project }: { project: ProjectV2 }) {
         </div>
 
         <div className="flex flex-wrap gap-1.5 mb-3">
-          <ProjectStatusBadge status={project.status} />
+          <ProjectStatusSelector project={project} />
           {(project.presta_type?.length ?? 0) > 0 && <PrestaList types={project.presta_type} size="sm" />}
         </div>
 

@@ -33,7 +33,7 @@ const NAV_ITEMS: { id: MainView; label: string; icon: React.ReactNode }[] = [
 ]
 
 export function SiteWebManager() {
-  const { projects, updateStatus, addProject, deleteProject } = useMockSiteWebProjects()
+  const { projects, updateStatus, addProject, deleteProject, refetch } = useMockSiteWebProjects()
   const [selectedProject, setSelectedProject] = useState<SiteWebProject | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [mainView, setMainView] = useState<MainView>('pipeline')
@@ -82,7 +82,7 @@ export function SiteWebManager() {
         projectId={selectedProject.id}
         project={selectedProject}
         backLabel="Site Web & SEO"
-        onBack={() => { setShowDetails(false); setSelectedProject(null) }}
+        onBack={() => { setShowDetails(false); setSelectedProject(null); refetch() }}
       />
     )
   }

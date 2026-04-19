@@ -62,7 +62,7 @@ export function CommNewProjectModal({ open, onSave, onClose }: CommNewProjectMod
     onSave({
       user_id: null,
       client_id: null,
-      client_name: clientName.trim() || null,
+      client_name: clientName.trim(),
       name: name.trim(),
       description: typeContrat === 'abonnement' ? `Pack ${pack} — ${clientName.trim()}` : name.trim(),
       status: 'in_progress',

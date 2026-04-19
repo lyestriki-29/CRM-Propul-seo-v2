@@ -72,25 +72,31 @@ export function SharePortalButton({ project, onRefresh }: SharePortalButtonProps
 
   if (portalUrl) {
     return (
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleCopy}
-          className="flex items-center gap-2"
-        >
-          {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-          {copied ? 'Copié !' : 'Copier le lien'}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRevoke}
-          className="text-red-400 hover:text-red-300"
-          title="Désactiver le lien client"
-        >
-          <Link2Off className="w-4 h-4" />
-        </Button>
+      <div className="space-y-2">
+        <div className="bg-[rgba(139,92,246,0.05)] border border-[rgba(139,92,246,0.15)] rounded-lg px-3 py-2">
+          <p className="text-[10px] text-[#9ca3af] mb-1">Lien portail client</p>
+          <p className="text-xs text-[#ede9fe] font-mono break-all select-all leading-relaxed">{portalUrl}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopy}
+            className="flex items-center gap-2"
+          >
+            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+            {copied ? 'Copié !' : 'Copier le lien'}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRevoke}
+            className="text-red-400 hover:text-red-300"
+            title="Désactiver le lien client"
+          >
+            <Link2Off className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
     )
   }

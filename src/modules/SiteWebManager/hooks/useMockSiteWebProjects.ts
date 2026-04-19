@@ -9,6 +9,9 @@ type SiteWebProject = ProjectV2 & { sw_status: StatusSiteWeb }
 export function useMockSiteWebProjects() {
   const [projects, setProjects] = useState<SiteWebProject[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const refetch = useCallback(() => setRefreshKey(k => k + 1), [])
 
   // Charger depuis Supabase, fallback mocks
   useEffect(() => {
@@ -31,7 +34,7 @@ export function useMockSiteWebProjects() {
         }
         setLoading(false)
       })
-  }, [])
+  }, [refreshKey])
 
   const updateStatus = useCallback(async (id: string, status: StatusSiteWeb) => {
     setProjects(prev => prev.map(p => p.id === id ? { ...p, sw_status: status, status } : p))
@@ -63,5 +66,5 @@ export function useMockSiteWebProjects() {
     await v2.from('projects').delete().eq('id', id)
   }, [])
 
-  return { projects, loading, updateStatus, addProject, deleteProject }
+  return { projects, loading, updateStatus, addProject, deleteProject, refetch }
 }

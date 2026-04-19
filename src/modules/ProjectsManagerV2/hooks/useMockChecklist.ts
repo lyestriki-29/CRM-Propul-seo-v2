@@ -24,6 +24,7 @@ interface UseChecklistReturn {
   progress: number
   progressByPhase: Record<ChecklistPhase, { total: number; done: number; percent: number }>
   addItem: (item: Omit<ChecklistItemV2, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
+  addItems: (items: Omit<ChecklistItemV2, 'id' | 'created_at' | 'updated_at'>[]) => Promise<void>
   updateItem: (id: string, updates: Partial<ChecklistItemV2>) => Promise<void>
   deleteItem: (id: string) => Promise<void>
   setItemStatus: (id: string, status: ChecklistStatus) => Promise<void>
@@ -99,6 +100,29 @@ export function useMockChecklist(projectId: string): UseChecklistReturn {
     if (!error && created) setItems(prev => [...prev, created as ChecklistItemV2])
   }, [projectId])
 
+  const addItems = useCallback(async (dataList: Omit<ChecklistItemV2, 'id' | 'created_at' | 'updated_at'>[]) => {
+    if (isMockProject(projectId)) {
+      const now = new Date().toISOString()
+      const newItems = dataList.map(data => ({
+        ...data,
+        id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        created_at: now,
+        updated_at: now,
+      }))
+      setItems(prev => [...prev, ...newItems])
+      return
+    }
+    const rows = dataList.map(data => {
+      const { position, ...rest } = data as Record<string, unknown>
+      return { ...rest, project_id: projectId, sort_order: position ?? (rest as Record<string, unknown>).sort_order ?? 0 }
+    })
+    const { data: created, error } = await supabase
+      .from('checklist_items_v2')
+      .insert(rows)
+      .select()
+    if (!error && created) setItems(prev => [...prev, ...(created as ChecklistItemV2[])])
+  }, [projectId])
+
   const updateItem = useCallback(async (id: string, updates: Partial<ChecklistItemV2>) => {
     if (isMockProject(projectId)) {
       setItems(prev =>
@@ -130,7 +154,7 @@ export function useMockChecklist(projectId: string): UseChecklistReturn {
     await updateItem(id, { status })
   }, [updateItem])
 
-  return { items, loading, progress, progressByPhase, addItem, updateItem, deleteItem, setItemStatus }
+  return { items, loading, progress, progressByPhase, addItem, addItems, updateItem, deleteItem, setItemStatus }
 }
 
 // Alias pour compatibilité avec les imports existants

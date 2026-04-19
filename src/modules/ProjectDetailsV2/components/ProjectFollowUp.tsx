@@ -13,6 +13,7 @@ import type { FollowUpType } from '../../../types/project-v2'
 import { useFollowUpsV2 } from '../../ProjectsManagerV2/hooks/useFollowUpsV2'
 import { useActivitiesV2 } from '../../ProjectsManagerV2/hooks/useActivitiesV2'
 import { useEmailTracking } from '../../ProjectsManagerV2/hooks/useEmailTracking'
+import { ProjectEmailRules } from './ProjectEmailRules'
 import type { FollowUpEntry } from '../../../types/project-v2'
 
 // ─── Catégories d'email ───────────────────────────────────────────────────────
@@ -129,7 +130,14 @@ export function ProjectFollowUp({ projectId }: { projectId: string }) {
       </div>
 
       {tab === 'rdv'    && <RdvSection    meetings={meetings} />}
-      {tab === 'emails' && <EmailsSection emails={emails} updateActivity={updateActivity} />}
+      {tab === 'emails' && (
+        <>
+          <div className="bg-surface-2 border border-border rounded-lg p-4">
+            <ProjectEmailRules projectId={projectId} />
+          </div>
+          <EmailsSection emails={emails} updateActivity={updateActivity} />
+        </>
+      )}
       {tab === 'suivi'  && (
         <SuiviSection
           projectId={projectId}

@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Receipt, TrendingUp, Plus, Pencil, Trash2, Check, X, ChevronDown } from 'lucide-react'
+import { Receipt, TrendingUp, Plus, Pencil, Trash2, Check, X, ChevronDown, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '../../../lib/utils'
 import { useBillingV2, type InvoiceV2 as MockInvoice, type InvoiceStatus } from '../../ProjectsManagerV2/hooks/useBillingV2'
+import type { ProjectV2 } from '../../../types/project-v2'
 
 const STATUS_CONFIG: Record<InvoiceStatus, { label: string; color: string }> = {
   draft:     { label: 'Brouillon',  color: 'bg-gray-500/20 text-gray-400' },
@@ -24,10 +25,12 @@ const EMPTY_FORM = {
 }
 
 interface ProjectBillingProps {
-  projectId: string
+  project: ProjectV2
 }
 
-export function ProjectBilling({ projectId }: ProjectBillingProps) {
+export function ProjectBilling({ project }: ProjectBillingProps) {
+  const projectId = project.id
+  const budget = project.budget
   const { invoices, addInvoice, updateInvoice, deleteInvoice, setInvoiceStatus } = useBillingV2(projectId)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -37,7 +40,7 @@ export function ProjectBilling({ projectId }: ProjectBillingProps) {
   const activeInvoices = invoices.filter(i => i.status !== 'cancelled')
   const total   = activeInvoices.reduce((s, i) => s + i.amount, 0)
   const paid    = activeInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
-  const pending = total - paid
+  const pending = budget != null && budget > 0 ? budget - paid : total - paid
 
   const openAdd = () => {
     setEditingId(null)
@@ -109,36 +112,61 @@ export function ProjectBilling({ projectId }: ProjectBillingProps) {
         </button>
       </div>
 
-      {total > 0 && (
-        <>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Total',    value: total,   color: 'text-foreground' },
-              { label: 'Encaissé', value: paid,    color: 'text-green-400' },
-              { label: 'Restant',  value: pending, color: pending > 0 ? 'text-orange-400' : 'text-muted-foreground' },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="bg-surface-2 border border-border rounded-lg p-3 text-center">
-                <TrendingUp className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-                <p className={`text-lg font-bold ${color}`}>{value.toLocaleString('fr-FR')} €</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
-              </div>
-            ))}
-          </div>
+      {(total > 0 || (budget != null && budget > 0)) && (() => {
+        const hasBudget = budget != null && budget > 0
+        const progressBase = hasBudget ? budget : total
+        const progressPercent = progressBase > 0 ? Math.min(Math.round((paid / progressBase) * 100), 100) : 0
+        const invoicedPercent = hasBudget && budget > 0 ? Math.round((total / budget) * 100) : 0
+        const overBudget = hasBudget && total > budget
 
-          <div className="bg-surface-2 border border-border rounded-lg p-3">
-            <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-              <span>Avancement facturation</span>
-              <span>{Math.round((paid / total) * 100)}%</span>
+        const metrics = [
+          ...(hasBudget ? [{ label: 'Budget', value: budget, color: 'text-[#8B5CF6]' }] : []),
+          { label: 'Facturé', value: total, color: overBudget ? 'text-red-400' : 'text-foreground' },
+          { label: 'Encaissé', value: paid, color: 'text-green-400' },
+          { label: 'Restant', value: pending, color: pending > 0 ? 'text-orange-400' : 'text-muted-foreground' },
+        ]
+
+        return (
+          <>
+            <div className={cn('grid gap-3', metrics.length === 4 ? 'grid-cols-4' : 'grid-cols-3')}>
+              {metrics.map(({ label, value, color }) => (
+                <div key={label} className="bg-surface-2 border border-border rounded-lg p-3 text-center">
+                  <TrendingUp className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                  <p className={`text-lg font-bold ${color}`}>{value.toLocaleString('fr-FR')} €</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                </div>
+              ))}
             </div>
-            <div className="h-2 bg-surface-3 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-500 rounded-full transition-all"
-                style={{ width: `${(paid / total) * 100}%` }}
-              />
+
+            {overBudget && (
+              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                <AlertTriangle className="h-4 w-4 text-red-400 shrink-0" />
+                <span className="text-xs text-red-300">
+                  Dépassement budget : +{(total - budget).toLocaleString('fr-FR')} € ({invoicedPercent}% du budget)
+                </span>
+              </div>
+            )}
+
+            <div className="bg-surface-2 border border-border rounded-lg p-3">
+              <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+                <span>Avancement facturation{hasBudget ? ' (vs budget)' : ''}</span>
+                <span>{progressPercent}%</span>
+              </div>
+              <div className="h-2 bg-surface-3 rounded-full overflow-hidden">
+                <div
+                  className={cn('h-full rounded-full transition-all', overBudget ? 'bg-red-500' : 'bg-green-500')}
+                  style={{ width: `${hasBudget ? Math.min((paid / budget) * 100, 100) : (total > 0 ? (paid / total) * 100 : 0)}%` }}
+                />
+              </div>
+              {hasBudget && total > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {invoicedPercent}% du budget facturé — {progressPercent}% encaissé
+                </p>
+              )}
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )
+      })()}
 
       {showForm && (
         <div className="bg-surface-2 border border-border rounded-lg p-4 space-y-3">

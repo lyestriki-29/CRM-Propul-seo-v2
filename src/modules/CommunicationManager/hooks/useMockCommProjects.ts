@@ -8,6 +8,9 @@ type CommProject = ProjectV2 & { comm_status: StatusComm }
 export function useMockCommProjects() {
   const [projects, setProjects] = useState<CommProject[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const refetch = useCallback(() => setRefreshKey(k => k + 1), [])
 
   useEffect(() => {
     setLoading(true)
@@ -28,7 +31,7 @@ export function useMockCommProjects() {
         }
         setLoading(false)
       })
-  }, [])
+  }, [refreshKey])
 
   const updateStatus = useCallback(async (id: string, status: StatusComm) => {
     setProjects(prev => prev.map(p => p.id === id ? { ...p, comm_status: status } : p))
@@ -62,5 +65,5 @@ export function useMockCommProjects() {
     await v2.from('projects').delete().eq('id', id)
   }, [])
 
-  return { projects, loading, updateStatus, addProject, deleteProject }
+  return { projects, loading, updateStatus, addProject, deleteProject, refetch }
 }

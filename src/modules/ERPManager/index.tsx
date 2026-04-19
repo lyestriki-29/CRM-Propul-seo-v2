@@ -30,7 +30,7 @@ const VIEW_TABS: { id: MainView; label: string; icon: React.ReactNode }[] = [
 ]
 
 export function ERPManager() {
-  const { projects, updateStatus, addProject, deleteProject } = useMockERPProjects()
+  const { projects, updateStatus, addProject, deleteProject, refetch } = useMockERPProjects()
   const [mainView, setMainView] = useState<MainView>('pipeline')
   const [showKpi, setShowKpi] = useState(true)
   const [showNewProject, setShowNewProject] = useState(false)
@@ -46,7 +46,7 @@ export function ERPManager() {
         projectId={selectedProject.id}
         project={selectedProject}
         backLabel="ERP Sur Mesure"
-        onBack={() => { setShowDetails(false); setSelectedId(null) }}
+        onBack={() => { setShowDetails(false); setSelectedId(null); refetch() }}
       />
     )
   }

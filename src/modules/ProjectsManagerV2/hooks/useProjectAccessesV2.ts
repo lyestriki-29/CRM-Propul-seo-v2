@@ -8,9 +8,9 @@ export interface ProjectAccessV2 {
   category: AccessCategory
   label: string
   url?: string | null
-  login?: string | null       // déchiffré côté serveur via v2.decrypt_access()
-  password?: string | null     // déchiffré côté serveur
-  notes?: string | null        // déchiffré côté serveur
+  login?: string | null
+  password?: string | null
+  notes?: string | null
   status: AccessStatus
   provided_by?: string | null
   expires_at?: string | null
@@ -35,10 +35,11 @@ export function useProjectAccessesV2(projectId: string): UseProjectAccessesV2Ret
     setLoading(true)
     v2
       .from('project_accesses')
-      .select('id, project_id, category, label, url, status, provided_by, expires_at, created_at, updated_at')
+      .select('*')
       .eq('project_id', projectId)
       .order('category', { ascending: true })
       .then(({ data, error }) => {
+        if (error) console.error('[useProjectAccessesV2] fetch error:', error.message, error)
         if (!error && data) setAccesses(data as ProjectAccessV2[])
         setLoading(false)
       })
@@ -48,8 +49,9 @@ export function useProjectAccessesV2(projectId: string): UseProjectAccessesV2Ret
     const { data: created, error } = await v2
       .from('project_accesses')
       .insert({ ...data, project_id: projectId })
-      .select('id, project_id, category, label, url, status, provided_by, expires_at, created_at, updated_at')
+      .select('*')
       .single()
+    if (error) console.error('[useProjectAccessesV2] insert error:', error.message, error)
     if (!error && created) setAccesses(prev => [...prev, created as ProjectAccessV2])
   }, [projectId])
 
@@ -58,13 +60,15 @@ export function useProjectAccessesV2(projectId: string): UseProjectAccessesV2Ret
       .from('project_accesses')
       .update(updates)
       .eq('id', id)
-      .select('id, project_id, category, label, url, status, provided_by, expires_at, created_at, updated_at')
+      .select('*')
       .single()
+    if (error) console.error('[useProjectAccessesV2] update error:', error.message, error)
     if (!error && data) setAccesses(prev => prev.map(a => a.id === id ? data as ProjectAccessV2 : a))
   }, [])
 
   const deleteAccess = useCallback(async (id: string) => {
     const { error } = await v2.from('project_accesses').delete().eq('id', id)
+    if (error) console.error('[useProjectAccessesV2] delete error:', error.message, error)
     if (!error) setAccesses(prev => prev.filter(a => a.id !== id))
   }, [])
 

@@ -9,6 +9,9 @@ type ERPProject = ProjectV2 & { erp_status: StatusERP }
 export function useMockERPProjects() {
   const [projects, setProjects] = useState<ERPProject[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const refetch = useCallback(() => setRefreshKey(k => k + 1), [])
 
   // Charger depuis Supabase, fallback mocks
   useEffect(() => {
@@ -31,7 +34,7 @@ export function useMockERPProjects() {
         }
         setLoading(false)
       })
-  }, [])
+  }, [refreshKey])
 
   const updateStatus = useCallback(async (id: string, status: StatusERP) => {
     setProjects(prev => prev.map(p => p.id === id ? { ...p, erp_status: status, status } : p))
@@ -63,5 +66,5 @@ export function useMockERPProjects() {
     await v2.from('projects').delete().eq('id', id)
   }, [])
 
-  return { projects, loading, updateStatus, addProject, deleteProject }
+  return { projects, loading, updateStatus, addProject, deleteProject, refetch }
 }

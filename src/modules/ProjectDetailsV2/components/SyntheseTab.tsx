@@ -9,6 +9,7 @@ import { useProjectAccessesV2 } from '../../ProjectsManagerV2/hooks/useProjectAc
 import type { ProjectAccessV2 } from '../../ProjectsManagerV2/hooks/useProjectAccessesV2'
 import { useActivitiesV2 } from '../../ProjectsManagerV2/hooks/useActivitiesV2'
 import { ShareBriefButton } from './ShareBriefButton'
+import { SyntheseFollowUpPreview } from './SyntheseFollowUpPreview'
 import { MOCK_BRIEFS } from '../../ProjectsManagerV2/mocks/mockBriefs'
 import { MOCK_ACTIVITIES } from '../../ProjectsManagerV2/mocks/mockActivities'
 import { MOCK_ACCESSES } from '../../ProjectsManagerV2/mocks/mockAccesses'
@@ -484,67 +485,94 @@ export function SyntheseTab({ project }: SyntheseTabProps) {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3 py-2.5">
-                      <div className={cn('w-2 h-2 rounded-full shrink-0',
-                        acc.status === 'active' ? 'bg-[#22c55e]' :
-                        acc.status === 'missing' ? 'bg-[#ef4444]' :
-                        acc.status === 'broken' ? 'bg-[#f59e0b]' :
-                        acc.status === 'expired' ? 'bg-[#ef4444]' :
-                        'bg-[#94a3b8]'
-                      )} />
-                      <span className="text-xs text-[#e2e8f0] flex-1">{acc.label}</span>
-                      <span className="text-[10px] text-[#64748b] bg-[rgba(100,116,139,0.15)] px-1.5 py-0.5 rounded">
-                        {CATEGORY_LABELS[acc.category] ?? acc.category}
-                      </span>
-
-                      {/* Actions : copier login/mdp, éditer, supprimer */}
-                      {acc.login && (
+                    <div className="py-2.5 space-y-1.5">
+                      {/* Ligne principale : status + label + catégorie + actions */}
+                      <div className="flex items-center gap-3">
+                        <div className={cn('w-2 h-2 rounded-full shrink-0',
+                          acc.status === 'active' ? 'bg-[#22c55e]' :
+                          acc.status === 'missing' ? 'bg-[#ef4444]' :
+                          acc.status === 'broken' ? 'bg-[#f59e0b]' :
+                          acc.status === 'expired' ? 'bg-[#ef4444]' :
+                          'bg-[#94a3b8]'
+                        )} />
+                        <span className="text-xs text-[#e2e8f0] font-medium flex-1">{acc.label}</span>
+                        <span className="text-[10px] text-[#64748b] bg-[rgba(100,116,139,0.15)] px-1.5 py-0.5 rounded">
+                          {CATEGORY_LABELS[acc.category] ?? acc.category}
+                        </span>
                         <button
-                          onClick={() => copyToClipboard(acc.login!, 'Login')}
-                          className="text-[#64748b] hover:text-[#e2e8f0] transition-colors"
-                          title="Copier le login"
+                          onClick={() => openEditAccess(acc)}
+                          className="text-[#64748b] hover:text-[#a78bfa] transition-colors"
+                          title="Modifier"
                         >
-                          <Copy className="h-3 w-3" />
+                          <Pencil className="h-3 w-3" />
                         </button>
-                      )}
-                      {acc.password && (
                         <button
-                          onClick={() => togglePassword(acc.id)}
-                          className="text-[#64748b] hover:text-[#e2e8f0] transition-colors"
-                          title={visiblePasswords.has(acc.id) ? 'Masquer' : 'Voir le mot de passe'}
+                          onClick={() => setDeletingAccessId(acc.id)}
+                          className="text-[#64748b] hover:text-[#ef4444] transition-colors"
+                          title="Supprimer"
                         >
-                          {visiblePasswords.has(acc.id) ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => openEditAccess(acc)}
-                        className="text-[#64748b] hover:text-[#a78bfa] transition-colors"
-                        title="Modifier"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </button>
-                      <button
-                        onClick={() => setDeletingAccessId(acc.id)}
-                        className="text-[#64748b] hover:text-[#ef4444] transition-colors"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    </div>
-
-                    {/* Détails mot de passe visible */}
-                    {visiblePasswords.has(acc.id) && acc.password && (
-                      <div className="flex items-center gap-2 mb-2 ml-5 bg-[rgba(234,179,8,0.05)] rounded px-3 py-1.5">
-                        <span className="text-[10px] text-[#64748b]">Mdp :</span>
-                        <span className="text-xs text-[#e2e8f0] font-mono flex-1">{acc.password}</span>
-                        <button
-                          onClick={() => copyToClipboard(acc.password!, 'Mot de passe')}
-                          className="text-[#64748b] hover:text-[#e2e8f0] transition-colors"
-                        >
-                          <Copy className="h-3 w-3" />
+                          <Trash2 className="h-3 w-3" />
                         </button>
                       </div>
-                    )}
+
+                      {/* Détails : URL, login, mot de passe, notes */}
+                      <div className="ml-5 space-y-1">
+                        {acc.url && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-[#64748b] w-10 shrink-0">URL</span>
+                            <a
+                              href={acc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-[#a78bfa] hover:text-[#c4b5fd] truncate"
+                            >
+                              {acc.url}
+                            </a>
+                          </div>
+                        )}
+                        {acc.login && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-[#64748b] w-10 shrink-0">Login</span>
+                            <span className="text-[10px] text-[#e2e8f0] font-mono">{acc.login}</span>
+                            <button
+                              onClick={() => copyToClipboard(acc.login!, 'Login')}
+                              className="text-[#64748b] hover:text-[#e2e8f0] transition-colors"
+                              title="Copier le login"
+                            >
+                              <Copy className="h-2.5 w-2.5" />
+                            </button>
+                          </div>
+                        )}
+                        {acc.password && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-[#64748b] w-10 shrink-0">Mdp</span>
+                            <span className="text-[10px] text-[#e2e8f0] font-mono">
+                              {visiblePasswords.has(acc.id) ? acc.password : '••••••••'}
+                            </span>
+                            <button
+                              onClick={() => togglePassword(acc.id)}
+                              className="text-[#64748b] hover:text-[#e2e8f0] transition-colors"
+                              title={visiblePasswords.has(acc.id) ? 'Masquer' : 'Voir'}
+                            >
+                              {visiblePasswords.has(acc.id) ? <EyeOff className="h-2.5 w-2.5" /> : <Eye className="h-2.5 w-2.5" />}
+                            </button>
+                            <button
+                              onClick={() => copyToClipboard(acc.password!, 'Mot de passe')}
+                              className="text-[#64748b] hover:text-[#e2e8f0] transition-colors"
+                              title="Copier le mot de passe"
+                            >
+                              <Copy className="h-2.5 w-2.5" />
+                            </button>
+                          </div>
+                        )}
+                        {acc.notes && (
+                          <div className="flex items-start gap-2">
+                            <span className="text-[10px] text-[#64748b] w-10 shrink-0">Notes</span>
+                            <span className="text-[10px] text-[#94a3b8] italic leading-relaxed">{acc.notes}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -596,6 +624,14 @@ export function SyntheseTab({ project }: SyntheseTabProps) {
         ) : (
           <p className="text-xs text-[#64748b] italic">Aucune activité récente</p>
         )}
+      </CollapsibleCard>
+
+      {/* Section 5: Suivi récent */}
+      <CollapsibleCard
+        title={<><span>{'\uD83D\uDCCB'}</span> Suivi récent</>}
+        headerBg="bg-[rgba(99,102,241,0.08)] text-[#818cf8]"
+      >
+        <SyntheseFollowUpPreview projectId={project.id} />
       </CollapsibleCard>
     </div>
   )

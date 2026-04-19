@@ -76,7 +76,7 @@ export function AiSummariesSection({ projects, isMobile, onNavigateToProject }: 
                     {block.label}
                   </span>
                   <p className="text-xs text-foreground/80 leading-relaxed line-clamp-2 mt-0.5">
-                    {project.ai_summary![block.key]}
+                    {project.ai_summary?.[block.key]}
                   </p>
                 </div>
               ))}

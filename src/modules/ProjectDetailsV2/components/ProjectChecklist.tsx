@@ -153,7 +153,7 @@ interface ProjectChecklistProps {
 }
 
 export function ProjectChecklist({ project }: ProjectChecklistProps) {
-  const { items, loading, progress, progressByPhase, setItemStatus, addItem, deleteItem } =
+  const { items, loading, progress, progressByPhase, setItemStatus, addItem, addItems, deleteItem } =
     useMockChecklist(project.id)
 
   const [isApplyingTemplate, setIsApplyingTemplate] = useState(false)
@@ -225,25 +225,24 @@ export function ProjectChecklist({ project }: ProjectChecklistProps) {
     toast.success('Tâche supprimée')
   }
 
-  const applyTemplate = (type: PrestaType) => {
+  const applyTemplate = async (type: PrestaType) => {
     if (isApplyingTemplate) return
     setIsApplyingTemplate(true)
     const tasks = TEMPLATES[type]
-    tasks.forEach((t, idx) => {
-      addItem({
-        project_id:     project.id,
-        parent_task_id: null,
-        title:          t.title,
-        phase:          t.phase,
-        status:         'todo',
-        priority:       'medium',
-        assigned_to:    null,
-        assigned_name:  null,
-        due_date:       null,
-        position:     idx + 1,
-      })
-    })
-    Promise.resolve().then(() => setIsApplyingTemplate(false))
+    const allItems = tasks.map((t, idx) => ({
+      project_id:     project.id,
+      parent_task_id: null,
+      title:          t.title,
+      phase:          t.phase,
+      status:         'todo' as const,
+      priority:       'medium' as const,
+      assigned_to:    null,
+      assigned_name:  null,
+      due_date:       null,
+      sort_order:     idx + 1,
+    }))
+    await addItems(allItems)
+    setIsApplyingTemplate(false)
     toast.success(`Template ${PRESTA_LABELS[type]} appliqué (${tasks.length} tâches)`)
   }
 

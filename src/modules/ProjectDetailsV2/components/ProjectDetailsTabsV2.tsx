@@ -23,7 +23,7 @@ export function ProjectDetailsTabsV2({ project }: { project: ProjectV2 }) {
     switch (activeTab) {
       case 'synthese':   return <SyntheseTab project={project} />
       case 'production': return <ProjectChecklist project={project} />
-      case 'finances':   return <ProjectBilling     key={project.id} projectId={project.id} />
+      case 'finances':   return <ProjectBilling     key={project.id} project={project} />
       case 'echanges':   return <ProjectFollowUp    key={project.id} projectId={project.id} />
     }
   }

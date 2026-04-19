@@ -60,7 +60,7 @@ export function SiteWebNewProjectModal({ open, onSave, onClose }: SiteWebNewProj
     onSave({
       user_id: null,
       client_id: null,
-      client_name: clientName.trim() || null,
+      client_name: clientName.trim(),
       name: name.trim(),
       description: `Pack ${PACKS.find(p => p.value === pack)?.label ?? pack} — ${clientName.trim() || name.trim()}`,
       status: 'in_progress',

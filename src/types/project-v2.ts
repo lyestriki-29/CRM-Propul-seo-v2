@@ -58,6 +58,10 @@ export interface ProjectV2 {
   brief_token: string | null
   brief_token_enabled: boolean
   brief_short_code?: string | null
+  // === STATUTS MODULE ===
+  sw_status?: StatusSiteWeb | null
+  erp_status?: StatusERP | null
+  comm_status?: StatusComm | null
   created_at: string
   updated_at: string
 }

@@ -32,7 +32,7 @@ const NAV_ITEMS: { id: MainView; label: string; icon: React.ReactNode }[] = [
 type DetailTab = 'brief' | 'suivi'
 
 export function CommunicationManager() {
-  const { projects, updateStatus, addProject } = useMockCommProjects()
+  const { projects, updateStatus, addProject, refetch } = useMockCommProjects()
   const [selectedProject, setSelectedProject] = useState<CommProject | null>(null)
   const [activeTab, setActiveTab] = useState<DetailTab>('brief')
   const [showDetails, setShowDetails] = useState(false)
@@ -74,7 +74,7 @@ export function CommunicationManager() {
         projectId={selectedProject.id}
         project={selectedProject}
         backLabel="Communication"
-        onBack={() => { setShowDetails(false); setSelectedProject(null) }}
+        onBack={() => { setShowDetails(false); setSelectedProject(null); refetch() }}
       />
     )
   }

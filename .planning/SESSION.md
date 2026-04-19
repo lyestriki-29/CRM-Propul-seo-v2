@@ -1,24 +1,26 @@
-# Session State — 2026-04-17 15:00
+# Session State — 2026-04-19 18:00
 
 ## Branch
 main
 
 ## Completed This Session
-- Schéma v2 Supabase : créé schema + 10 vues + permissions + check constraints
-- Proxy v2 : contourne PostgREST en mappant v2.from('table') → supabase.from('table_v2')
-- 3 hooks migrés Supabase : useMockSiteWebProjects, useMockERPProjects, useMockCommProjects
-- ProjectStatusBadge : ajout tous statuts modules + fallback
-- Null safety : presta_type?.length (5 fichiers), budget guards vérifiés
-- SyntheseTab : ajout ShareBriefButton + CRUD accès coffre-fort
-- 3 projets test + brief + accès + activités insérés en DB
+- Lien portail : URL affichée dans SharePortalButton après génération
+- Follow-ups Synthèse : nouveau composant SyntheseFollowUpPreview intégré dans SyntheseTab
+- Gmail light : ProjectEmailRules intégré dans onglet Échanges
+- Sélecteur phase : ProjectStatusSelector + sync kanban (refetch onBack) dans 3 modules
+- Budget billing : ProjectBilling reçoit project, affiche budget vs facturé, alerte dépassement
+- Fix template : bulk insert addItems + sort_order (pas position) + async applyTemplate
+- Fix coffre-fort : hook réécrit avec select('*'), vrais noms colonnes (label pas service_name)
+- Fix crash Dashboard : ai_summary!. → ai_summary?. dans AiSummariesSection + Widget
 
 ## Next Task
-Tester le flow complet dans le navigateur : créer un projet depuis SiteWeb/ERP, vérifier persistance au refresh, cliquer pour ouvrir les détails, tester ajout accès et génération lien brief
+Tester les 7 features dans le navigateur : coffre-fort, template, sélecteur phase, finances, Gmail, suivi synthèse, lien portail
 
 ## Blockers
-None
+- Résumé IA : Edge Function generate-ai-summary non déployée (pas un bug code)
+- Projets avec status générique (in_progress) invisibles sur kanban module-spécifique
 
 ## Key Context
-- PostgREST Supabase hébergé ne supporte PAS `ALTER ROLE authenticator SET pgrst.db_schemas` → proxy dans supabase.ts à la place
-- 13 tables v2 n'existent pas encore (kpi, notifications, features, etc.) — hooks échouent silencieusement, à créer au fur et à mesure
-- Column rename : project_accesses_v2.service_name → label
+- Table project_accesses_v2 : colonnes = label (PAS service_name), login/password/notes en TEXT clair, provided_by et expires_at existent
+- Table checklist_items_v2 : colonne sort_order (PAS position), status CHECK n'inclut pas 'skipped'
+- 9 projets de test à supprimer en DB (client_name vide ou "test")
