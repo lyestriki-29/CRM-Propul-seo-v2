@@ -47,6 +47,7 @@ export function ERPManager() {
         project={selectedProject}
         backLabel="ERP Sur Mesure"
         onBack={() => { setShowDetails(false); setSelectedId(null); refetch() }}
+        onDelete={(id) => { deleteProject(id); setShowDetails(false); setSelectedId(null) }}
       />
     )
   }

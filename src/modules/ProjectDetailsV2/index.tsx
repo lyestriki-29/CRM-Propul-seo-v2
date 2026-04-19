@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react'
 import { useMockProjects } from '../ProjectsManagerV2/hooks/useMockProjects'
 import { ProjectDetailsTabsV2 } from './components/ProjectDetailsTabsV2'
 import { ProjectV2LeftSidebar } from './components/ProjectV2LeftSidebar'
@@ -11,6 +12,8 @@ interface ProjectDetailsV2Props {
   project?: ProjectV2
   /** Label du fil d'ariane, ex: "Site Web & SEO" */
   backLabel?: string
+  /** Callback de suppression — si fourni, affiche le bouton supprimer */
+  onDelete?: (id: string) => void
 }
 
 // UI pure — pas de hook, utilisable sans contexte
@@ -19,24 +22,41 @@ function ProjectDetailsV2UI({
   onBack,
   backLabel = 'Projets V2',
   refetch,
+  onDelete,
 }: {
   project: ProjectV2
   onBack: () => void
   backLabel?: string
   refetch?: () => void
+  onDelete?: (id: string) => void
 }) {
   return (
     <div className="flex flex-col h-screen bg-[#020205] overflow-hidden">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-3 px-5 py-3 bg-[#070512] border-b border-[rgba(139,92,246,0.18)] shrink-0">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-xs text-[#9ca3af] hover:text-[#ede9fe] transition-colors"
-        >
-          ← {backLabel}
-        </button>
-        <span className="text-[rgba(139,92,246,0.3)]">/</span>
-        <span className="text-xs font-medium text-[#ede9fe] truncate">{project.name}</span>
+      <div className="flex items-center justify-between px-5 py-3 bg-[#070512] border-b border-[rgba(139,92,246,0.18)] shrink-0">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-xs text-[#9ca3af] hover:text-[#ede9fe] transition-colors"
+          >
+            ← {backLabel}
+          </button>
+          <span className="text-[rgba(139,92,246,0.3)]">/</span>
+          <span className="text-xs font-medium text-[#ede9fe] truncate">{project.name}</span>
+        </div>
+        {onDelete && (
+          <button
+            onClick={() => {
+              if (confirm(`Supprimer le projet "${project.name}" ?`)) {
+                onDelete(project.id)
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Supprimer
+          </button>
+        )}
       </div>
 
       {/* 3 colonnes */}
@@ -88,9 +108,9 @@ function ProjectDetailsV2WithContext({
 }
 
 // Export principal — dispatche selon si le projet est fourni directement
-export function ProjectDetailsV2({ projectId, onBack, project, backLabel }: ProjectDetailsV2Props) {
+export function ProjectDetailsV2({ projectId, onBack, project, backLabel, onDelete }: ProjectDetailsV2Props) {
   if (project) {
-    return <ProjectDetailsV2UI project={project} onBack={onBack} backLabel={backLabel} />
+    return <ProjectDetailsV2UI project={project} onBack={onBack} backLabel={backLabel} onDelete={onDelete} />
   }
   return <ProjectDetailsV2WithContext projectId={projectId} onBack={onBack} backLabel={backLabel} />
 }

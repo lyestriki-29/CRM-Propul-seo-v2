@@ -83,6 +83,7 @@ export function SiteWebManager() {
         project={selectedProject}
         backLabel="Site Web & SEO"
         onBack={() => { setShowDetails(false); setSelectedProject(null); refetch() }}
+        onDelete={(id) => { deleteProject(id); setShowDetails(false); setSelectedProject(null) }}
       />
     )
   }
