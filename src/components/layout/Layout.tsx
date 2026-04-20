@@ -29,7 +29,6 @@ const PersonalTasks = lazy(() => import('../../modules/PersonalTasks').then(m =>
 const CommunicationClients = lazy(() => import('../../modules/CommunicationClients').then(m => ({ default: m.CommunicationClients })));
 const ProjectsManagerV2 = lazy(() => import('../../modules/ProjectsManagerV2').then(m => ({ default: m.ProjectsManagerV2 })))
 const DashboardV2 = lazy(() => import('../../modules/DashboardV2').then(m => ({ default: m.DashboardV2 })))
-const MonthlyDashboard = lazy(() => import('../../modules/MonthlyDashboard').then(m => ({ default: m.MonthlyDashboard })));
 const SiteWebManager = lazy(() => import('../../modules/SiteWebManager').then(m => ({ default: m.SiteWebManager })))
 const ERPManager = lazy(() => import('../../modules/ERPManager').then(m => ({ default: m.ERPManager })))
 const CommunicationManager = lazy(() => import('../../modules/CommunicationManager').then(m => ({ default: m.CommunicationManager })))
@@ -111,7 +110,6 @@ export function Layout() {
       'communication-clients': 'can_view_communication',
       'accounting': 'can_view_finance',
       'settings': 'can_view_settings',
-      'monthly-dashboard': 'can_view_projects',
       'dashboard-v2': 'can_view_dashboard',
       'site-web': 'can_view_projects',
       'erp-manager': 'can_view_projects',
@@ -122,7 +120,7 @@ export function Layout() {
     const modulePriority = [
       'dashboard', 'dashboard-v2', 'site-web', 'erp-manager', 'comm-manager',
       'crm', 'crm-bot-one', 'crm-erp',
-      'projects', 'projects-v2', 'monthly-dashboard',
+      'projects', 'projects-v2',
       'communication', 'communication-kpi',
       'communication-clients', 'accounting', 'settings'
     ];
@@ -159,7 +157,6 @@ export function Layout() {
       'communication': 'can_view_communication',
       'communication-kpi': 'can_view_communication',
       'communication-clients': 'can_view_communication',
-      'monthly-dashboard': 'can_view_projects',
       'dashboard-v2': 'can_view_dashboard',
       'site-web': 'can_view_projects',
       'erp-manager': 'can_view_projects',
@@ -235,8 +232,6 @@ export function Layout() {
         return wrappedComponent(ProjectsManagerV2);
       case 'dashboard-v2':
         return wrappedComponent(DashboardV2);
-      case 'monthly-dashboard':
-        return wrappedComponent(MonthlyDashboard);
       case 'site-web':
         return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><SiteWebManager /></Suspense></ProjectsV2Provider>;
       case 'erp-manager':

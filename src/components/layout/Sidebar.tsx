@@ -103,13 +103,12 @@ export function Sidebar() {
     items: [
       { id: 'dashboard-v2',      label: 'Dashboard V2',        icon: LayoutDashboard, permission: 'can_view_dashboard' },
       { id: 'projects-v2',       label: 'Gestion des projets', icon: Sparkles,        permission: 'can_view_projects' },
-      { id: 'monthly-dashboard', label: 'Mois en cours',       icon: BarChart3,       permission: 'can_view_projects' },
     ]
   };
 
   const enCoursSection: NavSection = {
     section: 'en-cours',
-    title: 'En cours',
+    title: 'Projets',
     items: [
       { id: 'comm-manager', label: 'Communication',  icon: Megaphone, permission: 'can_view_projects' },
       { id: 'erp-manager',  label: 'ERP Sur Mesure', icon: Settings2, permission: 'can_view_projects' },

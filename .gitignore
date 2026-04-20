@@ -61,3 +61,4 @@ coverage/
 *.tsbuildinfo
 # Update
 .superpowers/
+.vercel
