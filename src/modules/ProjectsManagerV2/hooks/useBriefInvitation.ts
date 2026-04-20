@@ -33,7 +33,7 @@ export function useBriefInvitation(token: string): UseBriefInvitationReturn {
     v2Anon
       .from('brief_invitations')
       .select('id, token, company_name, status')
-      .eq('token', token)
+      .eq('short_code', token)
       .single()
       .then(({ data: inv, error: err }) => {
         if (err || !inv) {

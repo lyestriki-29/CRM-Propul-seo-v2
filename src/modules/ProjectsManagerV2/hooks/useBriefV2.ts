@@ -138,7 +138,7 @@ export function useBriefByToken(token: string) {
     v2Anon
       .from('projects')
       .select('id, name')
-      .eq('brief_token', token)
+      .eq('brief_short_code', token)
       .eq('brief_token_enabled', true)
       .single()
       .then(async ({ data: project, error: projectError }) => {

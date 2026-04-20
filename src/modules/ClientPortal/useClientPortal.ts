@@ -58,7 +58,7 @@ export function useClientPortal() {
     const { data: project, error: projectError } = await v2Anon
       .from('projects')
       .select('id, name, client_name, client_id, status, progress, completion_score, next_action_label, next_action_due, presta_type, start_date, end_date, budget, ai_summary')
-      .eq('portal_token', token)
+      .eq('portal_short_code', token)
       .eq('portal_enabled', true)
       .single()
 

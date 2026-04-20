@@ -19,9 +19,11 @@ const ClientBriefInvitePage = lazy(() =>
 
 // Détection de la route publique avant tout rendu
 const pathname = window.location.pathname;
-const portalMatch = pathname.match(/^\/portal\/([a-f0-9-]{36})$/i);
-const briefMatch = pathname.match(/^\/brief\/([a-f0-9-]{36})$/i);
-const briefInviteMatch = pathname.match(/^\/brief-invite\/([a-f0-9-]{36})$/i);
+// Alphabet du shortCode (src/lib/shortCode.ts) : sans 0/1/I/L/O pour éviter l'ambiguïté
+const SHORT_CODE_RE = '[A-HJ-NP-Z2-9]{8}';
+const portalMatch = pathname.match(new RegExp(`^/portal/(${SHORT_CODE_RE})$`));
+const briefMatch = pathname.match(new RegExp(`^/brief/(${SHORT_CODE_RE})$`));
+const briefInviteMatch = pathname.match(new RegExp(`^/brief-invite/(${SHORT_CODE_RE})$`));
 
 function App() {
   const { user, loading } = useAuth();
