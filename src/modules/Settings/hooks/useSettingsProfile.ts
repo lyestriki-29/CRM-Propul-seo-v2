@@ -12,7 +12,7 @@ export function useSettingsProfile(): SettingsProfileReturn {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [currentUserData, setCurrentUserData] = useState<UserType | null>(null);
 
-  const isAdmin = currentUser?.email === 'team@propulseo-site.com';
+  const isAdmin = currentUser?.role === 'admin';
 
   useEffect(() => {
     if (currentUser?.id) {

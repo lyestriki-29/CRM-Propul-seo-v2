@@ -97,7 +97,7 @@ export function Layout() {
   // Rediriger vers le premier module accessible si le module actif n'est pas autorisé
   useEffect(() => {
     if (!currentUserData || loading) return;
-    if (currentUserData.email === 'team@propulseo-site.com') return;
+    if (currentUserData.role === 'admin') return;
 
     const modulePermissions: { [key: string]: string } = {
       'dashboard': 'can_view_dashboard',
@@ -142,7 +142,7 @@ export function Layout() {
   // Vérifier si l'utilisateur peut accéder à un module
   const canAccessModule = (module: string) => {
     if (!currentUserData) return true;
-    if (currentUserData.email === 'team@propulseo-site.com') return true;
+    if (currentUserData.role === 'admin') return true;
 
     const modulePermissions: { [key: string]: string } = {
       'dashboard': 'can_view_dashboard',

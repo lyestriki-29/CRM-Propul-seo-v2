@@ -74,7 +74,7 @@ export function Sidebar() {
     loadUserData();
   }, [user, getUserByAuthId]);
 
-  const isAdmin = currentUserData?.email === 'team@propulseo-site.com';
+  const isAdmin = currentUserData?.role === 'admin';
 
   const canAccessPage = (pagePermission: string) => {
     if (!currentUserData) return true;
