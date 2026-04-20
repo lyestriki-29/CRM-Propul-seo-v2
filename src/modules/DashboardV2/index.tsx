@@ -4,9 +4,6 @@ import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Zap, Settings } from 'lucide-react'
 import { BriefNotificationsModal } from './components/BriefNotificationsModal'
-import { MOCK_SITEWEB_PROJECTS } from '../SiteWebManager/mocks'
-import { MOCK_ERP_PROJECTS } from '../ERPManager/mocks'
-import { MOCK_COMM_PROJECTS, MOCK_COMM_BRIEFS } from '../CommunicationManager/mocks'
 import { useStore } from '../../store/useStore'
 import { BentoGrid } from './components/BentoGrid'
 import { KpiStatsWidget } from './components/right/KpiStatsWidget'
@@ -17,6 +14,7 @@ import { PriorityActionsWidget } from './components/left/PriorityActionsWidget'
 import { RevenueChartWidget } from './components/left/RevenueChartWidget'
 import { ActiveProjectsWidget } from './components/left/ActiveProjectsWidget'
 import { useDashboardData } from './hooks/useDashboardData'
+import { useDashboardKpisV2 } from './hooks/useDashboardKpisV2'
 import { useDashboardRealtime } from './hooks/useDashboardRealtime'
 import { useUnreadEmails } from './hooks/useUnreadEmails'
 
@@ -40,30 +38,8 @@ export function DashboardV2() {
     [navigateWithContext]
   )
 
-  // KPIs V2 globaux (données mock)
-  const v2Kpis = useMemo(() => {
-    const swCA = MOCK_SITEWEB_PROJECTS
-      .filter(p => ['signe', 'en_production', 'livre'].includes(p.sw_status))
-      .reduce((sum, p) => sum + (p.budget ?? 0), 0)
-    const swActive = MOCK_SITEWEB_PROJECTS
-      .filter(p => !['livre', 'perdu'].includes(p.sw_status)).length
-
-    const erpCA = MOCK_ERP_PROJECTS
-      .filter(p => ['signe', 'en_developpement', 'recette', 'livre'].includes(p.erp_status))
-      .reduce((sum, p) => sum + (p.budget ?? 0), 0)
-    const erpActive = MOCK_ERP_PROJECTS
-      .filter(p => !['livre', 'perdu'].includes(p.erp_status)).length
-
-    const mrr = MOCK_COMM_BRIEFS
-      .filter(b => b.type_contrat === 'abonnement' && b.mrr != null)
-      .reduce((sum, b) => sum + (b.mrr ?? 0), 0)
-    const commActive = MOCK_COMM_PROJECTS
-      .filter(p => p.comm_status === 'actif').length
-
-    const totalCA = swCA + erpCA + mrr
-
-    return { swCA, swActive, erpCA, erpActive, mrr, commActive, totalCA }
-  }, [])
+  // KPIs V2 globaux — branchés sur la comptabilité réelle
+  const v2Kpis = useDashboardKpisV2()
 
   // Fusionner emails non répondus dans les actions prioritaires
   const allPriorityItems = useMemo(() => {
@@ -142,25 +118,25 @@ export function DashboardV2() {
         </div>
       )}
 
-      {/* KPIs globaux V2 */}
+      {/* KPIs globaux V2 — source : accounting_entries (année en cours) + projects_v2 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="glass-card rounded-xl p-4">
-          <p className="text-xs text-muted-foreground mb-1">CA Total V2</p>
-          <p className="text-xl font-bold text-foreground">{v2Kpis.totalCA.toLocaleString('fr-FR')}€</p>
+          <p className="text-xs text-muted-foreground mb-1">CA Total {new Date().getFullYear()}</p>
+          <p className="text-xl font-bold text-foreground">{v2Kpis.totalCa.toLocaleString('fr-FR')}€</p>
         </div>
         <div className="glass-card rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">MRR Communication</p>
-          <p className="text-xl font-bold text-emerald-400">{v2Kpis.mrr.toLocaleString('fr-FR')}€/mois</p>
-          <p className="text-xs text-muted-foreground mt-1">{v2Kpis.commActive} abonnement{v2Kpis.commActive !== 1 ? 's' : ''} actif{v2Kpis.commActive !== 1 ? 's' : ''}</p>
+          <p className="text-xl font-bold text-emerald-400">{v2Kpis.mrrComm.toLocaleString('fr-FR')}€/mois</p>
+          <p className="text-xs text-muted-foreground mt-1">{v2Kpis.commActive} projet{v2Kpis.commActive !== 1 ? 's' : ''} actif{v2Kpis.commActive !== 1 ? 's' : ''}</p>
         </div>
         <div className="glass-card rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">Site Web & SEO</p>
-          <p className="text-xl font-bold text-blue-400">{v2Kpis.swCA.toLocaleString('fr-FR')}€</p>
+          <p className="text-xl font-bold text-blue-400">{v2Kpis.caSiteWeb.toLocaleString('fr-FR')}€</p>
           <p className="text-xs text-muted-foreground mt-1">{v2Kpis.swActive} projet{v2Kpis.swActive !== 1 ? 's' : ''} actif{v2Kpis.swActive !== 1 ? 's' : ''}</p>
         </div>
         <div className="glass-card rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">ERP Sur Mesure</p>
-          <p className="text-xl font-bold text-violet-400">{v2Kpis.erpCA.toLocaleString('fr-FR')}€</p>
+          <p className="text-xl font-bold text-violet-400">{v2Kpis.caErp.toLocaleString('fr-FR')}€</p>
           <p className="text-xs text-muted-foreground mt-1">{v2Kpis.erpActive} projet{v2Kpis.erpActive !== 1 ? 's' : ''} actif{v2Kpis.erpActive !== 1 ? 's' : ''}</p>
         </div>
       </div>
