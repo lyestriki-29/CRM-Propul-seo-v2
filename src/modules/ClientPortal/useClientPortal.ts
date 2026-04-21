@@ -37,6 +37,7 @@ export interface PortalData {
     | 'end_date'
     | 'budget'
     | 'ai_summary'
+    | 'portal_expires_at'
   >
   checklist: Pick<ChecklistItemV2, 'id' | 'title' | 'phase' | 'status'>[]
   invoices: PortalInvoice[]
@@ -54,12 +55,14 @@ export function useClientPortal() {
     setError(null)
     setData(null)
 
-    // 1. Projet par token
+    // 1. Projet par token (refuse lien expiré)
+    const now = new Date().toISOString()
     const { data: project, error: projectError } = await v2Anon
       .from('projects')
-      .select('id, name, client_name, client_id, status, progress, completion_score, next_action_label, next_action_due, presta_type, start_date, end_date, budget, ai_summary')
+      .select('id, name, client_name, client_id, status, progress, completion_score, next_action_label, next_action_due, presta_type, start_date, end_date, budget, ai_summary, portal_expires_at')
       .eq('portal_short_code', token)
       .eq('portal_enabled', true)
+      .or(`portal_expires_at.is.null,portal_expires_at.gt.${now}`)
       .single()
 
     if (projectError || !project) {
@@ -116,7 +119,7 @@ export function useClientPortal() {
   }, [])
 
   // Génère un token et active le portail (client authentifié)
-  const generateToken = useCallback(async (projectId: string): Promise<string | null> => {
+  const generateToken = useCallback(async (projectId: string): Promise<{ shortCode: string; expiresAt: string } | null> => {
     const token = crypto.randomUUID()
     const shortCode = generateShortCode()
     const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
@@ -131,7 +134,7 @@ export function useClientPortal() {
       .eq('id', projectId)
 
     if (error) return null
-    return shortCode
+    return { shortCode, expiresAt }
   }, [])
 
   // Désactive le portail et efface le token (client authentifié)

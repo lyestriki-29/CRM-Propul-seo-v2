@@ -30,10 +30,10 @@ export function SharePortalButton({ project, onRefresh }: SharePortalButtonProps
 
   const handleGenerate = async () => {
     setLoading(true)
-    const token = await generateToken(project.id)
+    const result = await generateToken(project.id)
     setLoading(false)
-    if (token) {
-      setShortCode(token)
+    if (result) {
+      setShortCode(result.shortCode)
       setEnabled(true)
       toast.success('Lien client généré')
       onRefresh()

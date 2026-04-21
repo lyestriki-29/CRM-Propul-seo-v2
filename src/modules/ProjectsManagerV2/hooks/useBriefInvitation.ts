@@ -24,7 +24,10 @@ export function useBriefInvitation(token: string): UseBriefInvitationReturn {
   const [alreadySubmitted, setAlreadySubmitted] = useState(false)
 
   useEffect(() => {
-    if (!token) return
+    if (!token) {
+      setLoading(false)
+      return
+    }
     setError(null)
     setData(null)
     setAlreadySubmitted(false)

@@ -46,6 +46,11 @@ function fileIcon(mime: string | null) {
   return FileText
 }
 
+// Filtre les protocoles dangereux (javascript:, data:, vbscript:...)
+function isSafeUrl(url: string): boolean {
+  return /^https?:\/\//i.test(url)
+}
+
 export function PortalDocuments({ documents }: DocsProps) {
   if (documents.length === 0) return null
 
@@ -102,11 +107,14 @@ export function PortalDocuments({ documents }: DocsProps) {
                     {items.map(doc => {
                       const FileIcon = fileIcon(doc.mime_type)
                       const size = humanSize(doc.file_size)
+                      const safeUrl = isSafeUrl(doc.file_url) ? doc.file_url : undefined
 
                       return (
                         <a
                           key={doc.id}
-                          href={doc.file_url}
+                          href={safeUrl ?? '#'}
+                          aria-disabled={!safeUrl}
+                          onClick={e => { if (!safeUrl) e.preventDefault() }}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{

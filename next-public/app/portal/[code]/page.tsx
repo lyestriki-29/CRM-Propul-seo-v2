@@ -9,11 +9,13 @@ type Props = { params: Promise<{ code: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
   const supabase = createSupabaseServer()
+  const now = new Date().toISOString()
   const { data } = await supabase
     .from('projects_v2')
     .select('name, client_name')
     .eq('portal_short_code', code)
     .eq('portal_enabled', true)
+    .or(`portal_expires_at.is.null,portal_expires_at.gt.${now}`)
     .single()
   return {
     title: `Suivi projet — ${data?.client_name ?? data?.name ?? 'Propulseo'}`,

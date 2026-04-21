@@ -5,9 +5,11 @@ import { createClient } from '@supabase/supabase-js'
 // La sécurité d'accès reste assurée par la validation portal_short_code + portal_enabled
 // + portal_expires_at en amont de chaque query.
 export function createSupabaseServer() {
-  return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  )
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url) throw new Error('[supabase-server] SUPABASE_URL manquante')
+  if (!key) throw new Error('[supabase-server] SUPABASE_SERVICE_ROLE_KEY manquante')
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
 }

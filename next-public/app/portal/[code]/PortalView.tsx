@@ -1,5 +1,3 @@
-'use client'
-
 import { Logo } from '@/components/Logo'
 import { PortalShell } from '@/components/portal/PortalShell'
 import { PortalHero } from '@/components/portal/PortalHero'

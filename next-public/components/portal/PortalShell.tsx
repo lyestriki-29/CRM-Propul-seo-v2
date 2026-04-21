@@ -1,4 +1,6 @@
-export function PortalShell({ children }: { children: React.ReactNode }) {
+import type { ReactNode } from 'react'
+
+export function PortalShell({ children }: { children: ReactNode }) {
   return (
     <div
       style={{
