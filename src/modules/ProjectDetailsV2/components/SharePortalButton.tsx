@@ -15,9 +15,17 @@ export function SharePortalButton({ project, onRefresh }: SharePortalButtonProps
   const { generateToken, revokeToken } = useClientPortal()
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [shortCode, setShortCode] = useState<string | null>(project.portal_short_code ?? null)
+  const [enabled, setEnabled] = useState<boolean>(project.portal_enabled ?? false)
 
-  const portalUrl = project.portal_short_code && project.portal_enabled
-    ? `https://brief-propulseo.vercel.app/portal/${project.portal_short_code}`
+  // Resync si le parent refetch et nous envoie un nouveau projet
+  useEffect(() => {
+    setShortCode(project.portal_short_code ?? null)
+    setEnabled(project.portal_enabled ?? false)
+  }, [project.portal_short_code, project.portal_enabled])
+
+  const portalUrl = shortCode && enabled
+    ? `https://brief-propulseo.vercel.app/portal/${shortCode}`
     : null
 
   const handleGenerate = async () => {
@@ -25,6 +33,8 @@ export function SharePortalButton({ project, onRefresh }: SharePortalButtonProps
     const token = await generateToken(project.id)
     setLoading(false)
     if (token) {
+      setShortCode(token)
+      setEnabled(true)
       toast.success('Lien client généré')
       onRefresh()
     } else {
@@ -37,6 +47,8 @@ export function SharePortalButton({ project, onRefresh }: SharePortalButtonProps
     const ok = await revokeToken(project.id)
     setLoading(false)
     if (ok) {
+      setShortCode(null)
+      setEnabled(false)
       toast.success('Lien désactivé')
       onRefresh()
     } else {

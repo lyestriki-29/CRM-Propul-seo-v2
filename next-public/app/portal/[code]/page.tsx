@@ -53,22 +53,19 @@ export default async function PortalPage({ params }: Props) {
     .in('status', ['sent', 'paid', 'overdue'])
     .order('date', { ascending: false })
 
-  // 4. Contact client
-  let contact = null
-  if (project.client_id) {
-    const { data: clientData } = await supabase
-      .from('clients')
-      .select('name, email, phone, address, sector')
-      .eq('id', project.client_id)
-      .single()
-    if (clientData) contact = clientData
-  }
+  // 4. Documents partagés (maquettes / livrables / contrats uniquement)
+  const { data: documents } = await supabase
+    .from('project_documents_v2')
+    .select('id, name, category, file_url, file_size, mime_type, created_at')
+    .eq('project_id', project.id)
+    .in('category', ['mockup', 'deliverable', 'contract'])
+    .order('created_at', { ascending: false })
 
   const portalData: PortalData = {
     project,
     checklist: checklist ?? [],
     invoices: invoices ?? [],
-    contact,
+    documents: documents ?? [],
   }
 
   return <PortalView data={portalData} />
