@@ -57,7 +57,7 @@ type SuiviTab = 'rdv' | 'emails' | 'suivi'
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function ProjectFollowUp({ projectId }: { projectId: string }) {
-  const [tab, setTab]       = useState<SuiviTab>('rdv')
+  const [tab, setTab]       = useState<SuiviTab>('suivi')
   const [syncing, setSyncing] = useState(false)
 
   const { followUps, addFollowUp, updateFollowUp, deleteFollowUp, toggleDone } = useFollowUpsV2(projectId)
@@ -95,6 +95,12 @@ export function ProjectFollowUp({ projectId }: { projectId: string }) {
       {/* Onglets + bouton sync */}
       <div className="flex items-center justify-between gap-2">
       <div className="flex gap-1 border-b border-border flex-1">
+        <TabBtn active={tab === 'suivi'} onClick={() => setTab('suivi')} icon={<MessageSquare className="h-3.5 w-3.5" />}>
+          Suivi
+          {pendingActions > 0 && (
+            <span className="ml-1 text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded-full">{pendingActions}</span>
+          )}
+        </TabBtn>
         <TabBtn active={tab === 'rdv'} onClick={() => setTab('rdv')} icon={<Video className="h-3.5 w-3.5" />}>
           RDV
           {meetings.length > 0 && (
@@ -105,12 +111,6 @@ export function ProjectFollowUp({ projectId }: { projectId: string }) {
           Emails
           {emails.length > 0 && (
             <span className="ml-1 text-[10px] bg-teal-500/20 text-teal-300 px-1.5 py-0.5 rounded-full">{emails.length}</span>
-          )}
-        </TabBtn>
-        <TabBtn active={tab === 'suivi'} onClick={() => setTab('suivi')} icon={<MessageSquare className="h-3.5 w-3.5" />}>
-          Suivi
-          {pendingActions > 0 && (
-            <span className="ml-1 text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded-full">{pendingActions}</span>
           )}
         </TabBtn>
       </div>
@@ -724,7 +724,7 @@ function SuiviSection({
                   </div>
                 </div>
 
-                <p className="text-sm text-foreground leading-relaxed">{entry.summary}</p>
+                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap break-words">{entry.summary}</p>
 
                 {entry.follow_up_action && (
                   <div className={cn(

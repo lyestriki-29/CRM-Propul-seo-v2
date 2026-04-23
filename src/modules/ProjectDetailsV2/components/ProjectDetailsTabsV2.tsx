@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { BarChart3, Settings, Wallet, MessageCircle } from 'lucide-react'
+import { BarChart3, Settings, Wallet, MessageCircle, FolderOpen } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import { SyntheseTab } from './SyntheseTab'
 import { ProjectChecklist } from './ProjectChecklist'
 import { ProjectBilling } from './ProjectBilling'
 import { ProjectFollowUp } from './ProjectFollowUp'
+import { ProjectBriefDocs } from './ProjectBriefDocs'
 import type { ProjectV2 } from '../../../types/project-v2'
 
-type TabId = 'synthese' | 'production' | 'finances' | 'echanges'
+type TabId = 'synthese' | 'production' | 'finances' | 'echanges' | 'brief'
 
 const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
-  { id: 'synthese',   label: 'Synthèse',   icon: BarChart3 },
+  { id: 'synthese',   label: 'Synthèse',    icon: BarChart3 },
   { id: 'production', label: 'Production',  icon: Settings },
+  { id: 'brief',      label: 'Brief & docs', icon: FolderOpen },
   { id: 'finances',   label: 'Finances',    icon: Wallet },
   { id: 'echanges',   label: 'Échanges',    icon: MessageCircle },
 ]
@@ -23,8 +25,9 @@ export function ProjectDetailsTabsV2({ project }: { project: ProjectV2 }) {
     switch (activeTab) {
       case 'synthese':   return <SyntheseTab project={project} />
       case 'production': return <ProjectChecklist project={project} />
-      case 'finances':   return <ProjectBilling     key={project.id} project={project} />
-      case 'echanges':   return <ProjectFollowUp    key={project.id} projectId={project.id} />
+      case 'brief':      return <ProjectBriefDocs  key={project.id} projectId={project.id} />
+      case 'finances':   return <ProjectBilling    key={project.id} project={project} />
+      case 'echanges':   return <ProjectFollowUp   key={project.id} projectId={project.id} />
     }
   }
 

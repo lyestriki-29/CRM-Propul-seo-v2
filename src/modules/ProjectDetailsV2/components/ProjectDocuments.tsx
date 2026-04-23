@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import {
-  FileText, Upload, Download, Trash2, X, Mail,
+  FileText, Upload, Download, Trash2, X,
   Folder, FolderOpen, Search, ChevronDown, ChevronRight,
   FileImage, FileSpreadsheet, Archive, Receipt, ClipboardList, Briefcase,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '../../../lib/utils'
 import { v2 } from '../../../lib/supabase'
+import { supabase } from '../../../lib/supabase'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { DocumentCategory } from '../../../types/project-v2'
+
+const BUCKET = 'project-documents'
 
 // ─── Config catégories ───────────────────────────────────────────────────────
 
@@ -71,8 +74,6 @@ interface Doc {
   file_size: number | null
   mime_type: string | null
   uploader_name: string | null
-  source: string
-  gmail_metadata: { message_id: string; attachment_id: string; subject: string; from: string } | null
   created_at: string
 }
 
@@ -141,41 +142,67 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+
     const existingVersions = docs
       .filter(d => d.name.toLowerCase() === file.name.toLowerCase())
       .map(d => parseInt(d.version ?? '1'))
     const version = String(existingVersions.length > 0 ? Math.max(...existingVersions) + 1 : 1)
-    const { error } = await v2.from('project_documents').insert({
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const path = `${projectId}/${Date.now()}_v${version}_${safeName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, file, { cacheControl: '3600', upsert: false })
+
+    if (uploadError) {
+      toast.error(`Erreur upload : ${uploadError.message}`)
+      e.target.value = ''
+      return
+    }
+
+    const { error: insertError } = await v2.from('project_documents').insert({
       project_id: projectId,
       name: file.name,
       category: inferCategory(file.name, file.type),
       version,
+      file_path: path,
       file_size: file.size,
       mime_type: file.type || null,
       uploader_name: 'Admin',
-      source: 'upload',
     })
-    if (!error) { toast.success(`"${file.name}" ajouté`); fetchDocs() }
-    else toast.error('Erreur lors de l\'ajout')
+
+    if (insertError) {
+      await supabase.storage.from(BUCKET).remove([path])
+      toast.error(`Erreur métadonnées : ${insertError.message}`)
+    } else {
+      toast.success(`"${file.name}" ajouté`)
+      fetchDocs()
+    }
     e.target.value = ''
   }
 
   const handleDelete = async (doc: Doc) => {
+    if (doc.file_path) {
+      await supabase.storage.from(BUCKET).remove([doc.file_path])
+    }
     await v2.from('project_documents').delete().eq('id', doc.id)
     setDocs(prev => prev.filter(d => d.id !== doc.id))
     setConfirmDeleteId(null)
     toast.success('Document supprimé')
   }
 
-  const getDownloadUrl = (doc: Doc): string | null => {
-    if (doc.source === 'gmail' && doc.gmail_metadata) {
-      const { message_id, attachment_id } = doc.gmail_metadata
-      return `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gmail-get-attachment?messageId=${message_id}&attachmentId=${attachment_id}&filename=${encodeURIComponent(doc.name)}&mimeType=${encodeURIComponent(doc.mime_type ?? 'application/octet-stream')}`
+  const handleDownload = async (doc: Doc) => {
+    if (!doc.file_path) { toast.info('Fichier non disponible'); return }
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(doc.file_path, 60)
+    if (error || !data?.signedUrl) {
+      toast.error('Erreur génération lien')
+      return
     }
-    return doc.file_path ?? null
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
   }
-
-  const hasGmail = docs.some(d => d.source === 'gmail')
 
   if (loading) return <div className="py-12 text-center text-sm text-muted-foreground">Chargement…</div>
 
@@ -188,11 +215,6 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-foreground">Documents</h3>
           <span className="text-xs text-muted-foreground">{docs.length} fichier{docs.length !== 1 ? 's' : ''}</span>
-          {hasGmail && (
-            <span className="text-[10px] text-blue-400 flex items-center gap-0.5 bg-blue-500/10 px-1.5 py-0.5 rounded">
-              <Mail className="h-2.5 w-2.5" /> Gmail sync
-            </span>
-          )}
         </div>
         <button
           onClick={() => fileInputRef.current?.click()}
@@ -265,7 +287,6 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
                 {isOpen && (
                   <div className="border-t border-white/10 divide-y divide-white/5">
                     {catDocs.map(doc => {
-                      const url = getDownloadUrl(doc)
                       return (
                         <div key={doc.id}>
                           <div className="flex items-center gap-3 px-3 py-2.5 bg-surface-1/50 hover:bg-surface-2/50 transition-colors">
@@ -275,11 +296,6 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
                               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                 {doc.version && (
                                   <span className="text-[10px] bg-surface-3 text-muted-foreground px-1.5 py-0.5 rounded">V{doc.version}</span>
-                                )}
-                                {doc.source === 'gmail' && (
-                                  <span className="text-[10px] text-blue-400 flex items-center gap-0.5">
-                                    <Mail className="h-2.5 w-2.5" /> Gmail
-                                  </span>
                                 )}
                                 {doc.file_size != null && (
                                   <span className="text-[10px] text-muted-foreground">{formatSize(doc.file_size)}</span>
@@ -293,12 +309,12 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
                               </div>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
-                              {url ? (
-                                <a href={url} target="_blank" rel="noopener noreferrer"
+                              {doc.file_path ? (
+                                <button onClick={() => handleDownload(doc)}
                                   className="text-muted-foreground hover:text-foreground transition-colors p-1" title="Télécharger"
                                 >
                                   <Download className="h-4 w-4" />
-                                </a>
+                                </button>
                               ) : (
                                 <button onClick={() => toast.info('Fichier non disponible')}
                                   className="text-muted-foreground/40 p-1 cursor-not-allowed"

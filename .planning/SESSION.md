@@ -1,32 +1,26 @@
-# Session State — 2026-04-20 10:00
+# Session State — 2026-04-23 18:30
 
 ## Branch
 main
 
 ## Completed This Session
-- Migration projets v1 → projects_v2 : 11 site_web + 15 ERP insérés dans le BON projet Supabase (tbuqctfgjjxnevmsvucl)
-- CHECK constraint status élargi pour accepter statuts modules (SiteWeb/ERP/Comm)
-- Bouton Supprimer ajouté en haut à droite de ProjectDetailsV2 (SiteWeb + ERP)
-- Déploiement Vercel configuré : compte lyestriki-1222, projet crm-propulseo, URL https://crm-propulseo-red.vercel.app
-- Env vars Supabase ajoutées à Vercel prod
-- Sidebar : "En cours" → "Projets", suppression entrée "Mois en cours"
-- 8 projets "test" supprimés de projects_v2
-- Dashboard V2 KPI branchés sur accounting_entries (fin des mocks) : nouveau hook useDashboardKpisV2
-- Permissions : bypass admin basé sur role='admin' au lieu d'email hardcodé → Admin a les mêmes droits qu'Etienne
-- V2 access accordé à Thibaut, Lucie, théo, Pierre (can_view_dashboard + can_view_projects)
+- Onglet Suivi du dossier : Suivi mis en premier (par défaut) dans Échanges
+- Fix mise en forme notes suivi : ajout `whitespace-pre-wrap break-words` (retours à la ligne préservés)
+- Nouveau composant ProjectBriefDocs.tsx : sous-onglets Brief client / Documents
+- Ajout onglet "Brief & docs" dans ProjectDetailsTabsV2 (entre Production et Finances)
+- Fix bug upload Documents : retiré champs inexistants (`source`, `gmail_metadata`), ajout upload Storage réel (bucket `project-documents`, URL signée 60s)
+- Migration créée : supabase/migrations/20260422_project_documents_bucket.sql
 
 ## Next Task
-Fixer les fonctionnalités cassées :
-1. Envoi du lien portail client pour suivi (SharePortalButton dans SyntheseTab)
-2. Envoi du brief (brief_invitations / BriefLink)
+**⚠️ Migration bucket PAS encore appliquée sur Supabase** — à faire avant de tester l'upload doc :
+1. Appliquer la migration `20260422_project_documents_bucket.sql` via SQL Editor Supabase (ou créer bucket `project-documents` via UI : privé, 50MB)
+2. Tester upload/download/suppression depuis l'onglet Brief & docs > Documents
+3. Vérifier le sous-onglet Brief client fonctionne (useBriefV2)
 
 ## Blockers
-- Projet Supabase wftozvnvstxzvfplveyz (secondaire, pas utilisé par l'app) a des données de test laissées — pas urgent, pas important
-- Édition projets : personne n'a can_edit_projects sauf admins — à clarifier si besoin
+- Bucket Storage `project-documents` à créer sur Supabase (tbuqctfgjjxnevmsvucl)
 
 ## Key Context
-- **2 projets Supabase** : tbuqctfgjjxnevmsvucl (= le VRAI, utilisé par l'app via .env), wftozvnvstxzvfplveyz (= secondaire, accessible via MCP)
-- **Service role key** dans .env permet de contourner RLS via curl PostgREST
-- **Vercel** : compte lyestriki-1222, projet crm-v2s-projects/crm-propulseo
-- **Dashboard V2** KPI lisent accounting_entries (revenue_category : site_internet/erp/communication) pour CA année en cours + projects_v2 pour count projets actifs
-- **Permissions** : 15 flags can_view_*, bypass total si role='admin'
+- Onglets V2 Projet : Synthèse / Production / **Brief & docs** (NEW) / Finances / Échanges
+- Table `project_documents_v2` n'a PAS de colonne `source` ni `gmail_metadata` — ne jamais les insérer
+- Download utilise `supabase.storage.createSignedUrl(path, 60)` car bucket privé
