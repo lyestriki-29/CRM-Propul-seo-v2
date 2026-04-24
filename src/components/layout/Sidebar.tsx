@@ -23,6 +23,7 @@ import {
   LayoutDashboard,
   Globe,
   Settings2,
+  BookOpen,
   type LucideIcon
 } from 'lucide-react';
 import { useStore } from '../../store';
@@ -103,6 +104,7 @@ export function Sidebar() {
     items: [
       { id: 'dashboard-v2',      label: 'Dashboard V2',        icon: LayoutDashboard, permission: 'can_view_dashboard' },
       { id: 'projects-v2',       label: 'Gestion des projets', icon: Sparkles,        permission: 'can_view_projects' },
+      { id: 'procedures',        label: 'Procédures',          icon: BookOpen,        permission: 'can_view_procedures' },
     ]
   };
 

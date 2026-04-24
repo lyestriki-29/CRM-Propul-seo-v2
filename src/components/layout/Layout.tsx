@@ -32,6 +32,7 @@ const DashboardV2 = lazy(() => import('../../modules/DashboardV2').then(m => ({ 
 const SiteWebManager = lazy(() => import('../../modules/SiteWebManager').then(m => ({ default: m.SiteWebManager })))
 const ERPManager = lazy(() => import('../../modules/ERPManager').then(m => ({ default: m.ERPManager })))
 const CommunicationManager = lazy(() => import('../../modules/CommunicationManager').then(m => ({ default: m.CommunicationManager })))
+const ProceduresManager = lazy(() => import('../../modules/ProceduresManager').then(m => ({ default: m.ProceduresManager })))
 
 // Loading component
 const ModuleLoader = () => (
@@ -114,13 +115,14 @@ export function Layout() {
       'site-web': 'can_view_projects',
       'erp-manager': 'can_view_projects',
       'comm-manager': 'can_view_projects',
+      'procedures': 'can_view_procedures',
     };
 
     // Ordre de priorité pour la redirection (même ordre que la sidebar)
     const modulePriority = [
       'dashboard', 'dashboard-v2', 'site-web', 'erp-manager', 'comm-manager',
       'crm', 'crm-bot-one', 'crm-erp',
-      'projects', 'projects-v2',
+      'projects', 'projects-v2', 'procedures',
       'communication', 'communication-kpi',
       'communication-clients', 'accounting', 'settings'
     ];
@@ -161,6 +163,7 @@ export function Layout() {
       'site-web': 'can_view_projects',
       'erp-manager': 'can_view_projects',
       'comm-manager': 'can_view_projects',
+      'procedures': 'can_view_procedures',
     };
 
     const permission = modulePermissions[module];
@@ -238,6 +241,8 @@ export function Layout() {
         return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><ERPManager /></Suspense></ProjectsV2Provider>;
       case 'comm-manager':
         return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><CommunicationManager /></Suspense></ProjectsV2Provider>;
+      case 'procedures':
+        return wrappedComponent(ProceduresManager);
       default:
         return <Dashboard />;
     }

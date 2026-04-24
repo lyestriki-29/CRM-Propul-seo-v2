@@ -1,26 +1,25 @@
-# Session State — 2026-04-23 18:30
+# Session State — 2026-04-25 (fin)
 
 ## Branch
 main
 
 ## Completed This Session
-- Onglet Suivi du dossier : Suivi mis en premier (par défaut) dans Échanges
-- Fix mise en forme notes suivi : ajout `whitespace-pre-wrap break-words` (retours à la ligne préservés)
-- Nouveau composant ProjectBriefDocs.tsx : sous-onglets Brief client / Documents
-- Ajout onglet "Brief & docs" dans ProjectDetailsTabsV2 (entre Production et Finances)
-- Fix bug upload Documents : retiré champs inexistants (`source`, `gmail_metadata`), ajout upload Storage réel (bucket `project-documents`, URL signée 60s)
-- Migration créée : supabase/migrations/20260422_project_documents_bucket.sql
+- Nouveau module **Procédures** (wiki interne SOP) — `src/modules/ProceduresManager/`
+- Migration `20260424_procedures_module.sql` : tables `procedures` + `procedure_categories` + `procedure_revisions`, bucket Storage `procedure-assets`, RPC FTS, trigger historique, RLS
+- Fix FTS index : wrapper `procedures_fts_vector()` IMMUTABLE (évite 42P17)
+- Éditeur TipTap complet (toolbar + upload image + storagePath persistent + re-signature au render)
+- Code review auto : fixes P0 (SVG XSS retiré, URLs signées expirant 1h → pipeline storagePath) + P1 (editor.destroy)
+- Seed fiche "Acheter un nom de domaine sur Namecheap" (`20260425_seed_procedure_namecheap.sql`)
+- Les 3 migrations appliquées sur prod `tbuqctfgjjxnevmsvucl` (après erreur initiale sur le mauvais projet)
 
 ## Next Task
-**⚠️ Migration bucket PAS encore appliquée sur Supabase** — à faire avant de tester l'upload doc :
-1. Appliquer la migration `20260422_project_documents_bucket.sql` via SQL Editor Supabase (ou créer bucket `project-documents` via UI : privé, 50MB)
-2. Tester upload/download/suppression depuis l'onglet Brief & docs > Documents
-3. Vérifier le sous-onglet Brief client fonctionne (useBriefV2)
+Tester le module en UI : Sidebar V2 → Procédures → voir fiche Namecheap, éditer, upload image, vérifier historique.
 
 ## Blockers
-- Bucket Storage `project-documents` à créer sur Supabase (tbuqctfgjjxnevmsvucl)
+Aucun. Tout est déployé.
 
 ## Key Context
-- Onglets V2 Projet : Synthèse / Production / **Brief & docs** (NEW) / Finances / Échanges
-- Table `project_documents_v2` n'a PAS de colonne `source` ni `gmail_metadata` — ne jamais les insérer
-- Download utilise `supabase.storage.createSignedUrl(path, 60)` car bucket privé
+- Tables sans suffixe `_v2` (nouveau module, pas de legacy) → accès direct `supabase.from('procedures')`.
+- Images TipTap : `src = signedUrl temp` + `storagePath = path Storage`. Serialize au save, resolve au render via `useResolvedContent`.
+- User a 2 Supabase : perso `wftozvnvstxzvfplveyz` (à nettoyer si besoin) et team `tbuqctfgjjxnevmsvucl` (prod app).
+- Dev server toujours UP sur :5173 et :5174.
