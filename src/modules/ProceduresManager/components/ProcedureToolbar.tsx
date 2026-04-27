@@ -15,11 +15,16 @@ import {
   Undo2,
   Redo2,
   Minus,
+  Lightbulb,
+  AlertTriangle,
+  CheckCircle2,
+  Info,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { uploadProcedureImage } from '../lib/upload-image'
+import { buildCalloutNode, type CalloutKind } from '../lib/procedure-template'
 
 interface ProcedureToolbarProps {
   editor: Editor | null
@@ -58,6 +63,10 @@ export function ProcedureToolbar({ editor, procedureId }: ProcedureToolbarProps)
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''
     }
+  }
+
+  const insertCallout = (kind: CalloutKind) => {
+    editor.chain().focus().insertContent(buildCalloutNode(kind)).run()
   }
 
   const handleLink = () => {
@@ -166,6 +175,41 @@ export function ProcedureToolbar({ editor, procedureId }: ProcedureToolbarProps)
         title="Séparateur"
       >
         <Minus className="h-4 w-4" />
+      </button>
+
+      <div className="w-px h-5 bg-border/60 mx-1" />
+
+      <button
+        type="button"
+        onClick={() => insertCallout('tip')}
+        className={btn(false, 'hover:!text-violet-300')}
+        title="Astuce 💡"
+      >
+        <Lightbulb className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => insertCallout('warning')}
+        className={btn(false, 'hover:!text-amber-300')}
+        title="Attention ⚠️"
+      >
+        <AlertTriangle className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => insertCallout('success')}
+        className={btn(false, 'hover:!text-emerald-300')}
+        title="Validation ✅"
+      >
+        <CheckCircle2 className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => insertCallout('note')}
+        className={btn(false, 'hover:!text-sky-300')}
+        title="Note ℹ️"
+      >
+        <Info className="h-4 w-4" />
       </button>
 
       <div className="w-px h-5 bg-border/60 mx-1" />

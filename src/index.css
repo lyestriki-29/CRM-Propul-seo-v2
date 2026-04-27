@@ -978,3 +978,126 @@ body {
 .calendar-day-busy {
   background: rgba(245, 158, 11, 0.03) !important;
 }
+
+/* =====================================================
+   PROCEDURE DOC VIEW — typography + numbering + callouts
+   Standard d'entreprise : line-height 1.85, h2 uppercase
+   numérotés (01, 02), h3 numérotés 1.1, callouts sobres.
+   ===================================================== */
+
+/* --- Callouts (style 'docs') : encadré border-left coloré --- */
+.procedure-prose blockquote[data-callout] {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  font-style: normal;
+  color: hsl(var(--foreground) / 0.9);
+  position: relative;
+}
+
+.procedure-prose blockquote[data-callout='tip'] {
+  border-left-color: rgb(167 139 250);
+  background: rgba(167, 139, 250, 0.05);
+}
+
+.procedure-prose blockquote[data-callout='warning'] {
+  border-left-color: rgb(251 191 36);
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.procedure-prose blockquote[data-callout='success'] {
+  border-left-color: rgb(52 211 153);
+  background: rgba(52, 211, 153, 0.05);
+}
+
+.procedure-prose blockquote[data-callout='note'] {
+  border-left-color: rgb(125 211 252);
+  background: rgba(125, 211, 252, 0.05);
+}
+
+.procedure-prose blockquote[data-callout]::before {
+  content: attr(data-callout-label);
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  color: hsl(var(--foreground) / 0.95);
+}
+
+.procedure-prose blockquote[data-callout='tip']::before { color: rgb(196 181 253); }
+.procedure-prose blockquote[data-callout='warning']::before { color: rgb(252 211 77); }
+.procedure-prose blockquote[data-callout='success']::before { color: rgb(110 231 183); }
+.procedure-prose blockquote[data-callout='note']::before { color: rgb(186 230 253); }
+
+.procedure-prose blockquote[data-callout] p {
+  margin: 0;
+  font-style: normal;
+  color: hsl(var(--foreground) / 0.9);
+}
+
+.procedure-prose blockquote[data-callout] p + p {
+  margin-top: 0.5rem;
+}
+
+/* --- Numérotation hiérarchique des h2/h3 (01, 02, 1.1, 1.2) --- */
+.procedure-prose-doc {
+  counter-reset: c-h2;
+}
+
+.procedure-prose-doc h2 {
+  counter-increment: c-h2;
+  counter-reset: c-h3;
+  position: relative;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+  font-size: 0.85rem !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase;
+  color: hsl(var(--foreground)) !important;
+  margin-top: 3.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.procedure-prose-doc h2::before {
+  content: counter(c-h2, decimal-leading-zero);
+  display: inline-block;
+  margin-right: 1rem;
+  color: hsl(var(--primary));
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0;
+}
+
+.procedure-prose-doc h3 {
+  counter-increment: c-h3;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: hsl(var(--foreground) / 0.9) !important;
+  margin-top: 2.5rem !important;
+}
+
+.procedure-prose-doc h3::before {
+  content: counter(c-h2) '.' counter(c-h3) ' ';
+  margin-right: 0.5rem;
+  color: hsl(var(--primary) / 0.7);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.procedure-prose-doc p,
+.procedure-prose-doc li {
+  font-feature-settings: 'kern', 'liga';
+  text-rendering: optimizeLegibility;
+}
+
+.procedure-prose-doc > p:first-of-type {
+  font-size: 1.05rem !important;
+  line-height: 1.8 !important;
+  color: hsl(var(--foreground) / 0.95) !important;
+}

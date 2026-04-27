@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
-import { ArrowLeft, Save, X } from 'lucide-react'
+import { ArrowLeft, Save, X, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { buildExtensions } from '../lib/tiptap-extensions'
 import { ProcedureToolbar } from './ProcedureToolbar'
 import { TagInput } from './TagInput'
+import { Prose } from './views/shared/Prose'
 import { useProcedureCategories } from '../hooks/useProcedureCategories'
 import { useProcedures } from '../hooks/useProcedures'
 import { useResolvedContent } from '../hooks/useResolvedContent'
+import { NEW_PROCEDURE_TEMPLATE } from '../lib/procedure-template'
 import type { Procedure, TipTapDoc } from '../types'
 
 interface ProcedureEditorProps {
@@ -19,8 +21,6 @@ interface ProcedureEditorProps {
   allTags: string[]
 }
 
-const EMPTY_DOC: TipTapDoc = { type: 'doc', content: [] }
-
 export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: ProcedureEditorProps) {
   const { categories } = useProcedureCategories()
   const { create, update } = useProcedures()
@@ -30,9 +30,13 @@ export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: Procedu
   const [categoryId, setCategoryId] = useState<string | null>(procedure?.category_id ?? null)
   const [tags, setTags] = useState<string[]>(procedure?.tags ?? [])
   const [saving, setSaving] = useState(false)
+  const [previewMode, setPreviewMode] = useState(false)
+  const [previewContent, setPreviewContent] = useState<TipTapDoc>(
+    procedure?.content ?? NEW_PROCEDURE_TEMPLATE,
+  )
 
   const initialContent = useMemo<TipTapDoc>(
-    () => procedure?.content ?? EMPTY_DOC,
+    () => procedure?.content ?? NEW_PROCEDURE_TEMPLATE,
     [procedure?.id]
   )
 
@@ -58,6 +62,22 @@ export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: Procedu
   )
 
   useEffect(() => () => { editor?.destroy() }, [editor])
+
+  useEffect(() => {
+    if (!editor) return
+    const sync = () => setPreviewContent(editor.getJSON() as TipTapDoc)
+    sync()
+    editor.on('update', sync)
+    editor.on('create', sync)
+    return () => {
+      editor.off('update', sync)
+      editor.off('create', sync)
+    }
+  }, [editor])
+
+  const previewKey = useMemo(() => {
+    return `${procedure?.id ?? 'new'}-${previewMode ? 'on' : 'off'}`
+  }, [procedure?.id, previewMode])
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -101,6 +121,19 @@ export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: Procedu
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPreviewMode((v) => !v)}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm transition-colors',
+              previewMode
+                ? 'border-primary/50 bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground hover:bg-surface-2',
+            )}
+            title={previewMode ? 'Masquer l\u2019aperçu' : 'Afficher l\u2019aperçu'}
+          >
+            {previewMode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            Aperçu
+          </button>
           <button
             onClick={onBack}
             className="flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-md text-muted-foreground hover:bg-surface-2 text-sm"
@@ -168,11 +201,51 @@ export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: Procedu
         </div>
       </div>
 
-      <div className="flex-1 bg-surface-1">
-        <ProcedureToolbar editor={editor} procedureId={procedure?.id ?? null} />
-        <div className="px-6 py-6 max-w-4xl mx-auto">
-          <EditorContent editor={editor} />
+      <div className="flex-1 bg-surface-1 flex min-h-0">
+        <div className={cn('flex flex-col min-w-0', previewMode ? 'w-1/2 border-r border-border/40' : 'w-full')}>
+          <ProcedureToolbar editor={editor} procedureId={procedure?.id ?? null} />
+          <div className={cn('px-6 py-6 mx-auto w-full overflow-y-auto', previewMode ? 'max-w-none' : 'max-w-4xl')}>
+            <EditorContent editor={editor} />
+          </div>
         </div>
+
+        {previewMode && (
+          <div className="w-1/2 min-w-0 overflow-y-auto bg-background">
+            <div className="px-8 py-8">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-primary mb-3">
+                Aperçu — rendu Doc
+              </div>
+              {title && (
+                <h1 className="text-3xl font-semibold text-foreground tracking-tight leading-tight mb-3">
+                  {title}
+                </h1>
+              )}
+              {summary && (
+                <p className="text-base text-muted-foreground leading-[1.7] mb-6">{summary}</p>
+              )}
+              <div className="h-px bg-gradient-to-r from-primary/40 via-border to-transparent mb-8" />
+              <Prose
+                content={previewContent}
+                contentKey={previewKey}
+                calloutStyle="docs"
+                className={cn(
+                  'procedure-prose procedure-prose-doc',
+                  'prose prose-invert max-w-none',
+                  'prose-headings:text-foreground prose-headings:font-semibold prose-headings:tracking-tight',
+                  'prose-h2:text-[1.35rem] prose-h2:mt-12 prose-h2:mb-5 prose-h2:uppercase prose-h2:tracking-wide',
+                  'prose-h3:text-base prose-h3:mt-8 prose-h3:mb-3',
+                  'prose-p:text-foreground/85 prose-p:leading-[1.85] prose-p:my-4 prose-p:text-[0.95rem]',
+                  'prose-strong:text-foreground prose-strong:font-semibold',
+                  'prose-a:text-primary prose-a:no-underline hover:prose-a:underline',
+                  'prose-code:text-primary prose-code:bg-surface-3/80 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[0.85em] prose-code:font-mono prose-code:font-normal',
+                  'prose-code:before:content-none prose-code:after:content-none',
+                  'prose-li:text-foreground/85 prose-li:my-2 prose-li:leading-[1.85]',
+                  'prose-img:rounded-md prose-img:my-8',
+                )}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
