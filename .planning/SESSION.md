@@ -1,31 +1,33 @@
-# Session State — 2026-04-27
+# Session State — 2026-04-29
 
 ## Branch
 main
 
 ## Completed This Session
-- Refonte rendu fiche Procédure : 3 variantes preview (Docs/Mag/KB) puis 4 enterprise (Conseil/SOP/RFC/Notion). Choix final = **Conseil** (renommé Doc).
-- Cleanup : suppression des 6 autres variantes + VariantSwitcher. Doc est la norme unique.
-- Template par défaut à la création (Contexte / Procédure / Astuces / Validation) → pousse la structure que Doc exploite (numérotation auto h2/h3, callouts via emoji).
-- 4 boutons callouts dans toolbar TipTap (1-clic insertion 💡⚠️✅ℹ️).
-- Aperçu live split-view dans l'éditeur (toggle Eye).
-- Migration `20260425_fix_double_apostrophes.sql` créée mais **PAS encore appliquée** sur prod.
-- Doc full-width : suppression `max-w-[760px]` sur la colonne principale.
-- Commit `cb1f3e8` push sur main.
+- Routing URL câblé partout (react-router-dom v7) : `<BrowserRouter>` dans App.tsx, `<Routes>` dans Layout, `<NavLink>` dans Sidebar.
+- Mapping centralisé `src/lib/routes.ts` (URLs FR : /dashboard, /projets, /procedures, /comptabilite, etc.) avec helpers `botOneRecord(id)`, `crmErpLead(id)`, `projectDetail(id)`, `clientDetail(id)`, `procedureDetail(slug)`, etc.
+- Sous-routes câblées : `/bot-one/:recordId`, `/crm-erp/leads/:leadId`, `/projets/:id`, `/clients/:id`, `/procedures/:slug` (+ `/edit`, `/revisions`).
+- 18 call sites `setActiveModule` / `navigateWithContext` migrés → `useNavigate`. Permaliens via `useParams`, transients via `?p=`, `?edit=`, `?from=`.
+- `navigationSlice` supprimé du store ; types `Store` (store/types.ts + types/index.ts) nettoyés ; `selectActiveModule`/`selectNavigationContext` retirés.
+- App.tsx : routes publiques `/portal/:token`, `/brief/:token`, `/brief-invite/:token` extraites en composants validés via regex shortCode.
+- Layout.tsx : redirection permissions via `getPermissionForPath()` + `navigate(replace:true)`, fallback `*` → `/dashboard`.
+- Build ✓ (17.88s, erreurs TS pré-existantes uniquement) ; dev server répond 200 sur `/`, `/dashboard`, `/procedures`.
+- Commits `e9aae53` (top-level routing) + `2629cd4` (sous-routes details/onglets) + `c9c5616` (merge `feat/routing-detail-views`) + `647d085` (WYSIWYG procedures) déjà push sur main.
 
 ## Next Task
-**Câbler le routing URL.** L'app utilise actuellement Zustand `activeModule` (string) pour la nav — donc URL fixe, refresh = reset au défaut. À faire :
-1. Installer `react-router-dom` (le repo est Vite/React, pas Next).
-2. Wrap `App.tsx` avec `<BrowserRouter>`.
-3. Définir routes pour chaque module (`/dashboard`, `/projets`, `/communication`, `/erp`, `/site-web`, `/contacts`, `/clients/:id`, `/projets/:id`, `/procedures`, `/procedures/:slug`, `/comptabilite`, `/parametres`, etc.).
-4. Remplacer `setActiveModule()` par `navigate()`.
-5. Sidebar : transformer les buttons en `<NavLink>` pour le highlight automatique.
-6. Vérifier que Vercel a bien le rewrite SPA (`vercel.json` ou config) pour que `/procedures/foo` ne 404 pas en prod.
+Sprint suivant ouvert. Pistes naturelles :
+1. **Audit erreurs TS pré-existantes** : ~80 erreurs TS6133 (imports/vars unused) + quelques TS2322/TS2339 réels — à nettoyer avec `npm run lint --fix` + passes ciblées (composants Header, MobileCalendar, useMentionNotifications, UserSelector).
+2. **Module Procédures Phase 3** : recherche full-text (`procedures.content_text` indexé tsvector), filtres tags, raccourcis clavier (Cmd+K palette).
+3. **Dashboard V2** : vrais KPI temps-réel (subscriber Realtime sur `accounting_entries` + `projects_v2`).
+
+Demander à l'utilisateur quelle direction prendre.
 
 ## Blockers
-**Migration apostrophes à appliquer manuellement** sur Supabase prod `tbuqctfgjjxnevmsvucl` via SQL Editor (sinon `l''adresse` reste affiché sur les 16 fiches existantes).
+Aucun.
 
 ## Key Context
-- Login admin Vercel projet `crm-propulseo` : team `team_PGObt4GifDGrYd18ieqpAiSY` (PAS lolett64). CLI local n'a pas accès.
-- Comptes admin app : `team@propulseo-site.com` (Etienne), `admin@propulseo.com` (Admin). MDP saisi `Raodto100k!` était mauvais — reset via Supabase Dashboard Auth.
-- Toute UI/feature à coder dans modules **V2** uniquement (CommunicationManager, ERPManager, SiteWebManager, ProjectsManagerV2, DashboardV2). Jamais les anciens.
+- Migration `20260425_fix_double_apostrophes.sql` appliquée et vérifiée (0 doubles `''` en base) — ticket fermé.
+- Routes URL FR canoniques. URLs partagées de la forme `/projets/:id`, `/clients/:id`, `/procedures/:slug` — ces IDs/slugs sont stables.
+- Compat `?p=:id` sur `/projets` redirige automatiquement vers `/projets/:id` (anciens partages de liens).
+- `?from=dashboard` utilisé pour afficher le bouton retour conditionnel sur CRM/CRMERP.
+- Toute UI/feature à coder dans modules **V2** uniquement (CommunicationManager, ERPManager, SiteWebManager, ProjectsManagerV2, DashboardV2, ProceduresManager).
