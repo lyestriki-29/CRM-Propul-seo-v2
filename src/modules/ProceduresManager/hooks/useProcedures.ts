@@ -42,6 +42,16 @@ export function useProcedures() {
     return data as unknown as Procedure
   }, [])
 
+  const getBySlug = useCallback(async (slug: string): Promise<Procedure | null> => {
+    const { data, error } = await supabase
+      .from('procedures')
+      .select('*')
+      .eq('slug', slug)
+      .maybeSingle()
+    if (error || !data) return null
+    return data as unknown as Procedure
+  }, [])
+
   const create = useCallback(
     async (input: {
       title: string
@@ -168,6 +178,7 @@ export function useProcedures() {
     error,
     reload: load,
     getById,
+    getBySlug,
     create,
     update,
     togglePin,

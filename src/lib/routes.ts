@@ -10,13 +10,26 @@ export const routes = {
   // V2 (par défaut)
   dashboard: '/dashboard',
   projects: '/projets',
+  projectDetail: (id: string) => `/projets/${id}`,
   projectsCompleted: '/projets/termines',
+
+  // Procédures (wiki interne)
   procedures: '/procedures',
+  procedureNew: '/procedures/new',
+  procedureDetail: (slug: string) => `/procedures/${slug}`,
+  procedureEdit: (slug: string) => `/procedures/${slug}/edit`,
+  procedureRevisions: (slug: string) => `/procedures/${slug}/revisions`,
 
   // Pôles V2
   communication: '/communication',
+  communicationProject: (id: string) => `/communication/${id}`,
   erp: '/erp',
+  erpProject: (id: string) => `/erp/${id}`,
   siteWeb: '/site-web',
+  siteWebProject: (id: string) => `/site-web/${id}`,
+
+  // Détail client (lead/contact CRM)
+  clientDetail: (id: string) => `/clients/${id}`,
 
   // CRM v1
   dashboardLegacy: '/dashboard-v1',

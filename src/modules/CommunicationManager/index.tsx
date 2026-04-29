@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react'
 import { Megaphone, TrendingUp, Users, Award, DollarSign, ChevronDown, ChevronUp, LayoutGrid, FolderKanban, CalendarDays, CalendarRange, Plus } from 'lucide-react'
+import { Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { useViewParam } from '@/lib/useViewParam'
+import { routes } from '@/lib/routes'
 import { useMockCommProjects } from './hooks/useMockCommProjects'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import { CommTaskBoard } from './components/CommTaskBoard'
@@ -31,12 +34,46 @@ const NAV_ITEMS: { id: MainView; label: string; icon: React.ReactNode }[] = [
 
 type DetailTab = 'brief' | 'suivi'
 
+/**
+ * Module Communication — câblé sur l'URL.
+ *  - /communication             → liste (pipeline / projets / mois / semaine via ?view=)
+ *  - /communication/:id         → détail projet (ProjectDetailsV2)
+ */
 export function CommunicationManager() {
+  return (
+    <Routes>
+      <Route index element={<CommunicationList />} />
+      <Route path=":id" element={<CommunicationProjectDetail />} />
+      <Route path="*" element={<Navigate to={routes.communication} replace />} />
+    </Routes>
+  )
+}
+
+function CommunicationProjectDetail() {
+  const { id = '' } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { projects, loading, refetch } = useMockCommProjects()
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Chargement…</div>
+  }
+  const project = projects.find((p) => p.id === id)
+  if (!project) return <Navigate to={routes.communication} replace />
+  return (
+    <ProjectDetailsV2
+      projectId={project.id}
+      project={project}
+      backLabel="Communication"
+      onBack={() => { navigate(routes.communication); refetch() }}
+    />
+  )
+}
+
+function CommunicationList() {
+  const navigate = useNavigate()
   const { projects, updateStatus, addProject, refetch } = useMockCommProjects()
   const [selectedProject, setSelectedProject] = useState<CommProject | null>(null)
   const [activeTab, setActiveTab] = useState<DetailTab>('brief')
-  const [showDetails, setShowDetails] = useState(false)
-  const [mainView, setMainView] = useState<MainView>('pipeline')
+  const [mainView, setMainView] = useViewParam<MainView>('view', 'pipeline', ['pipeline', 'project', 'month', 'week'])
   const [showKpi, setShowKpi] = useState(false)
   const [showNewProject, setShowNewProject] = useState(false)
 
@@ -68,20 +105,8 @@ export function CommunicationManager() {
     return { mrr, nbAbonnes, topPackLabel, caOneShot }
   }, [projects])
 
-  if (showDetails && selectedProject) {
-    return (
-      <ProjectDetailsV2
-        projectId={selectedProject.id}
-        project={selectedProject}
-        backLabel="Communication"
-        onBack={() => { setShowDetails(false); setSelectedProject(null); refetch() }}
-      />
-    )
-  }
-
   const handleProjectClick = (project: CommProject) => {
-    setSelectedProject(project)
-    setShowDetails(true)
+    navigate(routes.communicationProject(project.id))
   }
 
   const handleStatusChange = (project: CommProject, status: StatusComm) => {

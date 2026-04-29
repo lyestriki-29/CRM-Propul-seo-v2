@@ -1,7 +1,10 @@
 import React, { useMemo, useState } from 'react'
 import { Globe, TrendingUp, FolderOpen, Award, DollarSign, ChevronDown, ChevronUp, LayoutGrid, FolderKanban, CalendarDays, CalendarRange, Plus } from 'lucide-react'
+import { Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { useViewParam } from '@/lib/useViewParam'
+import { routes } from '@/lib/routes'
 import { useMockSiteWebProjects } from './hooks/useMockSiteWebProjects'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import { SiteWebTaskBoard } from './components/SiteWebTaskBoard'
@@ -32,11 +35,46 @@ const NAV_ITEMS: { id: MainView; label: string; icon: React.ReactNode }[] = [
   { id: 'week',     label: 'Semaine',   icon: <CalendarRange className="w-3.5 h-3.5" /> },
 ]
 
+/**
+ * Module Site Web & SEO — câblé sur l'URL.
+ *  - /site-web              → liste / pipeline (vue via ?view=)
+ *  - /site-web/:id          → détail projet
+ */
 export function SiteWebManager() {
+  return (
+    <Routes>
+      <Route index element={<SiteWebList />} />
+      <Route path=":id" element={<SiteWebProjectDetail />} />
+      <Route path="*" element={<Navigate to={routes.siteWeb} replace />} />
+    </Routes>
+  )
+}
+
+function SiteWebProjectDetail() {
+  const { id = '' } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { projects, loading, deleteProject, refetch } = useMockSiteWebProjects()
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Chargement…</div>
+  }
+  const project = projects.find((p) => p.id === id)
+  if (!project) return <Navigate to={routes.siteWeb} replace />
+  return (
+    <ProjectDetailsV2
+      projectId={project.id}
+      project={project}
+      backLabel="Site Web & SEO"
+      onBack={() => { navigate(routes.siteWeb); refetch() }}
+      onDelete={(pid) => { deleteProject(pid); navigate(routes.siteWeb) }}
+    />
+  )
+}
+
+function SiteWebList() {
+  const navigate = useNavigate()
   const { projects, updateStatus, addProject, deleteProject, refetch } = useMockSiteWebProjects()
   const [selectedProject, setSelectedProject] = useState<SiteWebProject | null>(null)
-  const [showDetails, setShowDetails] = useState(false)
-  const [mainView, setMainView] = useState<MainView>('pipeline')
+  const [mainView, setMainView] = useViewParam<MainView>('view', 'pipeline', ['pipeline', 'project', 'month', 'week'])
   const [showKpi, setShowKpi] = useState(false)
   const [showNewProject, setShowNewProject] = useState(false)
 
@@ -76,21 +114,8 @@ export function SiteWebManager() {
     return { caSign, caLivre, actifs, topPack }
   }, [projects])
 
-  if (showDetails && selectedProject) {
-    return (
-      <ProjectDetailsV2
-        projectId={selectedProject.id}
-        project={selectedProject}
-        backLabel="Site Web & SEO"
-        onBack={() => { setShowDetails(false); setSelectedProject(null); refetch() }}
-        onDelete={(id) => { deleteProject(id); setShowDetails(false); setSelectedProject(null) }}
-      />
-    )
-  }
-
   const handleViewProject = (project: SiteWebProject) => {
-    setSelectedProject(project)
-    setShowDetails(true)
+    navigate(routes.siteWebProject(project.id))
   }
 
   const handleDeleteProject = (project: SiteWebProject) => {

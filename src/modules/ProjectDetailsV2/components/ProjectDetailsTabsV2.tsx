@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { BarChart3, Settings, Wallet, MessageCircle, FolderOpen } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import { SyntheseTab } from './SyntheseTab'
@@ -6,9 +5,11 @@ import { ProjectChecklist } from './ProjectChecklist'
 import { ProjectBilling } from './ProjectBilling'
 import { ProjectFollowUp } from './ProjectFollowUp'
 import { ProjectBriefDocs } from './ProjectBriefDocs'
+import { useViewParam } from '@/lib/useViewParam'
 import type { ProjectV2 } from '../../../types/project-v2'
 
 type TabId = 'synthese' | 'production' | 'finances' | 'echanges' | 'brief'
+const TAB_IDS: readonly TabId[] = ['synthese', 'production', 'brief', 'finances', 'echanges'] as const
 
 const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
   { id: 'synthese',   label: 'Synthèse',    icon: BarChart3 },
@@ -19,7 +20,7 @@ const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
 ]
 
 export function ProjectDetailsTabsV2({ project }: { project: ProjectV2 }) {
-  const [activeTab, setActiveTab] = useState<TabId>('synthese')
+  const [activeTab, setActiveTab] = useViewParam<TabId>('tab', 'synthese', TAB_IDS)
 
   const renderContent = () => {
     switch (activeTab) {

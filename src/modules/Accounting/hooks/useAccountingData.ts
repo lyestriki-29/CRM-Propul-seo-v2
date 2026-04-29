@@ -1,11 +1,37 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRealtimeAccounting } from '../../../hooks/useRealtimeAccounting';
 import { useAnnualAccounting } from '../../../hooks/useAnnualAccounting';
 import { useIsMobile } from '../../../hooks/useMediaQuery';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 
+// Format/Parse YYYY-MM ↔ Date (1er jour du mois en local)
+function parseMonth(s: string | null): Date {
+  if (!s) return new Date();
+  const m = s.match(/^(\d{4})-(\d{2})$/);
+  if (!m) return new Date();
+  const year = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10) - 1;
+  if (Number.isNaN(year) || Number.isNaN(month) || month < 0 || month > 11) return new Date();
+  return new Date(year, month, 1);
+}
+function formatMonth(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
 export function useAccountingData() {
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedMonth = useMemo(() => parseMonth(searchParams.get('month')), [searchParams]);
+  const setSelectedMonth = useCallback((next: Date) => {
+    setSearchParams((prev) => {
+      const np = new URLSearchParams(prev);
+      const today = new Date();
+      const isCurrent = next.getFullYear() === today.getFullYear() && next.getMonth() === today.getMonth();
+      if (isCurrent) np.delete('month');
+      else np.set('month', formatMonth(next));
+      return np;
+    }, { replace: true });
+  }, [setSearchParams]);
   const [mounted, setMounted] = useState(false);
   const currentYear = new Date().getFullYear();
   const isMobile = useIsMobile();
