@@ -8,7 +8,8 @@ import { ProjectStatusBadge } from './components/ProjectStatusBadge'
 import { PrestaList } from './components/PrestaBadge'
 import { ProjectsV2Provider } from './context/ProjectsV2Context'
 import { useMockProjects } from './hooks/useMockProjects'
-import { useSearchParams } from 'react-router-dom'
+import { Routes, Route, useSearchParams, useNavigate, useParams, Navigate } from 'react-router-dom'
+import { routes } from '@/lib/routes'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 import { MobileHeader } from '../../components/mobile/MobileHeader'
 import { FAB } from '../../components/mobile/FAB'
@@ -29,22 +30,42 @@ const EMPTY_FORM = {
   assigned_to: '',
 }
 
+/**
+ * Module Projets V2 — câblé sur l'URL.
+ *  - /projets             → liste
+ *  - /projets/:id         → détail projet
+ * Compat : /projets?p=ID  → redirige vers /projets/:id (ancien partage de liens)
+ */
 export function ProjectsManagerV2() {
   return (
     <ProjectsV2Provider>
-      <ProjectsManagerV2Inner />
+      <Routes>
+        <Route index element={<ProjectsManagerV2Inner />} />
+        <Route path=":id" element={<ProjectsManagerV2Detail />} />
+        <Route path="*" element={<Navigate to={routes.projects} replace />} />
+      </Routes>
     </ProjectsV2Provider>
+  )
+}
+
+function ProjectsManagerV2Detail() {
+  const { id = '' } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  return (
+    <ProjectDetailsV2
+      projectId={id}
+      onBack={() => navigate(routes.projects)}
+    />
   )
 }
 
 function ProjectsManagerV2Inner() {
   const { projects, updateProjectStatus, updateProject, addProject, deleteProject } = useMockProjects()
   const isMobile = useIsMobile()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const [showAddProject, setShowAddProject]         = useState(false)
-  const [showProjectDetails, setShowProjectDetails] = useState(false)
-  const [selectedProjectId, setSelectedProjectId]   = useState<string | null>(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingProject, setEditingProject] = useState<ProjectV2 | null>(null)
   const [filterUser, setFilterUser] = useState<string>('')
@@ -57,17 +78,20 @@ function ProjectsManagerV2Inner() {
     })
   }, [])
 
+  // Compat : ?p=ID → /projets/:id (ancien partage de liens)
   useEffect(() => {
     const pid = searchParams.get('p')
     if (pid) {
-      setSelectedProjectId(pid)
-      setShowProjectDetails(true)
+      // Strip ?p= et navigate vers le segment URL canonique
+      const np = new URLSearchParams(searchParams)
+      np.delete('p')
+      setSearchParams(np, { replace: true })
+      navigate(routes.projectDetail(pid), { replace: true })
     }
-  }, [searchParams])
+  }, [searchParams, setSearchParams, navigate])
 
   const handleViewProject = (project: ProjectV2) => {
-    setSelectedProjectId(project.id)
-    setShowProjectDetails(true)
+    navigate(routes.projectDetail(project.id))
   }
 
   const handleEditProject = (project: ProjectV2) => {
@@ -88,10 +112,6 @@ function ProjectsManagerV2Inner() {
     }
   }
 
-  const handleBackToList = () => {
-    setShowProjectDetails(false)
-    setSelectedProjectId(null)
-  }
 
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -132,10 +152,6 @@ function ProjectsManagerV2Inner() {
     () => filterUser ? projects.filter(p => p.assigned_to === filterUser) : projects,
     [projects, filterUser]
   )
-
-  if (showProjectDetails && selectedProjectId) {
-    return <ProjectDetailsV2 projectId={selectedProjectId} onBack={handleBackToList} />
-  }
 
   return (
     <div className={cn('min-h-screen', isMobile ? 'pb-20' : 'p-6 space-y-4')}>

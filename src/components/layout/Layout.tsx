@@ -34,6 +34,7 @@ const SiteWebManager = lazy(() => import('../../modules/SiteWebManager').then(m 
 const ERPManager = lazy(() => import('../../modules/ERPManager').then(m => ({ default: m.ERPManager })))
 const CommunicationManager = lazy(() => import('../../modules/CommunicationManager').then(m => ({ default: m.CommunicationManager })))
 const ProceduresManager = lazy(() => import('../../modules/ProceduresManager').then(m => ({ default: m.ProceduresManager })))
+const ClientDetailsRoute = lazy(() => import('../routing/ClientDetailsRoute').then(m => ({ default: m.ClientDetailsRoute })))
 
 const ModuleLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -196,14 +197,20 @@ export function Layout() {
 
               {/* V2 (par défaut) */}
               <Route path={routes.dashboard} element={wrap(DashboardV2)} />
-              <Route path={routes.projects} element={wrap(ProjectsManagerV2)} />
+              {/* /projets/termines doit être DÉCLARÉ AVANT /projets/* pour gagner */}
               <Route path={routes.projectsCompleted} element={wrap(CompletedProjectsManager)} />
-              <Route path={routes.procedures} element={wrap(ProceduresManager)} />
+              {/* Projets V2 : sous-routes (list / :id) */}
+              <Route path="/projets/*" element={wrap(ProjectsManagerV2)} />
+              {/* Procédures : sous-routes gérées en interne (list/new/:slug/edit/revisions) */}
+              <Route path="/procedures/*" element={wrap(ProceduresManager)} />
 
-              {/* Pôles V2 */}
-              <Route path={routes.communication} element={wrapWithProjects(CommunicationManager)} />
-              <Route path={routes.erp} element={wrapWithProjects(ERPManager)} />
-              <Route path={routes.siteWeb} element={wrapWithProjects(SiteWebManager)} />
+              {/* Pôles V2 — sous-routes (list / :id) gérées en interne */}
+              <Route path="/communication/*" element={wrapWithProjects(CommunicationManager)} />
+              <Route path="/erp/*" element={wrapWithProjects(ERPManager)} />
+              <Route path="/site-web/*" element={wrapWithProjects(SiteWebManager)} />
+
+              {/* Détail client / lead (depuis CRM) */}
+              <Route path="/clients/:id" element={wrap(ClientDetailsRoute)} />
 
               {/* CRM v1 */}
               <Route path={routes.dashboardLegacy} element={<Dashboard />} />

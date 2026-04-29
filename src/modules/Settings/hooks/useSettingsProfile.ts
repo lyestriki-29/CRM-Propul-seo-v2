@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useStore } from '../../../store/useStore';
 import { toast } from 'sonner';
 import { useUsers, User as UserType } from '../../../hooks/useUsers';
+import { useSearchParams } from 'react-router-dom';
 import type { SettingsProfileReturn } from '../types';
 
 export function useSettingsProfile(): SettingsProfileReturn {
@@ -9,7 +10,15 @@ export function useSettingsProfile(): SettingsProfileReturn {
   const { users, loading, error, fetchUsers, getUserByAuthId, updateUser, deleteUser } = useUsers();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const showAdvanced = searchParams.get('view') === 'advanced';
+  const setShowAdvanced = useCallback((v: boolean) => {
+    setSearchParams((prev) => {
+      const np = new URLSearchParams(prev);
+      if (v) np.set('view', 'advanced'); else np.delete('view');
+      return np;
+    }, { replace: true });
+  }, [setSearchParams]);
   const [currentUserData, setCurrentUserData] = useState<UserType | null>(null);
 
   const isAdmin = currentUser?.role === 'admin';

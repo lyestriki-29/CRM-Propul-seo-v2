@@ -53,8 +53,8 @@ export function CRM() {
     const mainContainer = document.querySelector('main.overflow-y-auto');
     if (mainContainer) mainContainer.scrollTop = 0;
     window.scrollTo(0, 0);
-    setSelectedContact(contact);
-    setShowContactDetails(true);
+    // Routing : ouvrir le détail via URL (/clients/:id) plutôt que via state local.
+    data.navigate(routes.clientDetail(contact.id));
   };
 
   const onRefresh = async () => {

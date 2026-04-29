@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Settings2, Plus, X, ChevronDown, ChevronUp, Trash2, ExternalLink, Kanban, FolderOpen, CalendarDays, CalendarClock } from 'lucide-react'
+import { Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom'
 import { useMockERPProjects } from './hooks/useMockERPProjects'
 import { ProjectDetailsV2 } from '../ProjectDetailsV2'
 import { MOCK_ERP_BRIEFS } from './mocks'
@@ -8,6 +9,8 @@ import { ERPBriefTab } from './components/ERPBriefTab'
 import { ERPNewProjectModal } from './components/ERPNewProjectModal'
 import type { StatusERP } from '../../types/project-v2'
 import { cn } from '@/lib/utils'
+import { useViewParam } from '@/lib/useViewParam'
+import { routes } from '@/lib/routes'
 
 type MainView = 'pipeline' | 'project' | 'month' | 'week'
 
@@ -29,28 +32,50 @@ const VIEW_TABS: { id: MainView; label: string; icon: React.ReactNode }[] = [
   { id: 'week',     label: 'Semaine',   icon: <CalendarClock className="w-3.5 h-3.5" /> },
 ]
 
+/**
+ * Module ERP Sur Mesure — câblé sur l'URL.
+ *  - /erp             → liste / pipeline (vue via ?view=)
+ *  - /erp/:id         → détail projet
+ */
 export function ERPManager() {
+  return (
+    <Routes>
+      <Route index element={<ERPList />} />
+      <Route path=":id" element={<ERPProjectDetail />} />
+      <Route path="*" element={<Navigate to={routes.erp} replace />} />
+    </Routes>
+  )
+}
+
+function ERPProjectDetail() {
+  const { id = '' } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { projects, loading, deleteProject, refetch } = useMockERPProjects()
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Chargement…</div>
+  }
+  const project = projects.find((p) => p.id === id)
+  if (!project) return <Navigate to={routes.erp} replace />
+  return (
+    <ProjectDetailsV2
+      projectId={project.id}
+      project={project}
+      backLabel="ERP Sur Mesure"
+      onBack={() => { navigate(routes.erp); refetch() }}
+      onDelete={(pid) => { deleteProject(pid); navigate(routes.erp) }}
+    />
+  )
+}
+
+function ERPList() {
+  const navigate = useNavigate()
   const { projects, updateStatus, addProject, deleteProject, refetch } = useMockERPProjects()
-  const [mainView, setMainView] = useState<MainView>('pipeline')
+  const [mainView, setMainView] = useViewParam<MainView>('view', 'pipeline', ['pipeline', 'project', 'month', 'week'])
   const [showKpi, setShowKpi] = useState(true)
   const [showNewProject, setShowNewProject] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [showDetails, setShowDetails] = useState(false)
 
   const selectedProject = projects.find(p => p.id === selectedId) ?? null
-
-  // Vue detail projet complet
-  if (showDetails && selectedProject) {
-    return (
-      <ProjectDetailsV2
-        projectId={selectedProject.id}
-        project={selectedProject}
-        backLabel="ERP Sur Mesure"
-        onBack={() => { setShowDetails(false); setSelectedId(null); refetch() }}
-        onDelete={(id) => { deleteProject(id); setShowDetails(false); setSelectedId(null) }}
-      />
-    )
-  }
 
   // KPIs
   const caSigne = projects
@@ -166,7 +191,7 @@ export function ERPManager() {
                       {colProjects.map(project => (
                         <div
                           key={project.id}
-                          onClick={() => { setSelectedId(project.id); setShowDetails(true) }}
+                          onClick={() => navigate(routes.erpProject(project.id))}
                           className={`bg-surface-1 rounded-lg p-3 cursor-pointer hover:bg-surface-3 transition-colors border ${
                             selectedId === project.id ? 'border-primary' : 'border-border'
                           }`}
@@ -266,7 +291,7 @@ export function ERPManager() {
               {/* Actions bas de panneau */}
               <div className="border-t border-border p-4 space-y-2">
                 <button
-                  onClick={() => setShowDetails(true)}
+                  onClick={() => selectedProject && navigate(routes.erpProject(selectedProject.id))}
                   className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
