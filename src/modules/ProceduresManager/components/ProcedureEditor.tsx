@@ -49,12 +49,23 @@ export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: Procedu
       editorProps: {
         attributes: {
           class:
-            'prose prose-invert prose-sm max-w-none focus:outline-none min-h-[400px] ' +
-            'prose-headings:text-foreground prose-p:text-foreground prose-li:text-foreground ' +
-            'prose-strong:text-foreground prose-a:text-primary prose-code:text-primary ' +
-            'prose-code:bg-surface-3 prose-code:px-1 prose-code:py-0.5 prose-code:rounded ' +
+            // Mirror the Doc view spacing so editing preserves form/breathing room.
+            'prose prose-invert max-w-none focus:outline-none min-h-[400px] ' +
+            'prose-headings:text-foreground prose-headings:font-semibold prose-headings:tracking-tight ' +
+            'prose-h1:text-2xl prose-h1:mt-8 prose-h1:mb-4 ' +
+            'prose-h2:text-[1.35rem] prose-h2:mt-12 prose-h2:mb-5 prose-h2:uppercase prose-h2:tracking-wide ' +
+            'prose-h3:text-base prose-h3:mt-8 prose-h3:mb-3 ' +
+            'prose-p:text-foreground/85 prose-p:leading-[1.85] prose-p:my-4 prose-p:text-[0.95rem] ' +
+            'prose-strong:text-foreground prose-strong:font-semibold ' +
+            'prose-a:text-primary prose-a:no-underline hover:prose-a:underline ' +
+            'prose-code:text-primary prose-code:bg-surface-3/80 prose-code:px-1.5 prose-code:py-0.5 ' +
+            'prose-code:rounded prose-code:text-[0.85em] prose-code:font-mono prose-code:font-normal ' +
             'prose-code:before:content-none prose-code:after:content-none ' +
-            'prose-blockquote:border-l-primary/60 prose-img:rounded-md',
+            'prose-li:text-foreground/85 prose-li:my-2 prose-li:leading-[1.85] ' +
+            'prose-ul:my-4 prose-ol:my-4 ' +
+            'prose-blockquote:border-l-primary/60 prose-blockquote:my-6 ' +
+            'prose-pre:my-5 prose-img:rounded-md prose-img:my-8 ' +
+            'prose-hr:my-10 prose-hr:border-border/60',
         },
       },
     },
