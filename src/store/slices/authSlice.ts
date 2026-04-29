@@ -22,7 +22,5 @@ export const createAuthSlice: StateCreator<Store, [], [], AuthSlice> = (set, get
   logout: () => set({
     currentUser: null,
     isAccessGranted: false,
-    activeModule: 'dashboard',
-    navigationContext: {},
   }),
 });

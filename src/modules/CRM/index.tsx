@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { routes } from '../../lib/routes';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import { ContactRow } from '../../types/supabase-types';
 import { ContactFormData, INITIAL_CONTACT_FORM } from './types';
@@ -35,7 +36,7 @@ export function CRM() {
     setContactDialogOpen, setEditContactDialogOpen,
   });
 
-  const fromDashboard = data.navigationContext?.fromModule === 'dashboard';
+  const fromDashboard = data.fromDashboard;
 
   useEffect(() => {
     if (showContactDetails) { setShowContactDetails(false); setSelectedContact(null); }
@@ -87,7 +88,7 @@ export function CRM() {
       showColumnManager={showColumnManager} setShowColumnManager={setShowColumnManager}
       mobilePreviewContact={mobilePreviewContact} setMobilePreviewContact={setMobilePreviewContact}
       showMobilePreview={showMobilePreview} setShowMobilePreview={setShowMobilePreview}
-      fromDashboard={fromDashboard} onBackToDashboard={() => data.navigateWithContext('dashboard')}
+      fromDashboard={fromDashboard} onBackToDashboard={() => data.navigate(routes.dashboard)}
       onContactClick={onContactClick} onRefresh={onRefresh}
     />
   );

@@ -84,19 +84,8 @@ export interface CalendarEvent {
   updated_at: string;
 }
 
-// Types de navigation
-export interface NavigationContext {
-  fromModule?: string;
-  toModule?: string;
-  data?: Record<string, unknown>;
-}
-
 // Types de store global
 export interface Store {
-  // Navigation
-  navigationContext: NavigationContext | null;
-  navigateWithContext: (module: string, context?: NavigationContext) => void;
-  
   // Authentification
   user: User | null;
   setUser: (user: User | null) => void;

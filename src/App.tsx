@@ -1,4 +1,5 @@
 import { useEffect, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { Layout } from './components/layout/Layout';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -17,54 +18,48 @@ const ClientBriefInvitePage = lazy(() =>
   import('./modules/ClientBrief/ClientBriefInvitePage').then(m => ({ default: m.ClientBriefInvitePage }))
 );
 
-// Détection de la route publique avant tout rendu
-const pathname = window.location.pathname;
 // Alphabet du shortCode (src/lib/shortCode.ts) : sans 0/1/I/L/O pour éviter l'ambiguïté
-const SHORT_CODE_RE = '[A-HJKMNP-Z2-9]{8}';
-const portalMatch = pathname.match(new RegExp(`^/portal/(${SHORT_CODE_RE})$`));
-const briefMatch = pathname.match(new RegExp(`^/brief/(${SHORT_CODE_RE})$`));
-const briefInviteMatch = pathname.match(new RegExp(`^/brief-invite/(${SHORT_CODE_RE})$`));
+const SHORT_CODE_RE = /^[A-HJKMNP-Z2-9]{8}$/;
 
-function App() {
+function PortalPageRoute() {
+  const { token = '' } = useParams<{ token: string }>();
+  if (!SHORT_CODE_RE.test(token)) return null;
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">Chargement...</div>}>
+        <ClientPortalPage token={token} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+function BriefPageRoute() {
+  const { token = '' } = useParams<{ token: string }>();
+  if (!SHORT_CODE_RE.test(token)) return null;
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-slate-400">Chargement...</div>}>
+        <ClientBriefPage token={token} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+function BriefInvitePageRoute() {
+  const { token = '' } = useParams<{ token: string }>();
+  if (!SHORT_CODE_RE.test(token)) return null;
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-slate-400">Chargement...</div>}>
+        <ClientBriefInvitePage token={token} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+function AuthenticatedApp() {
   const { user, loading } = useAuth();
 
-  useEffect(() => {
-    // Force dark mode
-    document.documentElement.classList.add('dark');
-  }, []);
-
-  // Route publique — ne pas passer par le Layout authentifié
-  if (portalMatch) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={<div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">Chargement...</div>}>
-          <ClientPortalPage token={portalMatch[1]} />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
-
-  if (briefMatch) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-slate-400">Chargement...</div>}>
-          <ClientBriefPage token={briefMatch[1]} />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
-
-  if (briefInviteMatch) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-slate-400">Chargement...</div>}>
-          <ClientBriefInvitePage token={briefInviteMatch[1]} />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
-
-  // Chargement session Supabase
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0814] flex items-center justify-center">
@@ -73,7 +68,6 @@ function App() {
     );
   }
 
-  // Non connecté → page login
   if (!user) {
     return (
       <ErrorBoundary>
@@ -89,6 +83,23 @@ function App() {
         <Toaster position="top-right" />
       </div>
     </ErrorBoundary>
+  );
+}
+
+function App() {
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/portal/:token" element={<PortalPageRoute />} />
+        <Route path="/brief/:token" element={<BriefPageRoute />} />
+        <Route path="/brief-invite/:token" element={<BriefInvitePageRoute />} />
+        <Route path="*" element={<AuthenticatedApp />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

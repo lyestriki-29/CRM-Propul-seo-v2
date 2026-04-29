@@ -1,9 +1,9 @@
 import { memo, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
   Users,
   Briefcase,
-  CheckSquare,
   Menu,
   Calculator,
   Settings,
@@ -11,40 +11,41 @@ import {
   Archive,
   X
 } from 'lucide-react';
-import { useStore } from '../../store';
 import { cn } from '../../lib/utils';
+import { routes } from '../../lib/routes';
 
 interface NavItem {
-  id: string;
+  to: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
 }
 
 const MAIN_NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', icon: Home, label: 'Accueil' },
-  { id: 'crm', icon: Users, label: 'CRM' },
-  { id: 'projects', icon: Briefcase, label: 'Projets' },
-  { id: 'accounting', icon: Calculator, label: 'Compta' },
+  { to: routes.dashboard, icon: Home, label: 'Accueil' },
+  { to: routes.crm, icon: Users, label: 'CRM' },
+  { to: routes.projects, icon: Briefcase, label: 'Projets' },
+  { to: routes.accounting, icon: Calculator, label: 'Compta' },
 ];
 
 const MORE_NAV_ITEMS: NavItem[] = [
-  { id: 'crm-bot-one', icon: Bot, label: 'CRM Bot One' },
-  { id: 'crm-erp', icon: Briefcase, label: 'CRM ERP' },
-  { id: 'completed-projects', icon: Archive, label: 'Projets termines' },
-  { id: 'settings', icon: Settings, label: 'Parametres' },
+  { to: routes.botOne, icon: Bot, label: 'CRM Bot One' },
+  { to: routes.crmErp, icon: Briefcase, label: 'CRM ERP' },
+  { to: routes.projectsCompleted, icon: Archive, label: 'Projets terminés' },
+  { to: routes.settings, icon: Settings, label: 'Paramètres' },
 ];
 
 export const BottomNav = memo(function BottomNav() {
-  const { activeModule, setActiveModule } = useStore();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
-  const handleNavClick = (moduleId: string) => {
-    setActiveModule(moduleId);
+  const handleNavClick = (to: string) => {
+    navigate(to);
     setIsMoreOpen(false);
   };
 
-  const isItemActive = (itemId: string) => activeModule === itemId;
-  const isMoreActive = MORE_NAV_ITEMS.some(item => activeModule === item.id);
+  const isItemActive = (to: string) => location.pathname === to || location.pathname.startsWith(to + '/');
+  const isMoreActive = MORE_NAV_ITEMS.some(item => isItemActive(item.to));
 
   return (
     <>
@@ -81,12 +82,12 @@ export const BottomNav = memo(function BottomNav() {
           <div className="p-4 grid grid-cols-2 gap-3">
             {MORE_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
-              const isActive = isItemActive(item.id);
+              const isActive = isItemActive(item.to);
 
               return (
                 <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
+                  key={item.to}
+                  onClick={() => handleNavClick(item.to)}
                   className={cn(
                     "flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200",
                     isActive
@@ -111,12 +112,12 @@ export const BottomNav = memo(function BottomNav() {
         <div className="flex items-center justify-around h-16">
           {MAIN_NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = isItemActive(item.id);
+            const isActive = isItemActive(item.to);
 
             return (
               <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
+                key={item.to}
+                onClick={() => handleNavClick(item.to)}
                 className={cn(
                   "flex flex-col items-center justify-center w-full h-full transition-colors duration-200 touch-feedback",
                   isActive

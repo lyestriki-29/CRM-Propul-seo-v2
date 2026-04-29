@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useStore } from '../../../store/useStore';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { routes } from '../../../lib/routes';
 import { useSupabaseProjects } from '../../../hooks/useSupabaseData';
 
 export function useCompletedProjectsData() {
-  const { navigationContext, navigateWithContext } = useStore();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data: allProjects, loading: projectsLoading } = useSupabaseProjects();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,10 +17,10 @@ export function useCompletedProjectsData() {
     setMounted(true);
   }, []);
 
-  const fromDashboard = navigationContext?.fromModule === 'dashboard';
+  const fromDashboard = searchParams.get('from') === 'dashboard';
 
   const handleBackToDashboard = () => {
-    navigateWithContext('dashboard');
+    navigate(routes.dashboard);
   };
 
   const completedProjects = useMemo(() => {
@@ -91,7 +93,7 @@ export function useCompletedProjectsData() {
   };
 
   const handleView = (projectId: string) => {
-    navigateWithContext('project-details', { projectId });
+    navigate(`${routes.projects}?p=${projectId}`);
   };
 
   const containerVariants = {
@@ -123,6 +125,6 @@ export function useCompletedProjectsData() {
     handleArchive,
     handleView,
     containerVariants,
-    navigateWithContext,
+    navigate,
   };
 }

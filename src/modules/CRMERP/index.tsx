@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useStore } from '@/store';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCRMERPData } from './hooks/useCRMERPData';
 import { useCRMERPActions } from './hooks/useCRMERPActions';
 import { useCRMERPColumns } from './hooks/useCRMERPColumns';
 import { useCRMUsers } from '@/hooks/useCRMUsers';
+import { routes } from '@/lib/routes';
 import { CRMERPPage } from './CRMERPPage';
 import type { CRMERPLead, CRMERPLeadFormData } from './types';
 
@@ -15,23 +16,29 @@ export function CRMERP() {
   const { leads, loading, error, refetch } = useCRMERPData();
   const { createLead, updateLead, deleteLead, updateStatus } = useCRMERPActions(refetch);
   const { users: crmUsers } = useCRMUsers();
-  const { navigateWithContext, navigationContext } = useStore();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<CRMERPLead | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [leadFilter, setLeadFilter] = useState('all');
 
-  // Handle edit request from detail page via navigation context
+  // Demande d'édition depuis la page détail via ?edit=:leadId
   useEffect(() => {
-    if (navigationContext?.editLeadId && leads.length > 0) {
-      const lead = leads.find((l) => l.id === navigationContext.editLeadId);
+    const editLeadId = searchParams.get('edit');
+    if (editLeadId && leads.length > 0) {
+      const lead = leads.find((l) => l.id === editLeadId);
       if (lead) {
         setEditingLead(lead);
         setModalOpen(true);
+        // Nettoyer le param pour éviter de rouvrir au refresh
+        const next = new URLSearchParams(searchParams);
+        next.delete('edit');
+        setSearchParams(next, { replace: true });
       }
     }
-  }, [navigationContext?.editLeadId, leads]);
+  }, [searchParams, leads, setSearchParams]);
 
   const users = (crmUsers ?? []).map((u: { id: string; name: string; email: string }) => ({
     id: u.id, name: u.name, email: u.email,
@@ -80,8 +87,8 @@ export function CRMERP() {
   }, [editingLead, updateLead, createLead]);
 
   const handleCardClick = useCallback((leadId: string) => {
-    navigateWithContext('crm-erp-lead-details', { leadId, fromModule: 'crm-erp' });
-  }, [navigateWithContext]);
+    navigate(routes.crmErpLead(leadId));
+  }, [navigate]);
 
   const handleDeleteLead = useCallback(async (leadId: string) => {
     if (!window.confirm('Supprimer ce lead définitivement ?')) return;

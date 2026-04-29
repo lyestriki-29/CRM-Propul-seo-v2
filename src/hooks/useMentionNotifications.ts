@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { logger } from '@/lib/logger';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
-import { useStore } from '../store';
 
 export interface MentionNotification {
   id: string;
@@ -23,7 +22,6 @@ export interface MentionNotification {
 
 export const useMentionNotifications = () => {
   const { user } = useAuth();
-  const { setActiveModule } = useStore();
   const [notifications, setNotifications] = useState<MentionNotification[]>([]);
 
   // Détecter les mentions dans un message

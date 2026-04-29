@@ -8,7 +8,7 @@ import { ProjectStatusBadge } from './components/ProjectStatusBadge'
 import { PrestaList } from './components/PrestaBadge'
 import { ProjectsV2Provider } from './context/ProjectsV2Context'
 import { useMockProjects } from './hooks/useMockProjects'
-import { useStore } from '../../store/useStore'
+import { useSearchParams } from 'react-router-dom'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 import { MobileHeader } from '../../components/mobile/MobileHeader'
 import { FAB } from '../../components/mobile/FAB'
@@ -40,7 +40,7 @@ export function ProjectsManagerV2() {
 function ProjectsManagerV2Inner() {
   const { projects, updateProjectStatus, updateProject, addProject, deleteProject } = useMockProjects()
   const isMobile = useIsMobile()
-  const { navigationContext } = useStore()
+  const [searchParams] = useSearchParams()
 
   const [showAddProject, setShowAddProject]         = useState(false)
   const [showProjectDetails, setShowProjectDetails] = useState(false)
@@ -58,11 +58,12 @@ function ProjectsManagerV2Inner() {
   }, [])
 
   useEffect(() => {
-    if (navigationContext?.projectId) {
-      setSelectedProjectId(navigationContext.projectId)
+    const pid = searchParams.get('p')
+    if (pid) {
+      setSelectedProjectId(pid)
       setShowProjectDetails(true)
     }
-  }, [navigationContext?.projectId])
+  }, [searchParams])
 
   const handleViewProject = (project: ProjectV2) => {
     setSelectedProjectId(project.id)

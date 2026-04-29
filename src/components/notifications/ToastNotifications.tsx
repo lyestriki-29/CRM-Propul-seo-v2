@@ -18,7 +18,7 @@ interface ToastNotification {
 export const ToastNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<ToastNotification[]>([]);
   const { messages, channels, users } = useTeamChatSimple();
-  const { setActiveModule, currentUser } = useStore();
+  const { currentUser } = useStore();
 
   // Formater le nom d'utilisateur
   const formatUserName = (userId: string) => {
@@ -103,19 +103,10 @@ export const ToastNotifications: React.FC = () => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
   };
 
-  // Aller au chat
+  // Aller au chat — module team-chat supprimé, action désactivée
   const goToChat = (notification: ToastNotification) => {
-    // Rediriger vers le module team-chat
-    setActiveModule('team-chat');
-    
-    // Stocker l'ID du canal pour que le composant TeamChat puisse s'y connecter
-    localStorage.setItem('redirectToChannel', notification.channelId);
-    
-    // Supprimer la notification
     removeNotification(notification.id);
-    
-    // Notification toast pour confirmer la redirection
-    toast.info(`Redirection vers ${notification.channelName}`);
+    toast.info(`Module chat indisponible (${notification.channelName})`);
   };
 
   // Surveiller les nouveaux messages

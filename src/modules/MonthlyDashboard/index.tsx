@@ -1,9 +1,10 @@
 // src/modules/MonthlyDashboard/index.tsx
 import { Euro, Clock, AlertTriangle, Wifi } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useMonthlyData } from './hooks/useMonthlyData'
 import { MetricCard } from './components/MetricCard'
 import { ProjectList } from './components/ProjectList'
-import { useStore } from '../../store'
+import { routes } from '../../lib/routes'
 import type { ProjectV2 } from '../../types/project-v2'
 
 function formatEuro(amount: number): string {
@@ -21,10 +22,10 @@ export function MonthlyDashboard() {
     refetch,
   } = useMonthlyData()
 
-  const { setActiveModule } = useStore()
+  const navigate = useNavigate()
 
   const handleProjectSelect = (_project: ProjectV2) => {
-    setActiveModule('projects-v2')
+    navigate(routes.projects)
   }
 
   if (loading) {

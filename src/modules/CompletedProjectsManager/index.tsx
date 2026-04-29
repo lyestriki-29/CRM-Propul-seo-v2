@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { CheckCircle2, Briefcase, Trophy, TrendingUp, Calendar } from 'lucide-react';
 import { Button } from '../../components/ui/button';
+import { routes } from '../../lib/routes';
 import { useCompletedProjectsData } from './hooks/useCompletedProjectsData';
 import { MetricCard } from './components/MetricCard';
 import { ProjectCard } from './components/ProjectCard';
@@ -27,7 +28,7 @@ export function CompletedProjectsManager() {
     handleArchive,
     handleView,
     containerVariants,
-    navigateWithContext,
+    navigate,
   } = useCompletedProjectsData();
 
   if (projectsLoading) {
@@ -133,7 +134,7 @@ export function CompletedProjectsManager() {
             </p>
             {!searchTerm && (
               <Button
-                onClick={() => navigateWithContext('projects')}
+                onClick={() => navigate(routes.projectsLegacy)}
                 className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl"
               >
                 <Briefcase className="h-4 w-4 mr-2" />
@@ -147,7 +148,7 @@ export function CompletedProjectsManager() {
           <CelebrationBanner
             completedCount={completedProjects.length}
             totalRevenue={metrics.totalRevenue}
-            onContinue={() => navigateWithContext('projects')}
+            onContinue={() => navigate(routes.projectsLegacy)}
           />
         )}
       </div>

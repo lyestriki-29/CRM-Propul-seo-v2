@@ -24,7 +24,7 @@ export const ChatNotifications: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { messages, channels, users } = useTeamChatSimple();
-  const { setActiveModule, currentUser } = useStore();
+  const { currentUser } = useStore();
 
   // Formater le nom d'utilisateur
   const formatUserName = (userId: string) => {
@@ -300,7 +300,7 @@ export const ChatNotifications: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setActiveModule('team-chat')}
+                disabled
                 className="w-full"
               >
                 <MessageCircle className="h-4 w-4 mr-2" />

@@ -1,8 +1,10 @@
 // src/modules/DashboardV2/hooks/useDashboardData.ts
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useProjectsV2 } from '../../ProjectsManagerV2/hooks/useProjectsV2'
 import { useSupabaseTasks, useSupabaseLeads, useSupabaseAccountingEntries } from '../../../hooks/useSupabaseData'
 import { useStore } from '../../../store/useStore'
+import { routes } from '../../../lib/routes'
 
 export interface PriorityActionItem {
   id: string
@@ -23,7 +25,8 @@ export interface DashboardKpis {
 }
 
 export function useDashboardData() {
-  const { navigateWithContext, currentUser } = useStore()
+  const navigate = useNavigate()
+  const { currentUser } = useStore()
   const { projects, loading: projectsLoading } = useProjectsV2()
   const { data: tasks, loading: tasksLoading } = useSupabaseTasks()
   const { data: leadsData, loading: leadsLoading } = useSupabaseLeads()
@@ -143,10 +146,10 @@ export function useDashboardData() {
   }, [accountingEntries])
 
   const handleNavigateToProject = (id: string) =>
-    navigateWithContext('projects-v2', { projectId: id })
+    navigate(`${routes.projects}?p=${id}`)
 
   const handleNavigateToLead = (id: string) =>
-    navigateWithContext('crm-erp-lead-details', { leadId: id })
+    navigate(routes.crmErpLead(id))
 
   return {
     loading,

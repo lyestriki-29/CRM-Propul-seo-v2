@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, lazy, Suspense } from 'react';
-import { useStore } from '../../store';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useUsers } from '../../hooks/useUsers';
 import { useIsMobile } from '../../hooks/useMediaQuery';
@@ -11,6 +11,7 @@ import { Dashboard } from '../../modules/Dashboard';
 import { Lock, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { ProjectsV2Provider } from '../../modules/ProjectsManagerV2/context/ProjectsV2Context';
+import { routes, getPermissionForPath } from '../../lib/routes';
 
 // Lazy load heavy modules
 const CRM = lazy(() => import('../../modules/CRM').then(m => ({ default: m.CRM })));
@@ -34,7 +35,6 @@ const ERPManager = lazy(() => import('../../modules/ERPManager').then(m => ({ de
 const CommunicationManager = lazy(() => import('../../modules/CommunicationManager').then(m => ({ default: m.CommunicationManager })))
 const ProceduresManager = lazy(() => import('../../modules/ProceduresManager').then(m => ({ default: m.ProceduresManager })))
 
-// Loading component
 const ModuleLoader = () => (
   <div className="flex items-center justify-center h-64">
     <div className="text-center">
@@ -44,44 +44,62 @@ const ModuleLoader = () => (
   </div>
 );
 
+const wrap = (Component: React.ComponentType) => (
+  <Suspense fallback={<ModuleLoader />}><Component /></Suspense>
+);
+
+const wrapWithProjects = (Component: React.ComponentType) => (
+  <ProjectsV2Provider>
+    <Suspense fallback={<ModuleLoader />}><Component /></Suspense>
+  </ProjectsV2Provider>
+);
+
+function AccessDenied({ email, path }: { email?: string; path: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-64 text-center">
+      <Lock className="w-16 h-16 text-muted-foreground mb-4" />
+      <h3 className="text-lg font-medium text-foreground mb-2">Accès non autorisé</h3>
+      <p className="text-muted-foreground">
+        Vous n'avez pas les permissions nécessaires pour accéder à ce module.
+      </p>
+      <p className="text-sm text-muted-foreground mt-2">
+        Contactez l'administrateur pour obtenir l'accès.
+      </p>
+      {email && (
+        <div className="mt-4 p-3 bg-surface-2 rounded-lg">
+          <p className="text-sm text-muted-foreground"><strong>Utilisateur:</strong> {email}</p>
+          <p className="text-sm text-muted-foreground"><strong>Page demandée:</strong> {path}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Layout() {
-  const { activeModule, setActiveModule, sidebarCollapsed } = useStore();
   const { user } = useAuth();
   const { getUserByAuthId } = useUsers();
   const isMobile = useIsMobile();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [currentUserData, setCurrentUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // Dashboard V2 est la nouvelle page d'accueil
-  useEffect(() => {
-    if (!activeModule || activeModule === 'dashboard') {
-      setActiveModule('dashboard-v2');
-    }
-  }, []);
-
-  // Force dark mode permanently
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
 
-  // Scroll to top on module change
   useEffect(() => {
-    if (mainRef.current) {
-      mainRef.current.scrollTo(0, 0);
-    } else {
-      window.scrollTo(0, 0);
-    }
-  }, [activeModule]);
+    if (mainRef.current) mainRef.current.scrollTo(0, 0);
+    else window.scrollTo(0, 0);
+  }, [location.pathname]);
 
-  // Charger les données utilisateur pour vérifier les permissions
   useEffect(() => {
     const loadUserData = async () => {
       if (!user) {
         setLoading(false);
         return;
       }
-
       try {
         const userData = await getUserByAuthId(user.id);
         setCurrentUserData(userData);
@@ -91,162 +109,53 @@ export function Layout() {
         setLoading(false);
       }
     };
-
     loadUserData();
   }, [user, getUserByAuthId]);
 
-  // Rediriger vers le premier module accessible si le module actif n'est pas autorisé
+  // Redirection vers la première page accessible si l'utilisateur n'a pas accès
   useEffect(() => {
     if (!currentUserData || loading) return;
     if (currentUserData.role === 'admin') return;
 
-    const modulePermissions: { [key: string]: string } = {
-      'dashboard': 'can_view_dashboard',
-      'crm': 'can_view_leads',
-      'crm-bot-one': 'can_view_crm_bot_one',
-      'crm-erp': 'can_view_crm_erp',
-      'projects': 'can_view_projects',
-      'communication': 'can_view_communication',
-      'communication-kpi': 'can_view_communication',
-      'communication-clients': 'can_view_communication',
-      'accounting': 'can_view_finance',
-      'settings': 'can_view_settings',
-      'dashboard-v2': 'can_view_dashboard',
-      'site-web': 'can_view_projects',
-      'erp-manager': 'can_view_projects',
-      'comm-manager': 'can_view_projects',
-      'procedures': 'can_view_procedures',
-    };
+    const requiredPerm = getPermissionForPath(location.pathname);
+    if (!requiredPerm) return;
+    if (currentUserData[requiredPerm] === true) return;
 
-    // Ordre de priorité pour la redirection (même ordre que la sidebar)
-    const modulePriority = [
-      'dashboard', 'dashboard-v2', 'site-web', 'erp-manager', 'comm-manager',
-      'crm', 'crm-bot-one', 'crm-erp',
-      'projects', 'projects-v2', 'procedures',
-      'communication', 'communication-kpi',
-      'communication-clients', 'accounting', 'settings'
+    // Cherche la première route accessible (ordre de priorité = sidebar)
+    const fallbackOrder = [
+      routes.dashboard,
+      routes.communication,
+      routes.erp,
+      routes.siteWeb,
+      routes.projects,
+      routes.procedures,
+      routes.crm,
+      routes.botOne,
+      routes.crmErp,
+      routes.projectsLegacy,
+      routes.productionLegacy,
+      routes.accounting,
+      routes.settings,
     ];
-
-    const canAccess = (mod: string) => {
-      const perm = modulePermissions[mod];
-      return perm ? currentUserData[perm] === true : true;
-    };
-
-    if (!canAccess(activeModule)) {
-      const firstAccessible = modulePriority.find(m => canAccess(m));
-      if (firstAccessible) {
-        console.log(`🔄 Redirection: ${activeModule} → ${firstAccessible} (permissions)`);
-        setActiveModule(firstAccessible);
-      }
+    const firstAccessible = fallbackOrder.find(p => {
+      const perm = getPermissionForPath(p);
+      return !perm || currentUserData[perm] === true;
+    });
+    if (firstAccessible) {
+      console.log(`🔄 Redirection: ${location.pathname} → ${firstAccessible} (permissions)`);
+      navigate(firstAccessible, { replace: true });
     }
-  }, [currentUserData, loading, activeModule, setActiveModule]);
+  }, [currentUserData, loading, location.pathname, navigate]);
 
-  // Vérifier si l'utilisateur peut accéder à un module
-  const canAccessModule = (module: string) => {
+  const canAccess = (perm: string | null) => {
+    if (!perm) return true;
     if (!currentUserData) return true;
     if (currentUserData.role === 'admin') return true;
-
-    const modulePermissions: { [key: string]: string } = {
-      'dashboard': 'can_view_dashboard',
-      'crm': 'can_view_leads',
-      'crm-bot-one': 'can_view_crm_bot_one',
-      'client-details-bot-one': 'can_view_crm_bot_one',
-      'crm-erp': 'can_view_crm_erp',
-      'crm-erp-lead-details': 'can_view_crm_erp',
-      'projects': 'can_view_projects',
-      'accounting': 'can_view_finance',
-      'settings': 'can_view_settings',
-      'communication': 'can_view_communication',
-      'communication-kpi': 'can_view_communication',
-      'communication-clients': 'can_view_communication',
-      'dashboard-v2': 'can_view_dashboard',
-      'site-web': 'can_view_projects',
-      'erp-manager': 'can_view_projects',
-      'comm-manager': 'can_view_projects',
-      'procedures': 'can_view_procedures',
-    };
-
-    const permission = modulePermissions[module];
-    return permission ? currentUserData[permission] === true : true;
+    return currentUserData[perm] === true;
   };
 
-  const renderModule = () => {
-    if (!canAccessModule(activeModule)) {
-      return (
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <Lock className="w-16 h-16 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">Acces non autorise</h3>
-          <p className="text-muted-foreground">
-            Vous n'avez pas les permissions necessaires pour acceder a ce module.
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Contactez l'administrateur pour obtenir l'acces.
-          </p>
-          {currentUserData && (
-            <div className="mt-4 p-3 bg-surface-2 rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                <strong>Utilisateur:</strong> {currentUserData.email}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <strong>Module demande:</strong> {activeModule}
-              </p>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    const wrappedComponent = (Component: React.ComponentType) => (
-      Component ? <Suspense fallback={<ModuleLoader />}><Component /></Suspense> : null
-    );
-
-    switch (activeModule) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'crm':
-        return wrappedComponent(CRM);
-      case 'crm-bot-one':
-        return wrappedComponent(CRMBotOne);
-      case 'client-details-bot-one':
-        return wrappedComponent(ClientDetailsBotOne);
-      case 'accounting':
-        return wrappedComponent(Accounting);
-      case 'projects':
-        return wrappedComponent(ProjectsManager);
-      case 'completed-projects':
-        return wrappedComponent(CompletedProjectsManager);
-      case 'settings':
-        return wrappedComponent(Settings);
-      case 'crm-erp':
-        return wrappedComponent(CRMERP);
-      case 'crm-erp-lead-details':
-        return wrappedComponent(CRMERPLeadDetails);
-      case 'contacts':
-        return wrappedComponent(Contacts);
-      case 'communication':
-        return wrappedComponent(Communication);
-      case 'communication-kpi':
-        return wrappedComponent(CommunicationKPI);
-      case 'personal-tasks':
-        return wrappedComponent(PersonalTasks);
-      case 'communication-clients':
-        return wrappedComponent(CommunicationClients);
-      case 'projects-v2':
-        return wrappedComponent(ProjectsManagerV2);
-      case 'dashboard-v2':
-        return wrappedComponent(DashboardV2);
-      case 'site-web':
-        return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><SiteWebManager /></Suspense></ProjectsV2Provider>;
-      case 'erp-manager':
-        return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><ERPManager /></Suspense></ProjectsV2Provider>;
-      case 'comm-manager':
-        return <ProjectsV2Provider><Suspense fallback={<ModuleLoader />}><CommunicationManager /></Suspense></ProjectsV2Provider>;
-      case 'procedures':
-        return wrappedComponent(ProceduresManager);
-      default:
-        return <Dashboard />;
-    }
-  };
+  const requiredPerm = getPermissionForPath(location.pathname);
+  const allowed = canAccess(requiredPerm);
 
   if (loading) {
     return (
@@ -264,18 +173,14 @@ export function Layout() {
       "flex h-screen bg-surface-1 transition-colors duration-200 overflow-hidden",
       isMobile && "flex-col"
     )}>
-      {/* Sidebar - Desktop only */}
       {!isMobile && <Sidebar />}
 
-      {/* Main content area */}
       <div className={cn(
         "flex-1 flex flex-col min-w-0 transition-all duration-300",
         isMobile && "h-full"
       )}>
-        {/* Header - Desktop only */}
         {!isMobile && <Header />}
 
-        {/* Main content */}
         <main
           className={cn(
             "flex-1 overflow-y-auto overflow-x-hidden scroll-touch branded-bg",
@@ -283,14 +188,51 @@ export function Layout() {
           )}
           ref={mainRef}
         >
-          {renderModule()}
+          {!allowed ? (
+            <AccessDenied email={currentUserData?.email} path={location.pathname} />
+          ) : (
+            <Routes>
+              <Route path="/" element={<Navigate to={routes.dashboard} replace />} />
+
+              {/* V2 (par défaut) */}
+              <Route path={routes.dashboard} element={wrap(DashboardV2)} />
+              <Route path={routes.projects} element={wrap(ProjectsManagerV2)} />
+              <Route path={routes.projectsCompleted} element={wrap(CompletedProjectsManager)} />
+              <Route path={routes.procedures} element={wrap(ProceduresManager)} />
+
+              {/* Pôles V2 */}
+              <Route path={routes.communication} element={wrapWithProjects(CommunicationManager)} />
+              <Route path={routes.erp} element={wrapWithProjects(ERPManager)} />
+              <Route path={routes.siteWeb} element={wrapWithProjects(SiteWebManager)} />
+
+              {/* CRM v1 */}
+              <Route path={routes.dashboardLegacy} element={<Dashboard />} />
+              <Route path={routes.crm} element={wrap(CRM)} />
+              <Route path={routes.botOne} element={wrap(CRMBotOne)} />
+              <Route path="/bot-one/:recordId" element={wrap(ClientDetailsBotOne)} />
+              <Route path={routes.crmErp} element={wrap(CRMERP)} />
+              <Route path="/crm-erp/leads/:leadId" element={wrap(CRMERPLeadDetails)} />
+              <Route path={routes.projectsLegacy} element={wrap(ProjectsManager)} />
+              <Route path={routes.productionLegacy} element={wrap(Communication)} />
+              <Route path={routes.productionKpi} element={wrap(CommunicationKPI)} />
+              <Route path={routes.productionClients} element={wrap(CommunicationClients)} />
+
+              {/* Personnel */}
+              <Route path={routes.personalTasks} element={wrap(PersonalTasks)} />
+
+              {/* Système */}
+              <Route path={routes.contacts} element={wrap(Contacts)} />
+              <Route path={routes.accounting} element={wrap(Accounting)} />
+              <Route path={routes.settings} element={wrap(Settings)} />
+
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to={routes.dashboard} replace />} />
+            </Routes>
+          )}
         </main>
       </div>
 
-      {/* Bottom Navigation - Mobile only */}
       {isMobile && <BottomNav />}
-
-      {/* Floating Nav FAB - Mobile only */}
       <MobileNavFAB />
     </div>
   );

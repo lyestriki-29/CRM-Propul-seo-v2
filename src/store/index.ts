@@ -3,7 +3,6 @@ import { persist } from 'zustand/middleware';
 import type { Store } from './types';
 import { createAuthSlice } from './slices/authSlice';
 import { createUiSlice } from './slices/uiSlice';
-import { createNavigationSlice } from './slices/navigationSlice';
 import { createCrmSlice } from './slices/crmSlice';
 import { createProjectsSlice } from './slices/projectsSlice';
 import { createAccountingSlice } from './slices/accountingSlice';
@@ -16,7 +15,6 @@ export const useStore = create<Store>()(
     (...a) => ({
       ...createAuthSlice(...a),
       ...createUiSlice(...a),
-      ...createNavigationSlice(...a),
       ...createCrmSlice(...a),
       ...createProjectsSlice(...a),
       ...createAccountingSlice(...a),

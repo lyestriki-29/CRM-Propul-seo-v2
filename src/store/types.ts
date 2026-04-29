@@ -255,13 +255,6 @@ export interface UiSlice {
   resetDashboardObjectives: () => void;
 }
 
-export interface NavigationSlice {
-  activeModule: string;
-  navigationContext: Record<string, any>;
-  setActiveModule: (module: string) => void;
-  navigateWithContext: (module: string, context?: Record<string, any>) => void;
-}
-
 export interface CrmSlice {
   clients: Client[];
   quotes: Quote[];
@@ -338,7 +331,6 @@ export interface TasksSlice {
 
 export type Store = AuthSlice &
   UiSlice &
-  NavigationSlice &
   CrmSlice &
   ProjectsSlice &
   AccountingSlice &

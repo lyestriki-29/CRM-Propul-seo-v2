@@ -1,10 +1,11 @@
 // src/modules/DashboardV2/index.tsx
 import { useCallback, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Zap, Settings } from 'lucide-react'
 import { BriefNotificationsModal } from './components/BriefNotificationsModal'
-import { useStore } from '../../store/useStore'
+import { routes } from '../../lib/routes'
 import { BentoGrid } from './components/BentoGrid'
 import { KpiStatsWidget } from './components/right/KpiStatsWidget'
 import { UpcomingMeetingsWidget } from './components/right/UpcomingMeetingsWidget'
@@ -19,7 +20,7 @@ import { useDashboardRealtime } from './hooks/useDashboardRealtime'
 import { useUnreadEmails } from './hooks/useUnreadEmails'
 
 export function DashboardV2() {
-  const { navigateWithContext } = useStore()
+  const navigate = useNavigate()
   const data = useDashboardData()
   const { emails, markAsReplied } = useUnreadEmails()
 
@@ -34,8 +35,8 @@ export function DashboardV2() {
   const [showNotifModal, setShowNotifModal] = useState(false)
 
   const handleNavigateToAllProjects = useCallback(
-    () => navigateWithContext('projects-v2', {}),
-    [navigateWithContext]
+    () => navigate(routes.projects),
+    [navigate]
   )
 
   // KPIs V2 globaux — branchés sur la comptabilité réelle

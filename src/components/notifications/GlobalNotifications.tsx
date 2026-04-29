@@ -3,8 +3,9 @@ import { Bell, X, MessageCircle, Users, Hash, CheckCircle, AlertCircle, Info } f
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useNavigate } from 'react-router-dom';
 import { useTeamChatSimple } from '../../hooks/useTeamChatSimple';
-import { useStore } from '../../store/useStore';
+import { moduleToRoute } from '../../lib/routes';
 
 interface GlobalNotification {
   id: string;
@@ -27,7 +28,7 @@ export const GlobalNotifications: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { messages, channels, users } = useTeamChatSimple();
-  const { setActiveModule } = useStore();
+  const navigate = useNavigate();
 
   // Formater le nom d'utilisateur
   const formatUserName = (userId: string) => {
@@ -130,10 +131,8 @@ export const GlobalNotifications: React.FC = () => {
   // Exécuter l'action d'une notification
   const executeNotificationAction = (notification: GlobalNotification) => {
     if (notification.action) {
-      setActiveModule(notification.action.module);
-      if (notification.action.data) {
-        // Gérer les données supplémentaires si nécessaire
-      }
+      const target = moduleToRoute[notification.action.module];
+      if (target) navigate(target);
       markAsRead(notification.id);
       setShowDropdown(false);
     }

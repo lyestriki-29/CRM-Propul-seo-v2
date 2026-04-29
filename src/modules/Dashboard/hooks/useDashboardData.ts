@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../../store/useStore';
+import { routes } from '../../../lib/routes';
 import {
   useSupabaseContacts,
   useSupabaseProjects,
@@ -9,7 +11,8 @@ import {
 } from '../../../hooks/useSupabaseData';
 
 export function useDashboardData() {
-  const { navigateWithContext, dashboardObjectives } = useStore();
+  const navigate = useNavigate();
+  const { dashboardObjectives } = useStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -64,28 +67,11 @@ export function useDashboardData() {
     return { ...obj, current };
   });
 
-  const handleNavigateToAccounting = () => {
-    navigateWithContext('accounting', {
-      highlightedData: ['revenue-chart'],
-      filters: { period: 'monthly' },
-    });
-  };
-
-  const handleNavigateToCRM = () => {
-    navigateWithContext('crm', { filters: { status: 'all' } });
-  };
-
-  const handleNavigateToProjects = () => {
-    navigateWithContext('projects', {});
-  };
-
-  const handleNavigateToTasks = () => {
-    navigateWithContext('tasks', {});
-  };
-
-  const handleNavigateToProject = (id: string) => {
-    navigateWithContext('projects-v2', { projectId: id });
-  };
+  const handleNavigateToAccounting = () => navigate(routes.accounting);
+  const handleNavigateToCRM = () => navigate(routes.crm);
+  const handleNavigateToProjects = () => navigate(routes.projectsLegacy);
+  const handleNavigateToTasks = () => navigate(routes.personalTasks);
+  const handleNavigateToProject = (id: string) => navigate(`${routes.projects}?p=${id}`);
 
   const formattedDate = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long',

@@ -1,6 +1,6 @@
 import { Plus, RefreshCw, ArrowLeft, Monitor } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useStore } from '@/store';
 
 interface Props {
   onAddLead: () => void;
@@ -10,15 +10,16 @@ interface Props {
 }
 
 export function CRMERPHeader({ onAddLead, onRefresh, loading, totalLeads }: Props) {
-  const { setActiveModule, navigationContext } = useStore();
-  const fromDashboard = navigationContext?.fromModule === 'dashboard';
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromDashboard = searchParams.get('from') === 'dashboard';
 
   return (
     <div className="bg-gradient-to-r from-primary via-neon-light to-primary text-white px-6 py-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {fromDashboard && (
-            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10 rounded-xl" onClick={() => setActiveModule('dashboard')}>
+            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10 rounded-xl" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}

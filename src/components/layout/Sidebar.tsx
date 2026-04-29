@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { NavLink } from 'react-router-dom';
 import {
   Home,
   Briefcase,
@@ -13,26 +14,24 @@ import {
   Archive,
   UserCheck,
   Database,
-  MessageSquare,
-  User,
-  ListTodo,
   Megaphone,
   Users,
-  DollarSign,
   Sparkles,
   LayoutDashboard,
   Globe,
   Settings2,
   BookOpen,
+  ListTodo,
   type LucideIcon
 } from 'lucide-react';
 import { useStore } from '../../store';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../hooks/useAuth';
 import { useUsers } from '../../hooks/useUsers';
+import { routes } from '../../lib/routes';
 
 interface NavItem {
-  id: string;
+  to: string;
   label: string;
   icon: LucideIcon;
   permission: string;
@@ -45,19 +44,13 @@ interface NavSection {
 }
 
 export function Sidebar() {
-  const {
-    activeModule,
-    setActiveModule,
-    sidebarCollapsed,
-    setSidebarCollapsed
-  } = useStore();
+  const { sidebarCollapsed, setSidebarCollapsed } = useStore();
 
   const { user } = useAuth();
   const { getUserByAuthId } = useUsers();
   const [currentUserData, setCurrentUserData] = useState<any>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['finance', 'admin', 'perso', 'v2', 'en-cours'])
-    // 'crm-v1' absent intentionnellement → replié par défaut
   );
 
   const isCollapsed = sidebarCollapsed;
@@ -94,7 +87,7 @@ export function Sidebar() {
     section: 'perso',
     title: 'Personnel',
     items: [
-      { id: 'personal-tasks', label: 'Mes Tâches', icon: ListTodo, permission: 'can_view_dashboard' }
+      { to: routes.personalTasks, label: 'Mes Tâches', icon: ListTodo, permission: 'can_view_dashboard' }
     ]
   }] : [];
 
@@ -102,9 +95,9 @@ export function Sidebar() {
     section: 'v2',
     title: '✦ V2 Beta',
     items: [
-      { id: 'dashboard-v2',      label: 'Dashboard V2',        icon: LayoutDashboard, permission: 'can_view_dashboard' },
-      { id: 'projects-v2',       label: 'Gestion des projets', icon: Sparkles,        permission: 'can_view_projects' },
-      { id: 'procedures',        label: 'Procédures',          icon: BookOpen,        permission: 'can_view_procedures' },
+      { to: routes.dashboard,  label: 'Dashboard V2',        icon: LayoutDashboard, permission: 'can_view_dashboard' },
+      { to: routes.projects,   label: 'Gestion des projets', icon: Sparkles,        permission: 'can_view_projects' },
+      { to: routes.procedures, label: 'Procédures',          icon: BookOpen,        permission: 'can_view_procedures' },
     ]
   };
 
@@ -112,9 +105,9 @@ export function Sidebar() {
     section: 'en-cours',
     title: 'Projets',
     items: [
-      { id: 'comm-manager', label: 'Communication',  icon: Megaphone, permission: 'can_view_projects' },
-      { id: 'erp-manager',  label: 'ERP Sur Mesure', icon: Settings2, permission: 'can_view_projects' },
-      { id: 'site-web',     label: 'Site Web & SEO', icon: Globe,     permission: 'can_view_projects' },
+      { to: routes.communication, label: 'Communication',  icon: Megaphone, permission: 'can_view_projects' },
+      { to: routes.erp,           label: 'ERP Sur Mesure', icon: Settings2, permission: 'can_view_projects' },
+      { to: routes.siteWeb,       label: 'Site Web & SEO', icon: Globe,     permission: 'can_view_projects' },
     ]
   };
 
@@ -126,29 +119,29 @@ export function Sidebar() {
       section: 'crm-v1',
       title: 'CRM v1',
       items: [
-        { id: 'dashboard', label: 'Tableau de bord', icon: Home, permission: 'can_view_dashboard' },
-        { id: 'crm', label: 'CRM Principal', icon: Database, permission: 'can_view_leads' },
-        { id: 'crm-bot-one', label: 'Bot One', icon: Bot, permission: 'can_view_crm_bot_one' },
-        { id: 'crm-erp', label: 'CRM ERP', icon: UserCheck, permission: 'can_view_crm_erp' },
-        { id: 'projects', label: 'Projets actifs', icon: Briefcase, permission: 'can_view_projects' },
-        { id: 'completed-projects', label: 'Terminés', icon: Archive, permission: 'can_view_projects' },
-        { id: 'communication', label: 'Production', icon: Megaphone, permission: 'can_view_communication' },
-        { id: 'communication-kpi', label: 'KPI', icon: BarChart3, permission: 'can_view_communication' },
-        { id: 'communication-clients', label: 'Clients', icon: Users, permission: 'can_view_communication' }
+        { to: routes.dashboardLegacy,    label: 'Tableau de bord', icon: Home,      permission: 'can_view_dashboard' },
+        { to: routes.crm,                label: 'CRM Principal',   icon: Database,  permission: 'can_view_leads' },
+        { to: routes.botOne,             label: 'Bot One',         icon: Bot,       permission: 'can_view_crm_bot_one' },
+        { to: routes.crmErp,             label: 'CRM ERP',         icon: UserCheck, permission: 'can_view_crm_erp' },
+        { to: routes.projectsLegacy,     label: 'Projets actifs',  icon: Briefcase, permission: 'can_view_projects' },
+        { to: routes.projectsCompleted,  label: 'Terminés',        icon: Archive,   permission: 'can_view_projects' },
+        { to: routes.productionLegacy,   label: 'Production',      icon: Megaphone, permission: 'can_view_communication' },
+        { to: routes.productionKpi,      label: 'KPI',             icon: BarChart3, permission: 'can_view_communication' },
+        { to: routes.productionClients,  label: 'Clients',         icon: Users,     permission: 'can_view_communication' }
       ]
     },
     {
       section: 'finance',
       title: 'Finance',
       items: [
-        { id: 'accounting', label: 'Comptabilité', icon: Calculator, permission: 'can_view_finance' }
+        { to: routes.accounting, label: 'Comptabilité', icon: Calculator, permission: 'can_view_finance' }
       ]
     },
     {
       section: 'admin',
       title: 'Système',
       items: [
-        { id: 'settings', label: 'Paramètres', icon: Settings, permission: 'can_view_settings' }
+        { to: routes.settings, label: 'Paramètres', icon: Settings, permission: 'can_view_settings' }
       ]
     }
   ];
@@ -214,7 +207,6 @@ export function Sidebar() {
 
           return (
             <div key={section.section} className={cn(sectionIndex > 0 && "mt-3")}>
-              {/* Section label */}
               {!isCollapsed && (
                 <button
                   onClick={() => toggleSection(section.section)}
@@ -230,20 +222,18 @@ export function Sidebar() {
                 </button>
               )}
 
-              {/* Items */}
               {(isExpanded || isCollapsed) && (
                 <div className="space-y-0.5">
                   {section.items.map((item) => {
                     if (!canAccessPage(item.permission)) return null;
-
-                    const isActive = activeModule === item.id;
                     const Icon = item.icon;
 
                     return (
-                      <div key={item.id} className="relative group">
-                        <button
-                          onClick={() => setActiveModule(item.id)}
-                          className={cn(
+                      <div key={item.to} className="relative group">
+                        <NavLink
+                          to={item.to}
+                          end={item.to === '/'}
+                          className={({ isActive }) => cn(
                             "w-full flex items-center gap-2.5 rounded-md transition-colors duration-150",
                             isCollapsed ? "justify-center p-2" : "px-2.5 py-1.5",
                             isActive
@@ -251,21 +241,24 @@ export function Sidebar() {
                               : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
                           )}
                         >
-                          <Icon className={cn(
-                            "h-4 w-4 flex-shrink-0",
-                            isActive ? "text-primary" : "text-muted-foreground"
-                          )} />
-                          {!isCollapsed && (
-                            <span className={cn(
-                              "text-[13px] truncate",
-                              isActive ? "font-semibold" : "font-medium"
-                            )}>
-                              {item.label}
-                            </span>
+                          {({ isActive }) => (
+                            <>
+                              <Icon className={cn(
+                                "h-4 w-4 flex-shrink-0",
+                                isActive ? "text-primary" : "text-muted-foreground"
+                              )} />
+                              {!isCollapsed && (
+                                <span className={cn(
+                                  "text-[13px] truncate",
+                                  isActive ? "font-semibold" : "font-medium"
+                                )}>
+                                  {item.label}
+                                </span>
+                              )}
+                            </>
                           )}
-                        </button>
+                        </NavLink>
 
-                        {/* Tooltip (collapsed) */}
                         {isCollapsed && (
                           <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-surface-3 text-foreground text-xs px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 whitespace-nowrap shadow-md border border-border/50">
                             {item.label}
@@ -307,7 +300,6 @@ export function Sidebar() {
               <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center">
                 <span className="text-xs font-semibold text-primary">{userInitial}</span>
               </div>
-              {/* Tooltip */}
               <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-surface-3 text-foreground text-xs px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 whitespace-nowrap shadow-md border border-border/50">
                 <div className="font-medium">{userName}</div>
                 <div className="text-muted-foreground">{roleLabel}</div>

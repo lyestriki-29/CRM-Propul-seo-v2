@@ -1,3 +1,4 @@
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   useSupabaseContacts,
   useContactsCRUD,
@@ -8,10 +9,10 @@ import {
 } from '../../../hooks/useSupabaseData';
 import { useCRMUsers } from '../../../hooks/useCRMUsers';
 import { useCRMColumns } from '../../../hooks/useCRMColumns';
-import { useStore } from '../../../store/useStore';
 
 export function useCRMData() {
-  const { navigationContext, navigateWithContext } = useStore();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const { data: contacts, loading: contactsLoading, error: contactsError, refetch: refetchContacts } = useSupabaseContacts();
   const { createContact, updateContact, deleteContact, loading: crudLoading } = useContactsCRUD();
@@ -41,7 +42,8 @@ export function useCRMData() {
     crmUsers, usersLoading,
     projects, accountingEntries,
     customColumns, columnsLoading, addColumn, updateColumn, deleteColumn, updateColumnCounts, refetchColumns,
-    navigationContext, navigateWithContext,
+    fromDashboard: searchParams.get('from') === 'dashboard',
+    navigate,
   };
 }
 

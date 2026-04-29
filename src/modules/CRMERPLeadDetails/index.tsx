@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '@/store';
 import { supabase } from '@/lib/supabase';
 import { useCRMUsers } from '@/hooks/useCRMUsers';
+import { routes } from '@/lib/routes';
 import { useCRMERPLeadDetails } from './hooks/useCRMERPLeadDetails';
 import { useCRMERPActivities } from './hooks/useCRMERPActivities';
 import { useCRMERPLeadAssign } from './hooks/useCRMERPLeadAssign';
@@ -9,9 +11,10 @@ import { CRMERPLeadDetailsPage } from './CRMERPLeadDetailsPage';
 import type { ActivityType } from './types';
 
 export function CRMERPLeadDetails() {
-  const { navigationContext, navigateWithContext, currentUser } = useStore();
-  const leadId = navigationContext?.leadId ?? null;
-  const fromModule = navigationContext?.fromModule ?? 'crm-erp';
+  const navigate = useNavigate();
+  const { leadId: leadIdParam } = useParams<{ leadId: string }>();
+  const { currentUser } = useStore();
+  const leadId = leadIdParam ?? null;
 
   const { lead, loading, refetch, updateLead } = useCRMERPLeadDetails(leadId);
   const { activities, addActivity, updateActivity, deleteActivity } = useCRMERPActivities(leadId);
@@ -32,13 +35,13 @@ export function CRMERPLeadDetails() {
   }));
 
   const handleBack = useCallback(() => {
-    navigateWithContext(fromModule);
-  }, [navigateWithContext, fromModule]);
+    navigate(-1);
+  }, [navigate]);
 
   const handleEdit = useCallback(() => {
-    // Navigate back to kanban and trigger edit modal
-    navigateWithContext('crm-erp', { editLeadId: leadId });
-  }, [navigateWithContext, leadId]);
+    if (!leadId) return;
+    navigate(`${routes.crmErp}?edit=${leadId}`);
+  }, [navigate, leadId]);
 
   const handleAddActivity = useCallback(async (type: ActivityType, content: string) => {
     await addActivity(type, content, dbUserId);

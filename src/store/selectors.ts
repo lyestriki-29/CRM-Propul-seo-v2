@@ -5,11 +5,6 @@ import type { Store } from './types';
 export const selectCurrentUser = (state: Store) => state.currentUser;
 export const selectIsAccessGranted = (state: Store) => state.isAccessGranted;
 
-// ===== Navigation =====
-// Usage: const activeModule = useStore(selectActiveModule)
-export const selectActiveModule = (state: Store) => state.activeModule;
-export const selectNavigationContext = (state: Store) => state.navigationContext;
-
 // ===== UI =====
 // Usage: const darkMode = useStore(selectDarkMode)
 export const selectSidebarCollapsed = (state: Store) => state.sidebarCollapsed;

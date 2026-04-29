@@ -1,4 +1,5 @@
 import { memo, useState, useCallback, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutGrid,
   X,
@@ -12,38 +13,39 @@ import {
   DollarSign,
   Settings,
 } from 'lucide-react';
-import { useStore } from '../../store';
 import { cn } from '../../lib/utils';
+import { routes } from '../../lib/routes';
 
 interface NavItem {
-  id: string;
+  to: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'personal-tasks', icon: ListTodo, label: 'Mes Tâches' },
-  { id: 'dashboard', icon: BarChart3, label: 'Dashboard' },
-  { id: 'crm', icon: UserCheck, label: 'CRM Principal' },
-  { id: 'crm-bot-one', icon: Bot, label: 'CRM Bot One' },
-  { id: 'crm-erp', icon: Briefcase, label: 'CRM ERP' },
-  { id: 'projects', icon: Briefcase, label: 'Projets actifs' },
-  { id: 'completed-projects', icon: Archive, label: 'Projets terminés' },
-  { id: 'communication', icon: MessageSquare, label: 'Communication' },
-  { id: 'communication-kpi', icon: BarChart3, label: 'KPI Communication' },
-  { id: 'communication-clients', icon: MessageSquare, label: 'Comm. Clients' },
-  { id: 'accounting', icon: DollarSign, label: 'Comptabilité' },
-  { id: 'settings', icon: Settings, label: 'Paramètres' },
+  { to: routes.personalTasks,     icon: ListTodo,       label: 'Mes Tâches' },
+  { to: routes.dashboard,         icon: BarChart3,      label: 'Dashboard' },
+  { to: routes.crm,               icon: UserCheck,      label: 'CRM Principal' },
+  { to: routes.botOne,            icon: Bot,            label: 'CRM Bot One' },
+  { to: routes.crmErp,            icon: Briefcase,      label: 'CRM ERP' },
+  { to: routes.projectsLegacy,    icon: Briefcase,      label: 'Projets actifs' },
+  { to: routes.projectsCompleted, icon: Archive,        label: 'Projets terminés' },
+  { to: routes.productionLegacy,  icon: MessageSquare,  label: 'Communication' },
+  { to: routes.productionKpi,     icon: BarChart3,      label: 'KPI Communication' },
+  { to: routes.productionClients, icon: MessageSquare,  label: 'Comm. Clients' },
+  { to: routes.accounting,        icon: DollarSign,     label: 'Comptabilité' },
+  { to: routes.settings,          icon: Settings,       label: 'Paramètres' },
 ];
 
 export const MobileNavFAB = memo(function MobileNavFAB() {
-  const { activeModule, setActiveModule } = useStore();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleNav = useCallback((moduleId: string) => {
-    setActiveModule(moduleId);
+  const handleNav = useCallback((to: string) => {
+    navigate(to);
     setIsOpen(false);
-  }, [setActiveModule]);
+  }, [navigate]);
 
   // Close on Escape
   useEffect(() => {
@@ -72,12 +74,12 @@ export const MobileNavFAB = memo(function MobileNavFAB() {
             <div className="py-2">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
-                const isActive = activeModule === item.id;
+                const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/');
 
                 return (
                   <button
-                    key={item.id}
-                    onClick={() => handleNav(item.id)}
+                    key={item.to}
+                    onClick={() => handleNav(item.to)}
                     className={cn(
                       "flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors duration-150",
                       isActive

@@ -22,7 +22,8 @@ import {
   CRMBotOneRecordForm, 
   CRMBotOneFilters 
 } from '../../types/crmBotOne';
-import { useStore } from '../../store';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '../../lib/routes';
 
 export function CRMBotOne() {
   const {
@@ -38,7 +39,7 @@ export function CRMBotOne() {
     fetchStats
   } = useCRMBotOne();
 
-  const { navigateWithContext } = useStore();
+  const navigate = useNavigate();
 
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<CRMBotOneRecord | null>(null);
@@ -69,8 +70,7 @@ export function CRMBotOne() {
   };
 
   const handleOpenContactDetails = (recordId: string) => {
-    // Naviguer vers la page de fiche client
-    navigateWithContext('client-details-bot-one', { recordId });
+    navigate(routes.botOneRecord(recordId));
   };
 
   const handleDeleteRecord = async (id: string) => {
@@ -91,7 +91,7 @@ export function CRMBotOne() {
         setShowRecordModal(false);
         // Rediriger vers la page client du nouveau lead
         if (newRecord && newRecord.id) {
-          navigateWithContext('client-details-bot-one', { recordId: newRecord.id });
+          navigate(routes.botOneRecord(newRecord.id));
         }
       } else if (modalMode === 'edit' && selectedRecord) {
         await updateRecord(selectedRecord.id, recordData);
