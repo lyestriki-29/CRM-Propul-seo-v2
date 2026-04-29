@@ -3,6 +3,7 @@ import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 import Typography from '@tiptap/extension-typography'
+import { TaskList, TaskItem } from '@tiptap/extension-list'
 
 // Image étendue avec `storagePath` pour persister le chemin Supabase Storage
 // à côté du `src` (URL signée temporaire). Voir lib/image-content.ts.
@@ -45,5 +46,12 @@ export function buildExtensions(opts: { placeholder?: string; editable?: boolean
       placeholder: opts.placeholder ?? 'Commencez à rédiger la procédure…',
     }),
     Typography,
+    TaskList.configure({
+      HTMLAttributes: { class: 'procedure-tasklist' },
+    }),
+    TaskItem.configure({
+      HTMLAttributes: { class: 'procedure-taskitem' },
+      nested: true,
+    }),
   ]
 }

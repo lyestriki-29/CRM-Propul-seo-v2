@@ -19,6 +19,10 @@ import {
   AlertTriangle,
   CheckCircle2,
   Info,
+  ShieldAlert,
+  AlertOctagon,
+  Star,
+  ListChecks,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRef, useState } from 'react'
@@ -162,6 +166,14 @@ export function ProcedureToolbar({ editor, procedureId }: ProcedureToolbarProps)
       </button>
       <button
         type="button"
+        onClick={() => editor.chain().focus().toggleTaskList().run()}
+        className={btn(editor.isActive('taskList'))}
+        title="Liste de tâches (cases à cocher)"
+      >
+        <ListChecks className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
         className={btn(editor.isActive('blockquote'))}
         title="Citation"
@@ -210,6 +222,30 @@ export function ProcedureToolbar({ editor, procedureId }: ProcedureToolbarProps)
         title="Note ℹ️"
       >
         <Info className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => insertCallout('critical')}
+        className={btn(false, 'hover:!text-red-400')}
+        title="Vital 🟥 (bloquant)"
+      >
+        <ShieldAlert className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => insertCallout('important')}
+        className={btn(false, 'hover:!text-orange-400')}
+        title="Important 🟧"
+      >
+        <AlertOctagon className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => insertCallout('recommended')}
+        className={btn(false, 'hover:!text-yellow-400')}
+        title="Recommandé 🟨"
+      >
+        <Star className="h-4 w-4" />
       </button>
 
       <div className="w-px h-5 bg-border/60 mx-1" />

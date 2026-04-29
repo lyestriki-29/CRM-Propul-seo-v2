@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import { ArrowLeft, Save, X, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -11,6 +11,7 @@ import { useProcedureCategories } from '../hooks/useProcedureCategories'
 import { useProcedures } from '../hooks/useProcedures'
 import { useResolvedContent } from '../hooks/useResolvedContent'
 import { NEW_PROCEDURE_TEMPLATE } from '../lib/procedure-template'
+import { applyDocTransforms } from '../lib/transform-doc'
 import type { Procedure, TipTapDoc } from '../types'
 
 interface ProcedureEditorProps {
@@ -48,12 +49,13 @@ export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: Procedu
       content: resolved,
       editorProps: {
         attributes: {
+          // Mêmes classes que la vue Doc → numérotation auto h2/h3, h2 majuscules,
+          // callouts colorés via blockquote[data-callout]. WYSIWYG strict.
           class:
-            // Mirror the Doc view spacing so editing preserves form/breathing room.
+            'procedure-prose procedure-prose-doc ' +
             'prose prose-invert max-w-none focus:outline-none min-h-[400px] ' +
             'prose-headings:text-foreground prose-headings:font-semibold prose-headings:tracking-tight ' +
-            'prose-h1:text-2xl prose-h1:mt-8 prose-h1:mb-4 ' +
-            'prose-h2:text-[1.35rem] prose-h2:mt-12 prose-h2:mb-5 prose-h2:uppercase prose-h2:tracking-wide ' +
+            'prose-h2:mt-12 prose-h2:mb-5 ' +
             'prose-h3:text-base prose-h3:mt-8 prose-h3:mb-3 ' +
             'prose-p:text-foreground/85 prose-p:leading-[1.85] prose-p:my-4 prose-p:text-[0.95rem] ' +
             'prose-strong:text-foreground prose-strong:font-semibold ' +
@@ -74,13 +76,28 @@ export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: Procedu
 
   useEffect(() => () => { editor?.destroy() }, [editor])
 
+  // Container de l'éditeur pour appliquer les transforms Doc (callouts, anchors)
+  const editorContainerRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!editor) return
     const sync = () => setPreviewContent(editor.getJSON() as TipTapDoc)
+    // Re-applique les transforms (callouts, ids) sur le DOM rendu de l'éditeur
+    // à chaque update — décalé en RAF pour laisser ProseMirror finir sa render.
+    let raf: number | null = null
+    const applyTransforms = () => {
+      if (raf !== null) cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        const root = editorContainerRef.current
+        if (root) applyDocTransforms(root, 'docs')
+      })
+    }
     sync()
-    editor.on('update', sync)
-    editor.on('create', sync)
+    applyTransforms()
+    editor.on('update', () => { sync(); applyTransforms() })
+    editor.on('create', () => { sync(); applyTransforms() })
     return () => {
+      if (raf !== null) cancelAnimationFrame(raf)
       editor.off('update', sync)
       editor.off('create', sync)
     }
@@ -215,7 +232,10 @@ export function ProcedureEditor({ procedure, onBack, onSaved, allTags }: Procedu
       <div className="flex-1 bg-surface-1 flex min-h-0">
         <div className={cn('flex flex-col min-w-0', previewMode ? 'w-1/2 border-r border-border/40' : 'w-full')}>
           <ProcedureToolbar editor={editor} procedureId={procedure?.id ?? null} />
-          <div className={cn('px-6 py-6 mx-auto w-full overflow-y-auto', previewMode ? 'max-w-none' : 'max-w-4xl')}>
+          <div
+            ref={editorContainerRef}
+            className={cn('px-6 py-6 mx-auto w-full overflow-y-auto', previewMode ? 'max-w-none' : 'max-w-4xl')}
+          >
             <EditorContent editor={editor} />
           </div>
         </div>

@@ -869,7 +869,24 @@ Si le client subit une attaque pendant la garantie ou après :
 > *Ce document est inspiré des standards OWASP, ANSSI et CNIL, adapté pour un usage opérationnel chez Propul'seo.*
 `
 
-const tiptap = markdownToTiptap(MARKDOWN)
+// Transformations sémantiques avant conversion :
+//   - lignes 🟥/🟧/🟨 standalone → blockquote (callouts colorés via data-callout)
+//   - items "- ☐ ..." → GFM task list "- [ ] ..." (vraies cases à cocher)
+function preprocessMarkdown(md) {
+  return md
+    .split('\n')
+    .map((line) => {
+      // 🟥/🟧/🟨 en début de ligne (hors liste) → préfixer par "> "
+      if (/^[🟥🟧🟨]/.test(line)) return '> ' + line
+      // "- ☐ " → "- [ ] " (GFM task list syntax)
+      if (/^(\s*)- ☐ /.test(line)) return line.replace(/^(\s*)- ☐ /, '$1- [ ] ')
+      return line
+    })
+    .join('\n')
+}
+
+const PROCESSED = preprocessMarkdown(MARKDOWN)
+const tiptap = markdownToTiptap(PROCESSED)
 const contentText = plainText(MARKDOWN)
 
 // Échappe les apostrophes pour SQL (PG simple quote → '')
@@ -895,7 +912,7 @@ INSERT INTO public.procedure_categories (name, slug, icon, color, sort_order) VA
   ('Sécurité', 'securite', 'Shield', '#dc2626', 5)
 ON CONFLICT (slug) DO NOTHING;
 
--- 2. Fiche
+-- 2. Fiche (UPSERT — met à jour le contenu si la fiche existe déjà)
 INSERT INTO public.procedures (title, slug, category_id, tags, summary, content, content_text)
 SELECT
   '${sqlEscape(TITLE)}',
@@ -905,7 +922,14 @@ SELECT
   '${sqlEscape(SUMMARY)}',
   ${dollarTag}${JSON.stringify(tiptap)}${dollarTag}::jsonb,
   '${sqlEscape(contentText)}'
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET
+  title        = EXCLUDED.title,
+  category_id  = EXCLUDED.category_id,
+  tags         = EXCLUDED.tags,
+  summary      = EXCLUDED.summary,
+  content      = EXCLUDED.content,
+  content_text = EXCLUDED.content_text,
+  updated_at   = now();
 `
 
 writeFileSync(OUT, sql, 'utf8')

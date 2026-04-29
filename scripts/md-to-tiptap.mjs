@@ -88,7 +88,7 @@ function paragraph(tokens) {
   return { type: 'paragraph', content: content.length ? content : [] }
 }
 
-function listItemFromToken(item) {
+function listItemFromToken(item, asTaskItem = false) {
   // marked list item has `tokens` (block-level children)
   const children = []
   let inlineBuf = null
@@ -122,6 +122,9 @@ function listItemFromToken(item) {
   }
   if (inlineBuf) children.push({ type: 'paragraph', content: inlineBuf })
   if (!children.length) children.push({ type: 'paragraph', content: [] })
+  if (asTaskItem) {
+    return { type: 'taskItem', attrs: { checked: !!item.checked }, content: children }
+  }
   return { type: 'listItem', content: children }
 }
 
@@ -151,8 +154,17 @@ function blockFromToken(tok) {
         content: tok.text ? [{ type: 'text', text: tok.text }] : [],
       }
     case 'list': {
+      const items = tok.items || []
+      // Si tous les items sont task items → taskList
+      const isTaskList = items.length > 0 && items.every((it) => it.task === true)
+      if (isTaskList) {
+        return {
+          type: 'taskList',
+          content: items.map((it) => listItemFromToken(it, true)),
+        }
+      }
       const type = tok.ordered ? 'orderedList' : 'bulletList'
-      const node = { type, content: (tok.items || []).map(listItemFromToken) }
+      const node = { type, content: items.map((it) => listItemFromToken(it, false)) }
       if (tok.ordered && tok.start && tok.start !== 1) node.attrs = { start: tok.start }
       return node
     }

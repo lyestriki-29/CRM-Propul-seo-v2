@@ -1,12 +1,17 @@
 import type { TipTapDoc, TipTapNode } from '../types'
 
-export type CalloutKind = 'tip' | 'warning' | 'success' | 'note'
+export type CalloutKind =
+  | 'tip' | 'warning' | 'success' | 'note'
+  | 'critical' | 'important' | 'recommended'
 
 const CALLOUT_PREFIX: Record<CalloutKind, string> = {
   tip: '💡 Astuce — ',
   warning: '⚠️ Attention — ',
   success: '✅ Validation — ',
   note: 'ℹ️ Note — ',
+  critical: '🟥 Vital — ',
+  important: '🟧 Important — ',
+  recommended: '🟨 Recommandé — ',
 }
 
 export function buildCalloutNode(kind: CalloutKind, text = ''): TipTapNode {
