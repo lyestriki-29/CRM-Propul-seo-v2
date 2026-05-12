@@ -30,14 +30,15 @@ export function RoleEditorV3({
 }: Props) {
   return (
     <div className="space-y-2 p-2 rounded-md bg-[rgba(139,92,246,0.05)] border border-[rgba(139,92,246,0.15)]">
-      <div className="grid grid-cols-3 gap-1">
+      <div className="grid grid-cols-2 gap-1">
         {ROLE_OPTIONS.map((r) => (
           <button
             key={r}
             type="button"
             onClick={() => onRoleChange(r)}
+            title={PROJECT_CONTACT_ROLE_LABELS[r]}
             className={cn(
-              'px-1.5 py-1 rounded text-[10px] font-medium border transition-colors',
+              'px-1.5 py-1 rounded text-[10px] font-medium border transition-colors truncate',
               draftRole === r
                 ? 'bg-[#8B5CF6]/20 border-[#8B5CF6] text-[#A78BFA]'
                 : 'bg-[#0f0b1e] border-[rgba(139,92,246,0.15)] text-[#9ca3af] hover:border-[#8B5CF6]/40',

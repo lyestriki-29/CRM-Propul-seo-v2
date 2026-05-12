@@ -131,9 +131,9 @@ export function AddProjectContactModalV3({ takenRoles, onSubmit, onClose }: Prop
                     type="button"
                     onClick={() => !disabled && setRole(r)}
                     disabled={disabled}
-                    title={disabled ? 'Un contact « Principal » existe déjà' : undefined}
+                    title={disabled ? 'Un contact « Principal » existe déjà' : PROJECT_CONTACT_ROLE_LABELS[r]}
                     className={cn(
-                      'px-2 py-1.5 rounded-md text-xs font-medium border transition-colors',
+                      'px-2 py-1.5 rounded-md text-xs font-medium border transition-colors truncate',
                       role === r
                         ? 'bg-[#8B5CF6]/20 border-[#8B5CF6] text-[#A78BFA]'
                         : 'bg-[#0f0b1e] border-[rgba(139,92,246,0.2)] text-[#9ca3af] hover:border-[#8B5CF6]/50',
