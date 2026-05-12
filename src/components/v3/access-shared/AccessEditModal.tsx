@@ -1,28 +1,30 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
-import { CATEGORY_ORDER, CATEGORY_LABELS, STATUS_ORDER, STATUS_LABELS } from './constants'
-import type { AccessCategory, AccessStatus } from '@/types/project-v2'
-import type { ProjectAccessV3, AccessUpsertInput } from '../../hooks/useProjectAccessesV3'
+import type { AccessRecord, AccessFormValues, CategoryConfig, AccessStatusShared } from './types'
+import { STATUS_LABELS, STATUS_ORDER } from './types'
 
 interface Props {
-  access: ProjectAccessV3 | null
+  access: AccessRecord | null
+  categories: CategoryConfig[]
+  title?: string
   onClose: () => void
-  onSubmit: (input: AccessUpsertInput) => Promise<void>
+  onSubmit: (values: AccessFormValues) => Promise<void>
 }
 
 const inputCls = 'w-full bg-[#0f0b1e] border border-[rgba(139,92,246,0.2)] rounded-md px-3 py-1.5 text-sm text-[#ede9fe] placeholder:text-[#6b7280] focus:outline-none focus:border-[#8B5CF6]'
 
-export function AccessEditModalV3({ access, onClose, onSubmit }: Props) {
+export function AccessEditModal({ access, categories, title, onClose, onSubmit }: Props) {
   const isEdit = access !== null
+  const defaultCategory = categories[0]?.value ?? ''
   const [form, setForm] = useState({
-    category: (access?.category ?? 'tools') as AccessCategory,
+    category: access?.category ?? defaultCategory,
     label: access?.label ?? '',
     url: access?.url ?? '',
     login: access?.login ?? '',
     password: access?.password ?? '',
     notes: access?.notes ?? '',
-    status: (access?.status ?? 'active') as AccessStatus,
+    status: (access?.status ?? 'active') as AccessStatusShared,
     provided_by: access?.provided_by ?? '',
     expires_at: access?.expires_at ? access.expires_at.slice(0, 10) : '',
   })
@@ -36,12 +38,9 @@ export function AccessEditModalV3({ access, onClose, onSubmit }: Props) {
     }
     setSaving(true)
     try {
-      // Convention secrets : on envoie la valeur saisie telle quelle.
-      // Si l'utilisateur a vidé un champ qui avait une valeur, on envoie '' pour effacer.
-      // Si le champ était vide au départ et est resté vide en création, on envoie null (pas de secret).
       const secretValue = (current: string, original: string | null | undefined): string | null => {
-        if (isEdit && original && current === '') return ''       // vidé volontairement → efface
-        if (current === '') return null                            // jamais rempli → ignore
+        if (isEdit && original && current === '') return ''
+        if (current === '') return null
         return current
       }
       await onSubmit({
@@ -78,7 +77,7 @@ export function AccessEditModalV3({ access, onClose, onSubmit }: Props) {
       >
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-[#ede9fe]">
-            {isEdit ? 'Modifier l\'accès' : 'Nouvel accès'}
+            {title ?? (isEdit ? 'Modifier l\'accès' : 'Nouvel accès')}
           </h3>
           <button onClick={onClose} className="h-7 w-7 flex items-center justify-center text-[#9ca3af] hover:text-[#ede9fe] hover:bg-[rgba(139,92,246,0.15)] transition-colors rounded-full">
             <X className="h-4 w-4" />
@@ -91,7 +90,7 @@ export function AccessEditModalV3({ access, onClose, onSubmit }: Props) {
               autoFocus
               value={form.label}
               onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
-              placeholder="ex: OVH Cloud, WordPress Admin"
+              placeholder="ex: GitHub, Notion Team, OVH..."
               className={inputCls}
             />
           </Field>
@@ -100,18 +99,18 @@ export function AccessEditModalV3({ access, onClose, onSubmit }: Props) {
             <Field label="Catégorie">
               <select
                 value={form.category}
-                onChange={e => setForm(f => ({ ...f, category: e.target.value as AccessCategory }))}
+                onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
                 className={inputCls}
               >
-                {CATEGORY_ORDER.map(c => (
-                  <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+                {categories.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
             </Field>
             <Field label="Statut">
               <select
                 value={form.status}
-                onChange={e => setForm(f => ({ ...f, status: e.target.value as AccessStatus }))}
+                onChange={e => setForm(f => ({ ...f, status: e.target.value as AccessStatusShared }))}
                 className={inputCls}
               >
                 {STATUS_ORDER.map(s => (

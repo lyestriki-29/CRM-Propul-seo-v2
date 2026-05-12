@@ -1,25 +1,24 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Copy, Check, Pencil, Trash2, ExternalLink } from 'lucide-react'
+import { Eye, EyeOff, Copy, Check, Pencil, Trash2, ExternalLink, type LucideIcon } from 'lucide-react'
 import { toast } from 'sonner'
-import { CATEGORY_ICONS, STATUS_LABELS, STATUS_COLORS } from './constants'
-import type { ProjectAccessV3 } from '../../hooks/useProjectAccessesV3'
+import type { AccessRecord } from './types'
+import { STATUS_LABELS, STATUS_COLORS } from './types'
 
 interface Props {
-  access: ProjectAccessV3
+  access: AccessRecord
   isAdmin: boolean
+  categoryIcon: LucideIcon
   onEdit: () => void
   onDelete: () => void
 }
 
 type SecretKind = 'login' | 'password'
 
-export function AccessItemV3({ access, isAdmin, onEdit, onDelete }: Props) {
+export function AccessItemView({ access, isAdmin, categoryIcon: Icon, onEdit, onDelete }: Props) {
   const [showLogin, setShowLogin] = useState(false)
   const [showPwd, setShowPwd] = useState(false)
   const [copied, setCopied] = useState<SecretKind | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
-
-  const Icon = CATEGORY_ICONS[access.category]
 
   const handleCopy = async (value: string | null, kind: SecretKind) => {
     if (!value) return
@@ -40,7 +39,6 @@ export function AccessItemV3({ access, isAdmin, onEdit, onDelete }: Props) {
 
   return (
     <div className="rounded-lg border border-[rgba(139,92,246,0.18)] bg-[#0f0b1e] p-3 space-y-2">
-      {/* Header */}
       <div className="flex items-center gap-2">
         <Icon className="h-4 w-4 text-[#A78BFA] shrink-0" />
         <span className="text-sm font-medium text-[#ede9fe] flex-1 truncate">{access.label}</span>
@@ -63,7 +61,6 @@ export function AccessItemV3({ access, isAdmin, onEdit, onDelete }: Props) {
         )}
       </div>
 
-      {/* URL */}
       {access.url && (
         <a
           href={normalizeUrl(access.url)}
@@ -76,7 +73,6 @@ export function AccessItemV3({ access, isAdmin, onEdit, onDelete }: Props) {
         </a>
       )}
 
-      {/* Secrets (admin uniquement) */}
       {isAdmin && (access.login || access.password) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
           {access.login !== null && (
@@ -102,12 +98,10 @@ export function AccessItemV3({ access, isAdmin, onEdit, onDelete }: Props) {
         </div>
       )}
 
-      {/* Notes */}
       {isAdmin && access.notes && (
         <p className="text-[11px] text-[#9ca3af] pt-1 whitespace-pre-wrap">{access.notes}</p>
       )}
 
-      {/* Footer */}
       {(access.provided_by || access.expires_at) && (
         <div className="flex items-center gap-3 text-[10px] text-[#6b7280] pt-1">
           {access.provided_by && <span>Fourni par {access.provided_by}</span>}
@@ -115,7 +109,6 @@ export function AccessItemV3({ access, isAdmin, onEdit, onDelete }: Props) {
         </div>
       )}
 
-      {/* Confirmation suppression */}
       {confirmDelete && (
         <div className="flex items-center justify-between gap-2 mt-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded">
           <p className="text-xs text-red-300">Supprimer cet accès ?</p>
@@ -139,6 +132,11 @@ export function AccessItemV3({ access, isAdmin, onEdit, onDelete }: Props) {
   )
 }
 
+function normalizeUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url
+  return `https://${url}`
+}
+
 interface SecretFieldProps {
   label: string
   value: string | null
@@ -146,11 +144,6 @@ interface SecretFieldProps {
   onToggle: () => void
   onCopy: () => void
   copied: boolean
-}
-
-function normalizeUrl(url: string): string {
-  if (/^https?:\/\//i.test(url)) return url
-  return `https://${url}`
 }
 
 function SecretField({ label, value, masked, onToggle, onCopy, copied }: SecretFieldProps) {
