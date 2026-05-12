@@ -50,7 +50,7 @@ export function AccessEditModal({ access, categories, title, onClose, onSubmit }
         url: form.url.trim() || null,
         login: secretValue(form.login, access?.login),
         password: secretValue(form.password, access?.password),
-        notes: form.notes.trim() === '' ? (isEdit && access?.notes ? '' : null) : form.notes.trim(),
+        notes: secretValue(form.notes.trim(), access?.notes),
         status: form.status,
         provided_by: form.provided_by.trim() || null,
         expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,

@@ -42,7 +42,7 @@ export function AgencyVaultPage() {
     void run()
   }, [user, getUserByAuthId])
 
-  const { accesses, loading, error, upsertAccess, deleteAccess } = useAgencyAccesses(isAdmin === true)
+  const { accesses, loading, error, upsertAccess, deleteAccess } = useAgencyAccesses(isAdmin)
 
   const filteredAccesses = useMemo(() => {
     if (!debouncedSearch.trim()) return accesses

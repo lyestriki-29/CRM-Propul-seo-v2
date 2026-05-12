@@ -111,9 +111,21 @@ export const routePermissions: Array<{ path: string; permission: string }> = [
   { path: routes.settings, permission: 'can_view_settings' },
   { path: routes.procedures, permission: 'can_view_procedures' },
   { path: routes.personalTasks, permission: 'can_view_dashboard' },
-  { path: routes.agencyVault, permission: 'can_view_dashboard' },
   { path: '/projets-v3-preview', permission: 'can_view_projects' },
 ]
+
+/**
+ * Routes accessibles uniquement aux utilisateurs avec role='admin'.
+ * Vérification appliquée AVANT le check de permissions booléennes :
+ * un non-admin qui force l'URL est redirigé même s'il a can_view_dashboard.
+ */
+export const ADMIN_ONLY_PATHS: string[] = [
+  routes.agencyVault,
+]
+
+export function isAdminOnlyPath(pathname: string): boolean {
+  return ADMIN_ONLY_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))
+}
 
 export function getPermissionForPath(pathname: string): string | null {
   const match = routePermissions

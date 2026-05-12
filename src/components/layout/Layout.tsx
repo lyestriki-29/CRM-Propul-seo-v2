@@ -11,7 +11,7 @@ import { Dashboard } from '../../modules/Dashboard';
 import { Lock, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { ProjectsV2Provider } from '../../modules/ProjectsManagerV2/context/ProjectsV2Context';
-import { routes, getPermissionForPath } from '../../lib/routes';
+import { routes, getPermissionForPath, isAdminOnlyPath } from '../../lib/routes';
 
 // Lazy load heavy modules
 const CRM = lazy(() => import('../../modules/CRM').then(m => ({ default: m.CRM })));
@@ -120,6 +120,13 @@ export function Layout() {
     if (!currentUserData || loading) return;
     if (currentUserData.role === 'admin') return;
 
+    // Routes admin-only : redirect immédiat pour tout non-admin
+    if (isAdminOnlyPath(location.pathname)) {
+      console.log(`🔒 Route admin-only ${location.pathname} → redirect dashboard`);
+      navigate(routes.dashboard, { replace: true });
+      return;
+    }
+
     const requiredPerm = getPermissionForPath(location.pathname);
     if (!requiredPerm) return;
     if (currentUserData[requiredPerm] === true) return;
@@ -158,7 +165,10 @@ export function Layout() {
   };
 
   const requiredPerm = getPermissionForPath(location.pathname);
-  const allowed = canAccess(requiredPerm);
+  const isAdminRoute = isAdminOnlyPath(location.pathname);
+  const allowed = isAdminRoute
+    ? (currentUserData?.role === 'admin')
+    : canAccess(requiredPerm);
 
   if (loading) {
     return (

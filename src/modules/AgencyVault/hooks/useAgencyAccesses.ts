@@ -40,12 +40,13 @@ interface UseReturn {
   refresh: () => Promise<void>
 }
 
-export function useAgencyAccesses(isAdmin: boolean): UseReturn {
+export function useAgencyAccesses(isAdmin: boolean | null): UseReturn {
   const [accesses, setAccesses] = useState<AgencyAccess[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const fetchAccesses = useCallback(async () => {
+    if (isAdmin === null) return
     setLoading(true)
     setError(null)
     const rpc = isAdmin ? 'get_decrypted_agency_accesses' : 'get_agency_access_metadata'
