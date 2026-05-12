@@ -29,9 +29,10 @@ BEGIN
     FROM public.users
     WHERE auth_user_id = auth.uid();
 
-    RETURN (
-        user_role = 'admin'
-        OR user_email = 'team@propulseo-site.com'
+    -- COALESCE pour garantir false (pas NULL) si l'user n'existe pas dans public.users
+    RETURN COALESCE(
+      user_role = 'admin' OR user_email = 'team@propulseo-site.com',
+      false
     );
 END;
 $function$;
@@ -235,6 +236,11 @@ END
 $$;
 
 -- ----- 11. Lecture métadonnées (tout authentifié, pas de secrets) -
+-- DESIGN INTENTIONNEL : tout user authentifié peut voir les métadonnées (label,
+-- url, statut, catégorie) de n'importe quel projet, sans check d'appartenance.
+-- Seuls login/password/notes restent admin-only via get_decrypted_accesses().
+-- Si besoin de scoping par projet plus tard : ajouter un check EXISTS sur
+-- projects_v2.assigned_to ou équivalent.
 CREATE OR REPLACE FUNCTION public.get_access_metadata(p_project_id uuid)
 RETURNS TABLE(
   id                  uuid,

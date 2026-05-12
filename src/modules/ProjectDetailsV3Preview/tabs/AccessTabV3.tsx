@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Plus, Lock, KeyRound, ChevronDown, ChevronRight } from 'lucide-react'
+import { toast } from 'sonner'
 import { useIsProjectV3Admin } from '../hooks/useIsProjectV3Admin'
 import { useProjectAccessesV3, type ProjectAccessV3 } from '../hooks/useProjectAccessesV3'
 import { AccessItemV3 } from './access/AccessItemV3'
@@ -18,6 +19,14 @@ export function AccessTabV3({ project }: Props) {
   const { accesses, loading, error, upsertAccess, deleteAccess } = useProjectAccessesV3(project.id, isAdmin)
   const [collapsed, setCollapsed] = useState<Partial<Record<AccessCategory, boolean>>>({})
   const [editing, setEditing] = useState<EditingState>(null)
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteAccess(id)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Suppression échouée')
+    }
+  }
 
   if (loading) {
     return (
@@ -111,7 +120,7 @@ export function AccessTabV3({ project }: Props) {
                     access={a}
                     isAdmin={isAdmin}
                     onEdit={() => setEditing(a)}
-                    onDelete={() => deleteAccess(a.id)}
+                    onDelete={() => handleDelete(a.id)}
                   />
                 ))}
               </div>
