@@ -10,6 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TEMPLATES } from './production/templates'
 import type { ProjectV2, ChecklistPhase, ChecklistStatus, PrestaType } from '@/types/project-v2'
 
+type ChecklistPriority = 'low' | 'medium' | 'high' | 'urgent'
+
+const PRIORITY_LABELS: Record<ChecklistPriority, string> = {
+  low: 'Basse',
+  medium: 'Moyenne',
+  high: 'Haute',
+  urgent: 'Urgente',
+}
+
 interface Props {
   project: ProjectV2
 }
@@ -24,6 +33,7 @@ export function ProductionTabV3({ project }: Props) {
   const [collapsed, setCollapsed] = useState<Partial<Record<ChecklistPhase, boolean>>>({})
   const [newTitle, setNewTitle] = useState('')
   const [newPhase, setNewPhase] = useState<ChecklistPhase>('onboarding')
+  const [newPriority, setNewPriority] = useState<ChecklistPriority>('medium')
   const [newAssignedTo, setNewAssignedTo] = useState('')
   const [showAdd, setShowAdd] = useState(false)
 
@@ -52,7 +62,7 @@ export function ProductionTabV3({ project }: Props) {
         title: newTitle.trim(),
         phase: newPhase,
         status: 'todo',
-        priority: 'medium',
+        priority: newPriority,
         assigned_to: user?.id ?? null,
         assigned_name: user?.name ?? null,
         due_date: null,
@@ -60,6 +70,7 @@ export function ProductionTabV3({ project }: Props) {
       })
       setNewTitle('')
       setNewAssignedTo('')
+      setNewPriority('medium')
       setShowAdd(false)
       toast.success('Tâche ajoutée')
     } catch (err) {
@@ -202,6 +213,16 @@ export function ProductionTabV3({ project }: Props) {
               <SelectContent side="top" align="start" avoidCollisions={false}>
                 {PHASE_ORDER.map((p) => (
                   <SelectItem key={p} value={p}>{PHASE_LABELS[p]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={newPriority} onValueChange={(v) => setNewPriority(v as ChecklistPriority)}>
+              <SelectTrigger className="w-[140px] h-8 bg-surface-3 border-border text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent side="top" align="start" avoidCollisions={false}>
+                {(['low', 'medium', 'high', 'urgent'] as ChecklistPriority[]).map((p) => (
+                  <SelectItem key={p} value={p}>{PRIORITY_LABELS[p]}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
