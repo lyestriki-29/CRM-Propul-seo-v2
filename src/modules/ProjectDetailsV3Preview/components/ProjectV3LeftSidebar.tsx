@@ -1,22 +1,15 @@
 import { useState } from 'react'
-import { Folder, Calendar, Tag, UserCheck, Wallet, Target, ChevronDown } from 'lucide-react'
+import { Folder, Calendar, Tag, Wallet, Target, ChevronDown } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { ProjectV2, ProjectStatusV2 } from '@/types/project-v2'
+import type { ProjectV2 } from '@/types/project-v2'
 import { formatPresta } from '../statusConfig'
-import { PipelineSelect } from './pipeline-previews/PipelineSelect'
-
-interface TeamUser { id: string; name: string; email: string }
 
 interface Props {
   project: ProjectV2
-  users: TeamUser[]
   onEdit: () => void
-  onAssign: (userId: string | null) => void
-  onStatusChange?: (status: ProjectStatusV2) => void | Promise<void>
 }
 
 function SidebarSection({
@@ -131,8 +124,7 @@ const formatBudget = (amount: number | null | undefined): string | null => {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(amount)
 }
 
-export function ProjectV3LeftSidebar({ project, users, onEdit, onAssign, onStatusChange }: Props) {
-
+export function ProjectV3LeftSidebar({ project, onEdit }: Props) {
   return (
     <div className="flex flex-col">
       {/* En-tête identité */}
@@ -162,11 +154,6 @@ export function ProjectV3LeftSidebar({ project, users, onEdit, onAssign, onStatu
             </span>
           </div>
         )}
-      </div>
-
-      {/* Pipeline (format Select validé) */}
-      <div className="border-b border-[rgba(139,92,246,0.15)] py-3 px-4">
-        <PipelineSelect status={project.status} onChange={onStatusChange} />
       </div>
 
       {/* À propos */}
@@ -202,30 +189,6 @@ export function ProjectV3LeftSidebar({ project, users, onEdit, onAssign, onStatu
           <p className="text-xs text-[#ede9fe] leading-relaxed whitespace-pre-wrap">{project.description}</p>
         </SidebarSection>
       )}
-
-      {/* Responsable */}
-      <SidebarSection title="Responsable">
-        <div className="flex items-center gap-2 mb-2">
-          <UserCheck className="h-3.5 w-3.5 text-[#9ca3af] shrink-0" />
-          <p className="text-xs text-[#ede9fe] font-medium">
-            {project.assigned_name ?? <span className="italic text-[#9ca3af]">Non assigné</span>}
-          </p>
-        </div>
-        <Select
-          value={project.assigned_to ?? '__none__'}
-          onValueChange={(v) => onAssign(v === '__none__' ? null : v)}
-        >
-          <SelectTrigger className="h-7 text-xs bg-[#0f0b1e] border-[rgba(139,92,246,0.25)]">
-            <SelectValue placeholder="Choisir un responsable" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">— Non assigné</SelectItem>
-            {users.map((u) => (
-              <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </SidebarSection>
     </div>
   )
 }

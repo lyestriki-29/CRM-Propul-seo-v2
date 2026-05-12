@@ -151,10 +151,7 @@ export function ProjectDetailsV3Preview() {
           <div className="w-[300px] shrink-0 border-r border-[rgba(139,92,246,0.18)] overflow-y-auto bg-[#070512]">
             <ProjectV3LeftSidebar
               project={project}
-              users={teamUsers}
               onEdit={() => setEditOpen(true)}
-              onAssign={handleAssign}
-              onStatusChange={handleStatusChange}
             />
           </div>
         )}
@@ -171,6 +168,8 @@ export function ProjectDetailsV3Preview() {
               project={project}
               users={teamUsers}
               onContactSaved={refetch}
+              onAssign={handleAssign}
+              onStatusChange={handleStatusChange}
             />
           </div>
         )}
