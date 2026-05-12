@@ -3,6 +3,7 @@ import { FileText, Upload, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { v2, supabase } from '@/lib/supabase'
 import { DocumentFolder } from './documents/DocumentFolder'
+import { useIsProjectV3Admin } from '../hooks/useIsProjectV3Admin'
 import {
   CATEGORIES, CATEGORY_ORDER, inferCategory, BUCKET, type Doc,
 } from './documents/constants'
@@ -23,13 +24,18 @@ export function DocumentsTabV3({ project }: Props) {
   const [openFolders, setOpenFolders] = useState<Set<DocumentCategory>>(new Set(CATEGORY_ORDER))
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { isAdmin } = useIsProjectV3Admin()
 
   const fetchDocs = async () => {
-    const { data } = await v2
+    const { data, error } = await v2
       .from('project_documents')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false })
+    if (error) {
+      console.error('[DocumentsTabV3] fetchDocs failed', { projectId, error })
+      toast.error(`Impossible de charger les documents : ${error.message}`)
+    }
     setDocs((data as Doc[]) ?? [])
     setLoading(false)
   }
@@ -110,11 +116,25 @@ export function DocumentsTabV3({ project }: Props) {
   }
 
   const handleDelete = async (doc: Doc) => {
-    if (doc.file_path) await supabase.storage.from(BUCKET).remove([doc.file_path])
-    await v2.from('project_documents').delete().eq('id', doc.id)
-    setDocs((prev) => prev.filter((d) => d.id !== doc.id))
-    setConfirmDeleteId(null)
-    toast.success('Document supprimé')
+    try {
+      if (doc.file_path) {
+        const { error: storageError } = await supabase.storage.from(BUCKET).remove([doc.file_path])
+        if (storageError) {
+          console.error('[DocumentsTabV3] storage.remove failed', { path: doc.file_path, error: storageError })
+          throw new Error(`Suppression du fichier impossible : ${storageError.message}`)
+        }
+      }
+      const { error: dbError } = await v2.from('project_documents').delete().eq('id', doc.id)
+      if (dbError) {
+        console.error('[DocumentsTabV3] db.delete failed', { id: doc.id, error: dbError })
+        throw new Error(`Suppression de la fiche impossible : ${dbError.message}`)
+      }
+      setDocs((prev) => prev.filter((d) => d.id !== doc.id))
+      setConfirmDeleteId(null)
+      toast.success('Document supprimé')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Impossible de supprimer le document')
+    }
   }
 
   const handleDownload = async (doc: Doc) => {
@@ -199,6 +219,7 @@ export function DocumentsTabV3({ project }: Props) {
                 onCancelDelete={() => setConfirmDeleteId(null)}
                 onDelete={handleDelete}
                 onDownload={handleDownload}
+                canDelete={isAdmin}
               />
             )
           })}

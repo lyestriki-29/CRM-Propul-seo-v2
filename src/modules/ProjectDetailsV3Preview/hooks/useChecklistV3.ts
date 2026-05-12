@@ -72,6 +72,17 @@ export function useChecklistV3(projectId: string): UseReturn {
     return result
   }, [items])
 
+  // Le type ChecklistItemV2 utilise `position` mais la table BDD `public.checklist_items_v2`
+  // utilise `sort_order`. On normalise au point d'insertion BDD pour éviter le silent fail.
+  const toDbRow = (data: Omit<ChecklistItemV2, 'id' | 'created_at' | 'updated_at'>) => {
+    const { position, ...rest } = data as Record<string, unknown>
+    return {
+      ...rest,
+      project_id: projectId,
+      sort_order: position ?? (rest as Record<string, unknown>).sort_order ?? 0,
+    }
+  }
+
   const addItem = useCallback(
     async (data: Omit<ChecklistItemV2, 'id' | 'created_at' | 'updated_at'>) => {
       if (isMockProject(projectId)) {
@@ -86,10 +97,14 @@ export function useChecklistV3(projectId: string): UseReturn {
       }
       const { data: created, error } = await supabase
         .from('checklist_items_v2')
-        .insert({ ...data, project_id: projectId })
+        .insert(toDbRow(data))
         .select()
         .single()
-      if (!error && created) setItems((prev) => [...prev, created as ChecklistItemV2])
+      if (error) {
+        console.error('[useChecklistV3] addItem failed', { data, error })
+        throw new Error(`Impossible d'ajouter la tâche : ${error.message}`)
+      }
+      if (created) setItems((prev) => [...prev, created as ChecklistItemV2])
     },
     [projectId],
   )
@@ -107,12 +122,13 @@ export function useChecklistV3(projectId: string): UseReturn {
         setItems((prev) => [...prev, ...newItems])
         return
       }
-      const rows = dataList.map((data) => {
-        const { position, ...rest } = data as Record<string, unknown>
-        return { ...rest, project_id: projectId, sort_order: position ?? (rest as Record<string, unknown>).sort_order ?? 0 }
-      })
+      const rows = dataList.map(toDbRow)
       const { data: created, error } = await supabase.from('checklist_items_v2').insert(rows).select()
-      if (!error && created) setItems((prev) => [...prev, ...(created as ChecklistItemV2[])])
+      if (error) {
+        console.error('[useChecklistV3] addItems failed', { count: dataList.length, error })
+        throw new Error(`Impossible d'ajouter les tâches : ${error.message}`)
+      }
+      if (created) setItems((prev) => [...prev, ...(created as ChecklistItemV2[])])
     },
     [projectId],
   )
@@ -125,13 +141,20 @@ export function useChecklistV3(projectId: string): UseReturn {
         )
         return
       }
+      const { position, ...restUpdates } = updates as Record<string, unknown>
+      const dbUpdates =
+        position !== undefined ? { ...restUpdates, sort_order: position } : restUpdates
       const { data, error } = await supabase
         .from('checklist_items_v2')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single()
-      if (!error && data) setItems((prev) => prev.map((i) => (i.id === id ? (data as ChecklistItemV2) : i)))
+      if (error) {
+        console.error('[useChecklistV3] updateItem failed', { id, updates, error })
+        throw new Error(`Impossible de modifier la tâche : ${error.message}`)
+      }
+      if (data) setItems((prev) => prev.map((i) => (i.id === id ? (data as ChecklistItemV2) : i)))
     },
     [projectId],
   )
@@ -142,17 +165,56 @@ export function useChecklistV3(projectId: string): UseReturn {
         setItems((prev) => prev.filter((i) => i.id !== id && i.parent_task_id !== id))
         return
       }
+      // Optimiste : on capture le snapshot juste avant la mutation pour éviter
+      // les races sur double-clic (lire prev dans le setter, pas dans la closure).
+      let snapshot: ChecklistItemV2[] = []
+      setItems((prev) => {
+        snapshot = prev
+        return prev.filter((i) => i.id !== id && i.parent_task_id !== id)
+      })
       const { error } = await supabase.from('checklist_items_v2').delete().eq('id', id)
-      if (!error) setItems((prev) => prev.filter((i) => i.id !== id && i.parent_task_id !== id))
+      if (error) {
+        console.error('[useChecklistV3] deleteItem failed', { id, error })
+        setItems(snapshot)
+        throw new Error(`Impossible de supprimer la tâche : ${error.message}`)
+      }
     },
     [projectId],
   )
 
   const setItemStatus = useCallback(
     async (id: string, status: ChecklistStatus) => {
-      await updateItem(id, { status })
+      if (isMockProject(projectId)) {
+        setItems((prev) =>
+          prev.map((i) => (i.id === id ? { ...i, status, updated_at: new Date().toISOString() } : i)),
+        )
+        return
+      }
+      // Optimiste : on capture l'item au moment du setter (pas via closure)
+      // pour éviter qu'un rollback efface une mutation concurrente.
+      let previous: ChecklistItemV2 | null = null
+      setItems((prev) => {
+        const found = prev.find((i) => i.id === id)
+        if (!found) return prev
+        previous = found
+        return prev.map((i) => (i.id === id ? { ...i, status, updated_at: new Date().toISOString() } : i))
+      })
+      if (!previous) return
+      const { data, error } = await supabase
+        .from('checklist_items_v2')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) {
+        console.error('[useChecklistV3] setItemStatus failed', { id, status, error })
+        const rollback = previous
+        setItems((prev) => prev.map((i) => (i.id === id ? rollback : i)))
+        throw new Error(`Impossible de changer le statut : ${error.message}`)
+      }
+      if (data) setItems((prev) => prev.map((i) => (i.id === id ? (data as ChecklistItemV2) : i)))
     },
-    [updateItem],
+    [projectId],
   )
 
   return { items, loading, progress, progressByPhase, addItem, addItems, updateItem, deleteItem, setItemStatus }

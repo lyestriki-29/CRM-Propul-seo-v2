@@ -11,9 +11,10 @@ interface Props {
   onCycleStatus: (id: string, current: ChecklistStatus) => void
   onAddSubTask: (parentId: string, title: string) => void
   onDelete: (id: string) => void
+  canDelete?: boolean
 }
 
-export function ProductionItem({ item, subItems, onCycleStatus, onAddSubTask, onDelete }: Props) {
+export function ProductionItem({ item, subItems, onCycleStatus, onAddSubTask, onDelete, canDelete = true }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [subOpen, setSubOpen] = useState(false)
   const [subTitle, setSubTitle] = useState('')
@@ -72,18 +73,22 @@ export function ProductionItem({ item, subItems, onCycleStatus, onAddSubTask, on
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="text-muted-foreground hover:text-red-400 transition-colors p-0.5"
-            title="Supprimer"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          {canDelete && (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="text-muted-foreground hover:text-red-400 transition-colors p-0.5"
+              title="Supprimer"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
-        <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 border shrink-0', PRIORITY_CLASS[item.priority])}>
-          {PRIORITY_LABEL[item.priority] ?? item.priority}
-        </Badge>
+        {item.priority !== 'medium' && (
+          <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 border shrink-0', PRIORITY_CLASS[item.priority])}>
+            {PRIORITY_LABEL[item.priority] ?? item.priority}
+          </Badge>
+        )}
       </div>
 
       {confirmDelete && (

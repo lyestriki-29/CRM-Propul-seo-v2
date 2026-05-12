@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useChecklistV3 } from '../hooks/useChecklistV3'
+import { useIsProjectV3Admin } from '../hooks/useIsProjectV3Admin'
 import { ProductionPhase } from './production/ProductionPhase'
 import { PHASE_LABELS, PHASE_ORDER, MOCK_USERS, PRESTA_LABELS } from './production/constants'
 import { TEMPLATES } from './production/templates'
@@ -14,6 +15,7 @@ interface Props {
 export function ProductionTabV3({ project }: Props) {
   const { items, loading, progress, progressByPhase, setItemStatus, addItem, addItems, deleteItem } =
     useChecklistV3(project.id)
+  const { isAdmin } = useIsProjectV3Admin()
 
   const [isApplyingTemplate, setIsApplyingTemplate] = useState(false)
   const [collapsed, setCollapsed] = useState<Partial<Record<ChecklistPhase, boolean>>>({})
@@ -25,56 +27,72 @@ export function ProductionTabV3({ project }: Props) {
   const togglePhase = (phase: ChecklistPhase) =>
     setCollapsed((prev) => ({ ...prev, [phase]: !prev[phase] }))
 
-  const cycleStatus = (id: string, current: ChecklistStatus) => {
+  const cycleStatus = async (id: string, current: ChecklistStatus) => {
     const next: Record<ChecklistStatus, ChecklistStatus> = {
       todo: 'in_progress', in_progress: 'done', done: 'todo', skipped: 'todo',
     }
-    setItemStatus(id, next[current])
+    try {
+      await setItemStatus(id, next[current])
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Impossible de changer le statut')
+    }
   }
 
-  const handleAddItem = (e: React.FormEvent) => {
+  const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTitle.trim()) return
     const user = MOCK_USERS.find((u) => u.id === newAssignedTo)
-    addItem({
-      project_id: project.id,
-      parent_task_id: null,
-      title: newTitle.trim(),
-      phase: newPhase,
-      status: 'todo',
-      priority: 'medium',
-      assigned_to: user?.id ?? null,
-      assigned_name: user?.name ?? null,
-      due_date: null,
-      position: items.length + 1,
-    })
-    setNewTitle('')
-    setNewAssignedTo('')
-    setShowAdd(false)
-    toast.success('Tâche ajoutée')
+    try {
+      await addItem({
+        project_id: project.id,
+        parent_task_id: null,
+        title: newTitle.trim(),
+        phase: newPhase,
+        status: 'todo',
+        priority: 'medium',
+        assigned_to: user?.id ?? null,
+        assigned_name: user?.name ?? null,
+        due_date: null,
+        position: items.length + 1,
+      })
+      setNewTitle('')
+      setNewAssignedTo('')
+      setShowAdd(false)
+      toast.success('Tâche ajoutée')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Impossible d'ajouter la tâche")
+    }
   }
 
-  const handleAddSubTask = (parentId: string, subTitle: string) => {
+  const handleAddSubTask = async (parentId: string, subTitle: string) => {
     const parent = items.find((i) => i.id === parentId)
     if (!parent) return
-    addItem({
-      project_id: project.id,
-      parent_task_id: parentId,
-      title: subTitle,
-      phase: parent.phase,
-      status: 'todo',
-      priority: parent.priority,
-      assigned_to: null,
-      assigned_name: null,
-      due_date: null,
-      position: items.length + 1,
-    })
-    toast.success('Sous-tâche ajoutée')
+    try {
+      await addItem({
+        project_id: project.id,
+        parent_task_id: parentId,
+        title: subTitle,
+        phase: parent.phase,
+        status: 'todo',
+        priority: parent.priority,
+        assigned_to: null,
+        assigned_name: null,
+        due_date: null,
+        position: items.length + 1,
+      })
+      toast.success('Sous-tâche ajoutée')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Impossible d'ajouter la sous-tâche")
+    }
   }
 
-  const handleDelete = (id: string) => {
-    deleteItem(id)
-    toast.success('Tâche supprimée')
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteItem(id)
+      toast.success('Tâche supprimée')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Impossible de supprimer la tâche')
+    }
   }
 
   const applyTemplate = async (type: PrestaType) => {
@@ -93,9 +111,14 @@ export function ProductionTabV3({ project }: Props) {
       due_date: null,
       position: idx + 1,
     }))
-    await addItems(allItems)
-    setIsApplyingTemplate(false)
-    toast.success(`Template ${PRESTA_LABELS[type]} appliqué (${tasks.length} tâches)`)
+    try {
+      await addItems(allItems)
+      toast.success(`Template ${PRESTA_LABELS[type]} appliqué (${tasks.length} tâches)`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Impossible d'appliquer le template")
+    } finally {
+      setIsApplyingTemplate(false)
+    }
   }
 
   if (loading) {
@@ -218,6 +241,7 @@ export function ProductionTabV3({ project }: Props) {
             onCycleStatus={cycleStatus}
             onAddSubTask={handleAddSubTask}
             onDelete={handleDelete}
+            canDelete={isAdmin}
           />
         ))
       )}

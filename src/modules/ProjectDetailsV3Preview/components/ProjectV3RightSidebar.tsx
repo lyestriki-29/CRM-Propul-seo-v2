@@ -1,12 +1,11 @@
 import { User, Plus, Building2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { ProjectV2 } from '@/types/project-v2'
 import {
   PROJECT_STATUS_ORDER,
   PROJECT_STATUS_LABELS,
   getStatusStyle,
-  getStatusLabel,
-  formatPresta,
 } from '../statusConfig'
 
 interface TeamUser { id: string; name: string; email: string }
@@ -36,11 +35,6 @@ function RightSection({
   )
 }
 
-const formatBudget = (amount: number | null | undefined): string => {
-  if (amount === null || amount === undefined) return '—'
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(amount)
-}
-
 export function ProjectV3RightSidebar({ project, users }: Props) {
   const assignee = users.find((u) => u.id === project.assigned_to)
 
@@ -50,7 +44,10 @@ export function ProjectV3RightSidebar({ project, users }: Props) {
       <RightSection
         title="Contact client"
         action={
-          <button className="text-[10px] text-[#8B5CF6] hover:text-[#A78BFA] flex items-center gap-0.5 transition-colors">
+          <button
+            onClick={() => toast.info('Édition du contact — disponible dans une prochaine version.')}
+            className="text-[10px] text-[#8B5CF6] hover:text-[#A78BFA] flex items-center gap-0.5 transition-colors"
+          >
             <Plus className="h-3 w-3" /> Ajouter
           </button>
         }
@@ -115,31 +112,6 @@ export function ProjectV3RightSidebar({ project, users }: Props) {
         </RightSection>
       )}
 
-      {/* Statistiques */}
-      <RightSection title="Statistiques">
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-[#9ca3af]">Type</span>
-            <span className="font-medium text-[#ede9fe]">{formatPresta(project.presta_type)}</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-[#9ca3af]">Budget</span>
-            <span className="font-medium text-[#ede9fe]">{formatBudget(project.budget)}</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-[#9ca3af]">Progression</span>
-            <span className="font-medium text-[#ede9fe]">{project.progress ?? 0}%</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-[#9ca3af]">Score</span>
-            <span className="font-medium text-[#ede9fe]">{project.completion_score ?? 0}%</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-[#9ca3af]">Statut</span>
-            <span className="font-medium text-[#ede9fe]">{getStatusLabel(project.status)}</span>
-          </div>
-        </div>
-      </RightSection>
     </div>
   )
 }

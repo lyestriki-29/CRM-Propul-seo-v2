@@ -16,11 +16,13 @@ interface Props {
   onCancelDelete: () => void
   onDelete: (doc: Doc) => void
   onDownload: (doc: Doc) => void
+  canDelete?: boolean
 }
 
 export function DocumentFolder({
   category, docs, isOpen, confirmDeleteId,
   onToggle, onAskDelete, onCancelDelete, onDelete, onDownload,
+  canDelete = true,
 }: Props) {
   const conf = CATEGORIES[category]
   const Icon = conf.icon
@@ -84,12 +86,15 @@ export function DocumentFolder({
                       <Download className="h-4 w-4" />
                     </button>
                   )}
-                  <button
-                    onClick={() => onAskDelete(doc.id)}
-                    className="text-muted-foreground hover:text-red-400 transition-colors p-1"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {canDelete && (
+                    <button
+                      onClick={() => onAskDelete(doc.id)}
+                      className="text-muted-foreground hover:text-red-400 transition-colors p-1"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
 

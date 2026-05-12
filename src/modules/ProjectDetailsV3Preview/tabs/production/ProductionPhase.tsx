@@ -14,6 +14,7 @@ interface Props {
   onCycleStatus: (id: string, current: ChecklistStatus) => void
   onAddSubTask: (parentId: string, title: string) => void
   onDelete: (id: string) => void
+  canDelete?: boolean
 }
 
 export function ProductionPhase({
@@ -26,6 +27,7 @@ export function ProductionPhase({
   onCycleStatus,
   onAddSubTask,
   onDelete,
+  canDelete = true,
 }: Props) {
   return (
     <div className="bg-surface-2 border border-border rounded-lg overflow-hidden">
@@ -65,6 +67,7 @@ export function ProductionPhase({
               onCycleStatus={onCycleStatus}
               onAddSubTask={onAddSubTask}
               onDelete={onDelete}
+              canDelete={canDelete}
             />
           ))}
         </div>
