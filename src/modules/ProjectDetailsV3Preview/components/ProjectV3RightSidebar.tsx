@@ -1,5 +1,5 @@
-import { User, Plus, Building2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { useState } from 'react'
+import { User, Plus, Building2, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProjectV2 } from '@/types/project-v2'
 import {
@@ -7,12 +7,14 @@ import {
   PROJECT_STATUS_LABELS,
   getStatusStyle,
 } from '../statusConfig'
+import { ContactEditModalV3 } from './ContactEditModalV3'
 
 interface TeamUser { id: string; name: string; email: string }
 
 interface Props {
   project: ProjectV2
   users: TeamUser[]
+  onContactSaved?: () => void | Promise<void>
 }
 
 function RightSection({
@@ -35,8 +37,13 @@ function RightSection({
   )
 }
 
-export function ProjectV3RightSidebar({ project, users }: Props) {
+export function ProjectV3RightSidebar({ project, users, onContactSaved }: Props) {
   const assignee = users.find((u) => u.id === project.assigned_to)
+  const [contactModalOpen, setContactModalOpen] = useState(false)
+
+  const hasLinkedContact = !!project.client_id
+  const actionLabel = hasLinkedContact ? 'Modifier' : 'Ajouter'
+  const ActionIcon = hasLinkedContact ? Pencil : Plus
 
   return (
     <div className="flex flex-col">
@@ -45,10 +52,10 @@ export function ProjectV3RightSidebar({ project, users }: Props) {
         title="Contact client"
         action={
           <button
-            onClick={() => toast.info('Édition du contact — disponible dans une prochaine version.')}
+            onClick={() => setContactModalOpen(true)}
             className="text-[10px] text-[#8B5CF6] hover:text-[#A78BFA] flex items-center gap-0.5 transition-colors"
           >
-            <Plus className="h-3 w-3" /> Ajouter
+            <ActionIcon className="h-3 w-3" /> {actionLabel}
           </button>
         }
       >
@@ -59,7 +66,11 @@ export function ProjectV3RightSidebar({ project, users }: Props) {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-[#ede9fe]">{project.client_name}</p>
-              <p className="text-[10px] text-[#9ca3af] italic">Coordonnées non renseignées</p>
+              {hasLinkedContact ? (
+                <p className="text-[10px] text-[#9ca3af]">Contact lié au projet</p>
+              ) : (
+                <p className="text-[10px] text-[#9ca3af] italic">Coordonnées non renseignées</p>
+              )}
             </div>
           </div>
         ) : (
@@ -112,6 +123,17 @@ export function ProjectV3RightSidebar({ project, users }: Props) {
         </RightSection>
       )}
 
+      {contactModalOpen && (
+        <ContactEditModalV3
+          contactId={project.client_id ?? null}
+          projectId={project.id}
+          defaultClientName={project.client_name}
+          onClose={() => setContactModalOpen(false)}
+          onSaved={async () => {
+            if (onContactSaved) await onContactSaved()
+          }}
+        />
+      )}
     </div>
   )
 }

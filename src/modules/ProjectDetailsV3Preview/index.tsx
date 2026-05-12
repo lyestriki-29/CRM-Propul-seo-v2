@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Sparkles, Loader2, Maximize2, Minimize2 } from 'lucide-react'
-import { toast } from 'sonner'
 import { useUsers } from '@/hooks/useUsers'
+import { useProjectsCRUD } from '@/hooks/supabase/useProjectsCRUD'
 import { useStore } from '@/store'
 import { routes } from '@/lib/routes'
-import type { PrestaType } from '@/types/project-v2'
+import type { PrestaType, ProjectV2, ProjectStatusV2 } from '@/types/project-v2'
 import { useProjectV3 } from './hooks/useProjectV3'
 import { ProjectV3LeftSidebar } from './components/ProjectV3LeftSidebar'
 import { ProjectV3RightSidebar } from './components/ProjectV3RightSidebar'
 import { ProjectV3Tabs } from './components/ProjectV3Tabs'
+import { ProjectEditModalV3 } from './components/ProjectEditModalV3'
 
 function getProjectListContext(presta: PrestaType[] | null | undefined): { label: string; path: string } {
   const types = presta ?? []
@@ -22,10 +23,35 @@ function getProjectListContext(presta: PrestaType[] | null | undefined): { label
 export function ProjectDetailsV3Preview() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { project, loading: loadingProject, error } = useProjectV3(id ?? '')
+  const { project, loading: loadingProject, error, refetch } = useProjectV3(id ?? '')
   const { users, loading: loadingUsers } = useUsers()
+  const { updateProject } = useProjectsCRUD()
   const setSidebarCollapsed = useStore((s) => s.setSidebarCollapsed)
   const [focusMode, setFocusMode] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+
+  const handleSaveProject = async (updates: Partial<ProjectV2>) => {
+    if (!project) return
+    const res = await updateProject(project.id, updates)
+    if (!res.success) throw new Error(res.error ?? 'Échec de la sauvegarde du projet')
+    await refetch()
+  }
+
+  const handleAssign = async (userId: string | null) => {
+    if (!project) return
+    const assignedUser = userId ? users.find((u) => u.id === userId) : null
+    const res = await updateProject(project.id, {
+      assigned_to: userId,
+      assigned_name: assignedUser?.name ?? null,
+    })
+    if (res.success) await refetch()
+  }
+
+  const handleStatusChange = async (status: ProjectStatusV2) => {
+    if (!project || status === project.status) return
+    const res = await updateProject(project.id, { status })
+    if (res.success) await refetch()
+  }
 
   // Loading global coordonné : on n'affiche les 3 colonnes qu'une fois projet + équipe prêts.
   const loading = loadingProject || loadingUsers
@@ -126,8 +152,9 @@ export function ProjectDetailsV3Preview() {
             <ProjectV3LeftSidebar
               project={project}
               users={teamUsers}
-              onEdit={() => toast.info('Édition du projet — disponible dans une prochaine version.')}
-              onAssign={() => toast.info('Assignation responsable — disponible dans une prochaine version.')}
+              onEdit={() => setEditOpen(true)}
+              onAssign={handleAssign}
+              onStatusChange={handleStatusChange}
             />
           </div>
         )}
@@ -140,10 +167,24 @@ export function ProjectDetailsV3Preview() {
         {/* Sidebar droite */}
         {!focusMode && (
           <div className="w-[280px] shrink-0 border-l border-[rgba(139,92,246,0.18)] overflow-y-auto bg-[#070512]">
-            <ProjectV3RightSidebar project={project} users={teamUsers} />
+            <ProjectV3RightSidebar
+              project={project}
+              users={teamUsers}
+              onContactSaved={refetch}
+            />
           </div>
         )}
       </div>
+
+      {/* Modal édition projet */}
+      {editOpen && (
+        <ProjectEditModalV3
+          project={project}
+          users={teamUsers}
+          onSave={handleSaveProject}
+          onClose={() => setEditOpen(false)}
+        />
+      )}
     </div>
   )
 }
