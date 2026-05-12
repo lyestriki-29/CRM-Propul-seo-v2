@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Sparkles, Loader2, Maximize2, Minimize2 } from 'lucide-react'
 import { useUsers } from '@/hooks/useUsers'
-import { useProjectsCRUD } from '@/hooks/supabase/useProjectsCRUD'
+import { useProjectUpdateV3 } from './hooks/useProjectUpdateV3'
 import { useStore } from '@/store'
 import { routes } from '@/lib/routes'
 import type { PrestaType, ProjectV2, ProjectStatusV2 } from '@/types/project-v2'
@@ -25,7 +25,7 @@ export function ProjectDetailsV3Preview() {
   const navigate = useNavigate()
   const { project, loading: loadingProject, error, refetch } = useProjectV3(id ?? '')
   const { users, loading: loadingUsers } = useUsers()
-  const { updateProject } = useProjectsCRUD()
+  const { updateProject } = useProjectUpdateV3()
   const setSidebarCollapsed = useStore((s) => s.setSidebarCollapsed)
   const [focusMode, setFocusMode] = useState(false)
   const [editOpen, setEditOpen] = useState(false)

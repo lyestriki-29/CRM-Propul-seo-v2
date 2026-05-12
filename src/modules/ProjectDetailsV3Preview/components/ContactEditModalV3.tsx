@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { X } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabase, v2 } from '@/lib/supabase'
 import { useContactsCRUD } from '@/hooks/supabase/useContactsCRUD'
 
 interface ContactData {
@@ -95,7 +95,7 @@ export function ContactEditModalV3({ contactId, projectId, defaultClientName, on
           company: form.company.trim() || null,
         })
         if (!res.success || !res.data) return
-        const { error: linkErr } = await supabase
+        const { error: linkErr } = await v2
           .from('projects')
           .update({ client_id: res.data.id, client_name: res.data.name })
           .eq('id', projectId)
