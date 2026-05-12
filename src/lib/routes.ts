@@ -12,6 +12,7 @@ export const routes = {
   projects: '/projets',
   projectDetail: (id: string) => `/projets/${id}`,
   projectsCompleted: '/projets/termines',
+  projectsV3: '/projets-en-cours',
 
   // Procédures (wiki interne)
   procedures: '/procedures',
@@ -101,6 +102,7 @@ export const routePermissions: Array<{ path: string; permission: string }> = [
   { path: routes.botOne, permission: 'can_view_crm_bot_one' },
   { path: routes.crmErp, permission: 'can_view_crm_erp' },
   { path: routes.projects, permission: 'can_view_projects' },
+  { path: routes.projectsV3, permission: 'can_view_projects' },
   { path: routes.projectsLegacy, permission: 'can_view_projects' },
   { path: routes.communication, permission: 'can_view_projects' },
   { path: routes.erp, permission: 'can_view_projects' },

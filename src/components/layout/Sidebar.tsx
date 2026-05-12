@@ -97,9 +97,10 @@ export function Sidebar() {
     section: 'v2',
     title: '✦ V2 Beta',
     items: [
-      { to: routes.dashboard,  label: 'Dashboard V2',        icon: LayoutDashboard, permission: 'can_view_dashboard' },
-      { to: routes.projects,   label: 'Gestion des projets', icon: Sparkles,        permission: 'can_view_projects' },
-      { to: routes.procedures, label: 'Procédures',          icon: BookOpen,        permission: 'can_view_procedures' },
+      { to: routes.dashboard,   label: 'Dashboard V2',        icon: LayoutDashboard, permission: 'can_view_dashboard' },
+      { to: routes.projects,    label: 'Gestion des projets', icon: Sparkles,        permission: 'can_view_projects' },
+      { to: routes.projectsV3,  label: 'Projets en cours',    icon: Briefcase,       permission: 'can_view_projects' },
+      { to: routes.procedures,  label: 'Procédures',          icon: BookOpen,        permission: 'can_view_procedures' },
     ]
   };
 
