@@ -39,6 +39,7 @@ const ProjectDetailsV3Preview = lazy(() => import('../../modules/ProjectDetailsV
 const AgencyVaultPage = lazy(() => import('../../modules/AgencyVault').then(m => ({ default: m.AgencyVaultPage })))
 const ProjectsV3Page = lazy(() => import('../../modules/ProjectsV3').then(m => ({ default: m.ProjectsV3Page })))
 const LeadsV3PlaceholderRoute = lazy(() => import('../../modules/LeadsV3').then(m => ({ default: m.LeadsV3Page })))
+const ProjectsV3CompletedPage = lazy(() => import('../../modules/ProjectsV3Completed').then(m => ({ default: m.ProjectsV3CompletedPage })))
 
 const ModuleLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -239,8 +240,8 @@ export function Layout() {
               <Route path={routes.communicationV3Production} element={wrap(Communication)} />
               <Route path={routes.communicationV3Kpi} element={wrap(CommunicationKPI)} />
 
-              {/* Projets V3 Terminés — réutilise CompletedProjectsManager (V2) en attendant module dédié */}
-              <Route path={routes.projectsV3Completed} element={wrap(CompletedProjectsManager)} />
+              {/* Projets V3 Terminés — module V3 dédié, vue liste compacte */}
+              <Route path={routes.projectsV3Completed} element={wrap(ProjectsV3CompletedPage)} />
 
               {/* Leads V3 — module en cours de construction (Phase 4) */}
               <Route path={routes.leadsV3} element={wrap(LeadsV3PlaceholderRoute)} />

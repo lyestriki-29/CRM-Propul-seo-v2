@@ -6,7 +6,7 @@
 ## Plan E2E V3 — Progression
 
 - [x] **Phase 0** — Commit safe + tag `v3-pre-autonomous-session` (commit 9146b62)
-- [ ] **Phase 1** — Sidebar rename V2 BETA → V3 PREVIEW, restructurer hiérarchie
+- [x] **Phase 1** — Sidebar rename V2 BETA → V3 PREVIEW + routes (commit 4ab1ac6)
 - [ ] **Phase 2** — Projets V3 > Terminés (sous-page filtrée archivés/livrés)
 - [ ] **Phase 3** — Communication V3 (wiring 2 sous-entrées vers modules V2)
 - [ ] **Phase 4** — Leads V3 (CRM Principal + CRM ERP fusionnés, 3 variantes UX) [GROS MORCEAU]
