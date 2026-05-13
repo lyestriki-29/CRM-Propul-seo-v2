@@ -63,7 +63,11 @@ export function ProjectsV3Page() {
   }
 
   useEffect(() => {
-    supabase.from('users').select('id, name').order('name').then(({ data }) => {
+    supabase.from('users').select('id, name').order('name').then(({ data, error }) => {
+      if (error) {
+        console.error('[ProjectsV3] users fetch failed:', error)
+        return
+      }
       if (data) setUsers(data as { id: string; name: string }[])
     })
   }, [])
@@ -152,7 +156,6 @@ export function ProjectsV3Page() {
         onSearchChange={setSearchQuery}
         onNewProject={() => {
           // TODO étape ultérieure : modal création (réutiliser celle de V2 ?)
-          console.log('[ProjectsV3] new project — à brancher')
         }}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
