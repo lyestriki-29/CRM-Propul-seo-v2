@@ -1,7 +1,6 @@
-import { Plus, Search, LayoutGrid, Rows3, Inbox } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 
 export type LeadsV3Tab = 'site_web' | 'erp'
-export type LeadsV3Variant = 'A' | 'B' | 'C'
 
 interface UserOption {
   id: string
@@ -12,8 +11,6 @@ interface Props {
   leadCount: number
   tab: LeadsV3Tab
   onTabChange: (tab: LeadsV3Tab) => void
-  variant: LeadsV3Variant
-  onVariantChange: (v: LeadsV3Variant) => void
   filterUserId: string
   onFilterUserChange: (id: string) => void
   users: UserOption[]
@@ -22,18 +19,10 @@ interface Props {
   onNewLead: () => void
 }
 
-const VARIANT_META: Record<LeadsV3Variant, { label: string; icon: typeof LayoutGrid }> = {
-  A: { label: 'Kanban', icon: LayoutGrid },
-  B: { label: 'Compact', icon: Rows3 },
-  C: { label: 'Inbox', icon: Inbox },
-}
-
 export function LeadsV3Header({
   leadCount,
   tab,
   onTabChange,
-  variant,
-  onVariantChange,
   filterUserId,
   onFilterUserChange,
   users,
@@ -90,35 +79,6 @@ export function LeadsV3Header({
             <option key={u.id} value={u.id}>{u.name}</option>
           ))}
         </select>
-
-        <div className="w-px h-5 bg-[rgba(139,92,246,0.18)]" />
-
-        <span className="text-[11px] uppercase tracking-[0.08em] text-[#6b7280] font-semibold">
-          Variante UX
-        </span>
-        <div className="flex items-center gap-px bg-[#070512] border border-[rgba(139,92,246,0.18)] rounded-md p-px">
-          {(['A', 'B', 'C'] as const).map(v => {
-            const Icon = VARIANT_META[v].icon
-            const active = variant === v
-            return (
-              <button
-                key={v}
-                type="button"
-                onClick={() => onVariantChange(v)}
-                title={`Variante ${v} — ${VARIANT_META[v].label}`}
-                aria-pressed={active}
-                className="h-[28px] inline-flex items-center gap-1.5 px-2 rounded transition-colors duration-150 text-[11px] font-semibold"
-                style={{
-                  background: active ? 'rgba(139, 92, 246, 0.18)' : 'transparent',
-                  color: active ? '#A78BFA' : '#6b7280',
-                }}
-              >
-                <Icon className="h-3 w-3" />
-                {v} · {VARIANT_META[v].label}
-              </button>
-            )
-          })}
-        </div>
 
         {/* Recherche */}
         <div className="ml-auto relative min-w-[240px]">

@@ -22,7 +22,8 @@ test.describe('Projets V3 — création via modale', () => {
 
     // Remplir le formulaire
     await page.getByPlaceholder(/nom du projet/i).fill(projectName)
-    await page.getByRole('button', { name: 'SEO' }).click()
+    // Nouveaux types de prestation V3 : Communication / ERP / Site Web
+    await page.getByRole('button', { name: 'Site Web' }).click()
 
     // Soumettre
     await page.getByRole('button', { name: /créer le projet/i }).click()

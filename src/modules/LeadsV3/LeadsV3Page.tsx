@@ -4,10 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { routes } from '@/lib/routes'
-import { LeadsV3Header, type LeadsV3Tab, type LeadsV3Variant } from './components/LeadsV3Header'
+import { LeadsV3Header, type LeadsV3Tab } from './components/LeadsV3Header'
 import { VariantA_Kanban } from './variants/VariantA_Kanban'
-import { VariantB_Compact } from './variants/VariantB_Compact'
-import { VariantC_Inbox } from './variants/VariantC_Inbox'
 import { useLeadsV3SiteWeb } from './hooks/useLeadsV3SiteWeb'
 import { useLeadsV3Erp } from './hooks/useLeadsV3Erp'
 import { useConvertLeadToProject } from './hooks/useConvertLeadToProject'
@@ -28,17 +26,11 @@ import {
 } from './utils/leadStatusMapping'
 
 const TAB_KEY = 'propulseo:leads-v3:tab'
-const VARIANT_KEY = 'propulseo:leads-v3:variant'
 
 function loadTab(): LeadsV3Tab {
   if (typeof window === 'undefined') return 'site_web'
   const v = window.localStorage.getItem(TAB_KEY)
   return v === 'erp' ? 'erp' : 'site_web'
-}
-function loadVariant(): LeadsV3Variant {
-  if (typeof window === 'undefined') return 'A'
-  const v = window.localStorage.getItem(VARIANT_KEY)
-  return v === 'B' || v === 'C' ? v : 'A'
 }
 
 function useDebounced<T>(value: T, delay: number): T {
@@ -53,14 +45,12 @@ function useDebounced<T>(value: T, delay: number): T {
 export function LeadsV3Page() {
   const navigate = useNavigate()
   const [tab, setTabRaw] = useState<LeadsV3Tab>(loadTab)
-  const [variant, setVariantRaw] = useState<LeadsV3Variant>(loadVariant)
   const [filterUserId, setFilterUserId] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const debouncedSearch = useDebounced(searchQuery, 300)
   const [users, setUsers] = useState<{ id: string; name: string }[]>([])
 
   const setTab = (t: LeadsV3Tab) => { setTabRaw(t); window.localStorage.setItem(TAB_KEY, t) }
-  const setVariant = (v: LeadsV3Variant) => { setVariantRaw(v); window.localStorage.setItem(VARIANT_KEY, v) }
 
   const sw = useLeadsV3SiteWeb()
   const erp = useLeadsV3Erp()
@@ -177,8 +167,6 @@ export function LeadsV3Page() {
         leadCount={cards.length}
         tab={tab}
         onTabChange={setTab}
-        variant={variant}
-        onVariantChange={setVariant}
         filterUserId={filterUserId}
         onFilterUserChange={setFilterUserId}
         users={users}
@@ -202,31 +190,13 @@ export function LeadsV3Page() {
             Essayez de retirer les filtres ou de créer un nouveau lead.
           </p>
         </div>
-      ) : variant === 'A' ? (
+      ) : (
         <VariantA_Kanban
           columns={columns}
           leadStatus={leadStatus}
           leads={cards}
           onLeadClick={handleLeadClick}
           onStatusChange={onStatusChange}
-          onConvert={conversionHandler}
-          isLeadSigned={isLeadSigned}
-          convertingId={convertingId}
-        />
-      ) : variant === 'B' ? (
-        <VariantB_Compact
-          columns={columns}
-          leadStatus={leadStatus}
-          leads={cards}
-          onLeadClick={handleLeadClick}
-          onStatusChange={onStatusChange}
-        />
-      ) : (
-        <VariantC_Inbox
-          columns={columns}
-          leadStatus={leadStatus}
-          leads={cards}
-          onLeadClick={handleLeadClick}
           onConvert={conversionHandler}
           isLeadSigned={isLeadSigned}
           convertingId={convertingId}
