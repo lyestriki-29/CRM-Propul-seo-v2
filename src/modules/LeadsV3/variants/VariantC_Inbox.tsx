@@ -13,13 +13,17 @@ interface Props {
   leadStatus: Record<string, string>
   leads: LeadCardData[]
   onLeadClick: (id: string) => void
+  /** Conversion lead → projet (bouton affiché uniquement si fourni + lead signé). */
+  onConvert?: (data: LeadCardData) => void
+  isLeadSigned?: (leadId: string) => boolean
+  convertingId?: string | null
 }
 
 /**
  * Variante C — "Inbox" : liste verticale unique, filtres par statut (pills).
  * Pas de drag & drop. Cartes détaillées avec badge statut visible.
  */
-export function VariantC_Inbox({ columns, leadStatus, leads, onLeadClick }: Props) {
+export function VariantC_Inbox({ columns, leadStatus, leads, onLeadClick, onConvert, isLeadSigned, convertingId }: Props) {
   const [activeStatuses, setActiveStatuses] = useState<Set<string>>(new Set())
 
   const toggle = (id: string) => {
@@ -97,14 +101,19 @@ export function VariantC_Inbox({ columns, leadStatus, leads, onLeadClick }: Prop
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {filtered.map(lead => (
-            <LeadCardV3
-              key={lead.id}
-              data={lead}
-              showStatusBadge
-              onClick={() => onLeadClick(lead.id)}
-            />
-          ))}
+          {filtered.map(lead => {
+            const eligible = onConvert && isLeadSigned?.(lead.id)
+            return (
+              <LeadCardV3
+                key={lead.id}
+                data={lead}
+                showStatusBadge
+                onClick={() => onLeadClick(lead.id)}
+                onConvert={eligible ? onConvert : undefined}
+                converting={convertingId === lead.id}
+              />
+            )
+          })}
         </div>
       )}
     </div>

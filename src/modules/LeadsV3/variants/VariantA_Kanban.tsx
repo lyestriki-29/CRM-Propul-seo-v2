@@ -33,9 +33,24 @@ interface Props {
   leads: LeadCardData[]
   onLeadClick: (id: string) => void
   onStatusChange: (id: string, newStatus: string) => Promise<void>
+  /** Conversion lead → projet (bouton affiché uniquement si fourni + lead signé). */
+  onConvert?: (data: LeadCardData) => void
+  /** Prédicat pour savoir si un lead est éligible à la conversion (statut "signé"). */
+  isLeadSigned?: (leadId: string) => boolean
+  /** ID du lead en cours de conversion (loader sur le bouton concerné). */
+  convertingId?: string | null
 }
 
-export function VariantA_Kanban({ columns, leadStatus, leads, onLeadClick, onStatusChange }: Props) {
+export function VariantA_Kanban({
+  columns,
+  leadStatus,
+  leads,
+  onLeadClick,
+  onStatusChange,
+  onConvert,
+  isLeadSigned,
+  convertingId,
+}: Props) {
   const [activeId, setActiveId] = useState<string | null>(null)
   // Miroir local pour optimistic update : on déplace la carte immédiatement
   // côté UI, puis on confirme/rollback selon la réponse Supabase. Évite le
@@ -115,6 +130,9 @@ export function VariantA_Kanban({ columns, leadStatus, leads, onLeadClick, onSta
             column={col}
             items={byColumn[col.id] ?? []}
             onLeadClick={onLeadClick}
+            onConvert={onConvert}
+            isLeadSigned={isLeadSigned}
+            convertingId={convertingId}
           />
         ))}
       </div>
@@ -134,10 +152,16 @@ function KanbanColumnView({
   column,
   items,
   onLeadClick,
+  onConvert,
+  isLeadSigned,
+  convertingId,
 }: {
   column: KanbanColumn
   items: LeadCardData[]
   onLeadClick: (id: string) => void
+  onConvert?: (data: LeadCardData) => void
+  isLeadSigned?: (leadId: string) => boolean
+  convertingId?: string | null
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id })
   const itemIds = items.map(i => i.id)
@@ -175,9 +199,18 @@ function KanbanColumnView({
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">
-            {items.map(lead => (
-              <SortableLead key={lead.id} lead={lead} onClick={() => onLeadClick(lead.id)} />
-            ))}
+            {items.map(lead => {
+              const eligible = onConvert && isLeadSigned?.(lead.id)
+              return (
+                <SortableLead
+                  key={lead.id}
+                  lead={lead}
+                  onClick={() => onLeadClick(lead.id)}
+                  onConvert={eligible ? onConvert : undefined}
+                  converting={convertingId === lead.id}
+                />
+              )
+            })}
           </div>
         )}
       </SortableContext>
@@ -185,7 +218,17 @@ function KanbanColumnView({
   )
 }
 
-function SortableLead({ lead, onClick }: { lead: LeadCardData; onClick: () => void }) {
+function SortableLead({
+  lead,
+  onClick,
+  onConvert,
+  converting,
+}: {
+  lead: LeadCardData
+  onClick: () => void
+  onConvert?: (data: LeadCardData) => void
+  converting?: boolean
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lead.id })
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -194,7 +237,7 @@ function SortableLead({ lead, onClick }: { lead: LeadCardData; onClick: () => vo
   }
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <LeadCardV3 data={lead} onClick={onClick} />
+      <LeadCardV3 data={lead} onClick={onClick} onConvert={onConvert} converting={converting} />
     </div>
   )
 }

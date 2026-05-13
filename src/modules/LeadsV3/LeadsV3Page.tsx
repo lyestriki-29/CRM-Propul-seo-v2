@@ -10,7 +10,9 @@ import { VariantB_Compact } from './variants/VariantB_Compact'
 import { VariantC_Inbox } from './variants/VariantC_Inbox'
 import { useLeadsV3SiteWeb } from './hooks/useLeadsV3SiteWeb'
 import { useLeadsV3Erp } from './hooks/useLeadsV3Erp'
+import { useConvertLeadToProject } from './hooks/useConvertLeadToProject'
 import { siteWebToCard, erpToCard, matchesQuery } from './utils/leadAdapters'
+import type { LeadCardData } from './components/LeadCardV3'
 import {
   SITE_WEB_STATUS_ORDER,
   SITE_WEB_STATUS_LABELS,
@@ -62,6 +64,8 @@ export function LeadsV3Page() {
 
   const sw = useLeadsV3SiteWeb()
   const erp = useLeadsV3Erp()
+  const { convert } = useConvertLeadToProject()
+  const [convertingId, setConvertingId] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.from('users').select('id, name').order('name').then(({ data, error }) => {
@@ -108,6 +112,65 @@ export function LeadsV3Page() {
     else navigate(routes.crmErpLead(id))
   }
 
+  /**
+   * Convertit un lead signé en projet V3.
+   * Récupère les infos depuis le lead source (budget, responsable) puis crée
+   * un `projects_v2` minimal. Le lead n'est pas archivé — conversion non destructive.
+   */
+  const handleConvertLead = async (card: LeadCardData) => {
+    setConvertingId(card.id)
+    try {
+      let payloadName = card.company || card.contact || 'Nouveau projet'
+      let payloadBudget: number | null = card.amount
+      let assignedTo: string | null = null
+      let assignedName: string | null = card.assignee
+
+      if (tab === 'site_web') {
+        const lead = sw.leads.find(l => l.id === card.id)
+        if (lead) {
+          payloadBudget = lead.project_price ?? card.amount
+          assignedTo = lead.assigned_to ?? null
+          assignedName = lead.assigned_user?.name ?? lead.assigned_user_name ?? card.assignee
+        }
+      } else {
+        const lead = erp.leads.find(l => l.id === card.id)
+        if (lead) {
+          assignedTo = lead.assignee_id ?? null
+          assignedName = lead.assignee?.name ?? card.assignee
+        }
+      }
+
+      const res = await convert({
+        name: payloadName,
+        client_name: card.company || card.contact,
+        assigned_to: assignedTo,
+        assigned_name: assignedName,
+        budget: payloadBudget,
+        source: card.source,
+      })
+
+      if (res.success && res.projectId) {
+        toast.success('Lead converti en projet ✓', {
+          action: {
+            label: 'Ouvrir le projet',
+            onClick: () => navigate(`/projets-v3-preview/${res.projectId}`),
+          },
+        })
+      } else {
+        toast.error(`Conversion échouée : ${res.error ?? 'erreur inconnue'}`)
+      }
+    } finally {
+      setConvertingId(null)
+    }
+  }
+
+  const isLeadSigned = (leadId: string): boolean => {
+    const status = leadStatus[leadId]
+    return status === 'signe' || status === 'signes'
+  }
+
+  const conversionHandler = (card: LeadCardData) => { void handleConvertLead(card) }
+
   return (
     <div className="min-h-full bg-[#0a0814] text-[#ede9fe] p-8 max-w-[1600px] mx-auto">
       <LeadsV3Header
@@ -146,6 +209,9 @@ export function LeadsV3Page() {
           leads={cards}
           onLeadClick={handleLeadClick}
           onStatusChange={onStatusChange}
+          onConvert={conversionHandler}
+          isLeadSigned={isLeadSigned}
+          convertingId={convertingId}
         />
       ) : variant === 'B' ? (
         <VariantB_Compact
@@ -161,6 +227,9 @@ export function LeadsV3Page() {
           leadStatus={leadStatus}
           leads={cards}
           onLeadClick={handleLeadClick}
+          onConvert={conversionHandler}
+          isLeadSigned={isLeadSigned}
+          convertingId={convertingId}
         />
       )}
     </div>

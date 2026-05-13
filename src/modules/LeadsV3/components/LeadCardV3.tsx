@@ -1,4 +1,4 @@
-import { Building2, Mail, Phone, User } from 'lucide-react'
+import { Building2, Mail, Phone, User, ArrowUpRight } from 'lucide-react'
 
 export interface LeadCardData {
   id: string
@@ -27,14 +27,24 @@ interface Props {
   onClick?: () => void
   /** En variante C (inbox), on montre le badge statut sur la carte. */
   showStatusBadge?: boolean
+  /** Callback pour convertir le lead en projet (affiche le bouton seulement si fourni). */
+  onConvert?: (data: LeadCardData) => void
+  /** Indique qu'une conversion est déjà en cours pour ce lead (loader). */
+  converting?: boolean
 }
 
 /**
  * Carte lead V3 — utilisée en variante A (kanban) et C (inbox).
  * Style : fond #070512, accents violets, hover bg #1a1430.
  */
-export function LeadCardV3({ data, onClick, showStatusBadge = false }: Props) {
+export function LeadCardV3({ data, onClick, showStatusBadge = false, onConvert, converting = false }: Props) {
   const title = data.company || data.contact || 'Lead sans nom'
+
+  const handleConvertClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!onConvert || converting) return
+    onConvert(data)
+  }
 
   return (
     <article
@@ -87,6 +97,19 @@ export function LeadCardV3({ data, onClick, showStatusBadge = false }: Props) {
             </span>
           )}
         </div>
+
+        {onConvert && (
+          <button
+            type="button"
+            onClick={handleConvertClick}
+            disabled={converting}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[rgba(16,185,129,0.15)] hover:bg-[rgba(16,185,129,0.25)] border border-[rgba(16,185,129,0.35)] text-[11px] font-semibold text-[#10b981] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Convertir ce lead signé en projet"
+          >
+            <ArrowUpRight className="h-3 w-3" />
+            {converting ? 'Conversion…' : 'Convertir en projet'}
+          </button>
+        )}
       </div>
     </article>
   )
