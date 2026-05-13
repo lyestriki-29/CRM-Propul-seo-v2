@@ -1,28 +1,168 @@
-import { Construction, Sparkles } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Loader2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
+import { routes } from '@/lib/routes'
+import { LeadsV3Header, type LeadsV3Tab, type LeadsV3Variant } from './components/LeadsV3Header'
+import { VariantA_Kanban } from './variants/VariantA_Kanban'
+import { VariantB_Compact } from './variants/VariantB_Compact'
+import { VariantC_Inbox } from './variants/VariantC_Inbox'
+import { useLeadsV3SiteWeb } from './hooks/useLeadsV3SiteWeb'
+import { useLeadsV3Erp } from './hooks/useLeadsV3Erp'
+import { siteWebToCard, erpToCard, matchesQuery } from './utils/leadAdapters'
+import {
+  SITE_WEB_STATUS_ORDER,
+  SITE_WEB_STATUS_LABELS,
+  SITE_WEB_STATUS_COLORS,
+  ERP_STATUS_ORDER,
+  ERP_STATUS_LABELS,
+  ERP_STATUS_COLORS,
+  isSiteWebStatus,
+  isErpStatus,
+  normalizeErpStatus,
+  type SiteWebStatus,
+  type ErpStatus,
+} from './utils/leadStatusMapping'
 
-/**
- * Placeholder du module Leads V3.
- * L'implémentation réelle (CRM Principal + CRM ERP fusionnés en 2 onglets,
- * 3 variantes UX comparables via toggle) arrive dans la phase 4 du chantier V3.
- */
+const TAB_KEY = 'propulseo:leads-v3:tab'
+const VARIANT_KEY = 'propulseo:leads-v3:variant'
+
+function loadTab(): LeadsV3Tab {
+  if (typeof window === 'undefined') return 'site_web'
+  const v = window.localStorage.getItem(TAB_KEY)
+  return v === 'erp' ? 'erp' : 'site_web'
+}
+function loadVariant(): LeadsV3Variant {
+  if (typeof window === 'undefined') return 'A'
+  const v = window.localStorage.getItem(VARIANT_KEY)
+  return v === 'B' || v === 'C' ? v : 'A'
+}
+
+function useDebounced<T>(value: T, delay: number): T {
+  const [d, setD] = useState(value)
+  useEffect(() => {
+    const t = window.setTimeout(() => setD(value), delay)
+    return () => window.clearTimeout(t)
+  }, [value, delay])
+  return d
+}
+
 export function LeadsV3Page() {
+  const navigate = useNavigate()
+  const [tab, setTabRaw] = useState<LeadsV3Tab>(loadTab)
+  const [variant, setVariantRaw] = useState<LeadsV3Variant>(loadVariant)
+  const [filterUserId, setFilterUserId] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearch = useDebounced(searchQuery, 300)
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([])
+
+  const setTab = (t: LeadsV3Tab) => { setTabRaw(t); window.localStorage.setItem(TAB_KEY, t) }
+  const setVariant = (v: LeadsV3Variant) => { setVariantRaw(v); window.localStorage.setItem(VARIANT_KEY, v) }
+
+  const sw = useLeadsV3SiteWeb()
+  const erp = useLeadsV3Erp()
+
+  useEffect(() => {
+    supabase.from('users').select('id, name').order('name').then(({ data, error }) => {
+      if (error) { console.error('[LeadsV3] users fetch failed:', error); return }
+      if (data) setUsers(data as { id: string; name: string }[])
+    })
+  }, [])
+
+  const loading = tab === 'site_web' ? sw.loading : erp.loading
+  const error = tab === 'site_web' ? sw.error : erp.error
+
+  // Construction des cards + statusMap selon l'onglet
+  const { cards, leadStatus, columns, onStatusChange } = useMemo(() => {
+    if (tab === 'site_web') {
+      const filtered = sw.leads.filter(l => !filterUserId || l.assigned_to === filterUserId)
+      const allCards = filtered.map(siteWebToCard).filter(c => matchesQuery(c, debouncedSearch))
+      const statusMap: Record<string, string> = {}
+      for (const l of filtered) statusMap[l.id] = l.normalized_status
+      const cols = SITE_WEB_STATUS_ORDER.map(s => ({
+        id: s, label: SITE_WEB_STATUS_LABELS[s], color: SITE_WEB_STATUS_COLORS[s],
+      }))
+      const updater = async (id: string, newStatus: string) => {
+        if (!isSiteWebStatus(newStatus)) return
+        await sw.updateStatus(id, newStatus as SiteWebStatus)
+      }
+      return { cards: allCards, leadStatus: statusMap, columns: cols, onStatusChange: updater }
+    }
+    const filtered = erp.leads.filter(l => !filterUserId || l.assignee_id === filterUserId)
+    const allCards = filtered.map(erpToCard).filter(c => matchesQuery(c, debouncedSearch))
+    const statusMap: Record<string, string> = {}
+    for (const l of filtered) statusMap[l.id] = normalizeErpStatus(l.status)
+    const cols = ERP_STATUS_ORDER.map(s => ({
+      id: s, label: ERP_STATUS_LABELS[s], color: ERP_STATUS_COLORS[s],
+    }))
+    const updater = async (id: string, newStatus: string) => {
+      if (!isErpStatus(newStatus)) return
+      await erp.updateStatus(id, newStatus as ErpStatus)
+    }
+    return { cards: allCards, leadStatus: statusMap, columns: cols, onStatusChange: updater }
+  }, [tab, sw, erp, filterUserId, debouncedSearch])
+
+  const handleLeadClick = (id: string) => {
+    if (tab === 'site_web') navigate(routes.clientDetail(id))
+    else navigate(routes.crmErpLead(id))
+  }
+
   return (
-    <div className="flex items-center justify-center h-full px-6">
-      <div className="max-w-md text-center">
-        <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[rgba(139,92,246,0.12)] border border-[rgba(139,92,246,0.25)] mb-5">
-          <Construction className="h-8 w-8 text-[#A78BFA]" />
+    <div className="min-h-full bg-[#0a0814] text-[#ede9fe] p-8 max-w-[1600px] mx-auto">
+      <LeadsV3Header
+        leadCount={cards.length}
+        tab={tab}
+        onTabChange={setTab}
+        variant={variant}
+        onVariantChange={setVariant}
+        filterUserId={filterUserId}
+        onFilterUserChange={setFilterUserId}
+        users={users}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onNewLead={() => toast.info('Création de lead : à venir en V3')}
+      />
+
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <Loader2 className="h-6 w-6 animate-spin text-[#A78BFA]" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">Leads V3</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          Module en cours de construction. Il regroupera les pipelines{' '}
-          <strong>Site web</strong> et <strong>ERP</strong> dans une expérience unifiée
-          avec 3 variantes UX comparables.
-        </p>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#8B5CF6]/15 to-[#EC4899]/15 border border-[rgba(139,92,246,0.3)]">
-          <Sparkles className="h-3.5 w-3.5 text-[#A78BFA]" />
-          <span className="text-xs font-semibold text-[#A78BFA]">Phase 4 du chantier V3</span>
+      ) : error ? (
+        <div className="flex items-center justify-center min-h-[40vh] text-[13px] text-red-400">
+          Erreur de chargement : {error}
         </div>
-      </div>
+      ) : cards.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
+          <p className="text-[14px] text-[#9ca3af]">Aucun lead pour le moment.</p>
+          <p className="text-[12px] text-[#6b7280] mt-1">
+            Essayez de retirer les filtres ou de créer un nouveau lead.
+          </p>
+        </div>
+      ) : variant === 'A' ? (
+        <VariantA_Kanban
+          columns={columns}
+          leadStatus={leadStatus}
+          leads={cards}
+          onLeadClick={handleLeadClick}
+          onStatusChange={onStatusChange}
+        />
+      ) : variant === 'B' ? (
+        <VariantB_Compact
+          columns={columns}
+          leadStatus={leadStatus}
+          leads={cards}
+          onLeadClick={handleLeadClick}
+          onStatusChange={onStatusChange}
+        />
+      ) : (
+        <VariantC_Inbox
+          columns={columns}
+          leadStatus={leadStatus}
+          leads={cards}
+          onLeadClick={handleLeadClick}
+        />
+      )}
     </div>
   )
 }
