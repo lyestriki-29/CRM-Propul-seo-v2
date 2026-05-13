@@ -1,26 +1,25 @@
-// Sélection des templates de checklist à matérialiser en BDD selon les
-// prestations cochées sur le projet. Source des templates : mocks V2 (purs,
-// `assigned_to: null`). On y injecte uniquement l'assigné du projet (UUID).
-import { SITEWEB_CHECKLIST_TEMPLATE } from '@/modules/SiteWebManager/mocks/mockSiteWebChecklists'
-import { ERP_CHECKLIST_TEMPLATE } from '@/modules/ERPManager/mocks/mockERPChecklists'
-import { COMM_CHECKLIST_INSTAGRAM } from '@/modules/CommunicationManager/mocks/mockCommChecklists'
+// Source unique de vérité pour les templates de checklist V3 :
+// `@/modules/ProjectDetailsV3Preview/tabs/production/templates`.
+// Ce module convertit chaque template `{phase, title}` en `TemplateItem`
+// (avec priority/status/position) pour la matérialisation en BDD.
+import { TEMPLATES } from '@/modules/ProjectDetailsV3Preview/tabs/production/templates'
 import type { ChecklistItemV2, PrestaType } from '@/types/project-v2'
 
 type TemplateItem = Omit<ChecklistItemV2, 'id' | 'project_id' | 'created_at' | 'updated_at'>
 
 function templateForPresta(presta: PrestaType): TemplateItem[] {
-  switch (presta) {
-    case 'web':
-    case 'site_web':
-      return SITEWEB_CHECKLIST_TEMPLATE
-    case 'erp':
-    case 'erp_v2':
-      return ERP_CHECKLIST_TEMPLATE
-    case 'communication':
-      return COMM_CHECKLIST_INSTAGRAM
-    default:
-      return []
-  }
+  const tasks = TEMPLATES[presta] ?? []
+  return tasks.map((t, idx) => ({
+    parent_task_id: null,
+    title: t.title,
+    phase: t.phase,
+    status: 'todo' as const,
+    priority: 'medium' as const,
+    assigned_to: null,
+    assigned_name: null,
+    due_date: null,
+    position: idx + 1,
+  }))
 }
 
 /**

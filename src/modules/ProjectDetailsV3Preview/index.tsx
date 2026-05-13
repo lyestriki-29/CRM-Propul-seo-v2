@@ -94,7 +94,7 @@ export function ProjectDetailsV3Preview() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#020205]">
+      <div className="flex items-center justify-center h-full bg-[#020205]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-[#8B5CF6] mx-auto mb-2" />
           <p className="text-sm text-[#9ca3af]">Chargement du projet…</p>
@@ -105,7 +105,7 @@ export function ProjectDetailsV3Preview() {
 
   if (error || !project) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#020205]">
+      <div className="flex items-center justify-center h-full bg-[#020205]">
         <div className="text-center max-w-md">
           <p className="text-sm text-[#ede9fe] mb-2">{error ?? 'Projet introuvable'}</p>
           <button
@@ -120,7 +120,7 @@ export function ProjectDetailsV3Preview() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#020205] overflow-hidden">
+    <div className="flex flex-col h-full bg-[#020205] overflow-hidden">
       {/* Breadcrumb / preview banner */}
       <div className="flex items-center justify-between px-5 py-3 bg-[#070512] border-b border-[rgba(139,92,246,0.18)] shrink-0">
         <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export function ProjectDetailsV3Preview() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar gauche */}
         {!focusMode && (
-          <div className="w-[300px] shrink-0 border-r border-[rgba(139,92,246,0.18)] overflow-y-auto bg-[#070512]">
+          <div className="w-[300px] shrink-0 border-r border-[rgba(139,92,246,0.18)] overflow-hidden bg-[#070512]">
             <ProjectV3LeftSidebar
               project={project}
               checklistProgress={checklist.progress}
@@ -173,7 +173,7 @@ export function ProjectDetailsV3Preview() {
 
         {/* Sidebar droite */}
         {!focusMode && (
-          <div className="w-[280px] shrink-0 border-l border-[rgba(139,92,246,0.18)] overflow-y-auto bg-[#070512]">
+          <div className="w-[280px] shrink-0 border-l border-[rgba(139,92,246,0.18)] overflow-hidden bg-[#070512]">
             <ProjectV3RightSidebar
               project={project}
               users={teamUsers}

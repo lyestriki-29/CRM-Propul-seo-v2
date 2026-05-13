@@ -2,6 +2,10 @@
 // Ne pas modifier le hook V2 ; toute évolution se fait ici.
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
+// Mocks V2 utilisés UNIQUEMENT en mode démo (projectId avec préfixe `sw-`/`erp-`/`comm-`).
+// Les projets réels en BDD ont des UUID — la fonction `isMockProject` ci-dessous
+// retourne false pour tout UUID, donc cette branche n'est jamais exécutée en prod.
+// À supprimer le jour où on n'a plus besoin du mode démo offline.
 import { MOCK_SITEWEB_CHECKLISTS } from '@/modules/SiteWebManager/mocks/mockSiteWebChecklists'
 import { MOCK_ERP_CHECKLISTS } from '@/modules/ERPManager/mocks/mockERPChecklists'
 import { buildTemplateForProject } from './checklistTemplates'
@@ -12,6 +16,8 @@ const MOCK_REGISTRY: Record<string, ChecklistItemV2[]> = {
   ...MOCK_ERP_CHECKLISTS,
 }
 
+// True uniquement pour les IDs de démo hardcodés (`sw-001`, `erp-002`, etc.).
+// Les UUID Supabase commencent par un caractère hexadécimal, jamais par ces préfixes.
 function isMockProject(projectId: string) {
   return projectId.startsWith('sw-') || projectId.startsWith('erp-') || projectId.startsWith('comm-')
 }
