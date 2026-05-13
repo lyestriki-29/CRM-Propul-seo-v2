@@ -1,120 +1,85 @@
-# Session State — 2026-05-13 fin (autonomous V3 session)
+# Session State — 2026-05-13 fin (chantier V3 complet)
 
 ## Branch
-**preview/v3-ux-overhaul** (exception V3 isolée, **AUCUN PUSH effectué**)
+**preview/v3-ux-overhaul** (exception V3 assumée — chantier isolé, pas de push)
 
 ## Tag de retour rapide
-`git reset --hard v3-pre-autonomous-session` revient au commit 9146b62
-(avant toute la session autonome).
+`git reset --hard v3-pre-autonomous-session` revient avant la session autonome.
 
-## Plan E2E V3 — Livré 100%
+## Completed This Session (12 commits depuis le tag de safety)
 
-- [x] **Phase 0** — Commit safe + tag (commit 9146b62)
-- [x] **Phase 1** — Sidebar V2 BETA → V3 PREVIEW + routes (commit 4ab1ac6)
-- [x] **Phase 2** — Module ProjectsV3Completed dédié (commit 7ff1181)
-- [x] **Phase 3** — Communication V3 wiring (livré en Phase 1)
-- [x] **Phase 4** — Leads V3 + 3 variantes UX + optimistic DnD (commit c3ed12a)
-- [x] **Phase 5** — Preview docs PDF/images/vidéo/Office (commit 3e5d795)
-- [x] **Phase 6** — Audit onglets restants → AUDIT_PHASE6.md
-- [x] **Bonus** — Conversion lead → projet 1 clic (commit 984916a)
+### Refonte V3 livrée
+- **Phase 1** — Sidebar : V2 BETA → V3 PREVIEW, +4 routes (Leads, Projets terminés V3, Comm. Production, Comm. KPI)
+- **Phase 2** — Module ProjectsV3Completed (vue liste, filtres responsable/pôles/recherche)
+- **Phase 3** — Communication V3 wiring (routes V3 → modules V2 réutilisés)
+- **Phase 4** — Module Leads V3 (CRM Principal + CRM ERP fusionnés, variante Kanban A retenue)
+- **Phase 5** — Preview documents projet (PDF / images / vidéo / Office via Google Docs viewer)
+- **Phase 6** — Audit onglets restants (Accès, Brief, Sidebar droite) → AUDIT_PHASE6.md
+- **Bonus** — Conversion lead → projet 1 clic (bouton sur cards "signé")
 
-## Livré cette session
+### Améliorations finales (après ton retour)
+- Choix utilisateur : **variante Kanban A** retenue, suppression de B (Compact) + C (Inbox) et de LeadCardV3Compact (-558 lignes)
+- Bouton "Nouveau projet" V3 branché sur modale dédiée
+- Modale Nouveau projet refondue : types **Communication / ERP / Site Web** (cohérence sidebar), tous les champs de Modifier (Client, Priorité, Date de début, SIRET)
+- Splittée en NewProjectModalV3 (77 L) + NewProjectFormV3 (220 L) pour respecter la règle 200 lignes
+- Fix BDD bonus : fallback `client_name = name` si vide (contrainte NOT NULL en BDD sinon INSERT échoue)
 
-### Sidebar
-- Section "V2 BETA" renommée "V3 PREVIEW"
-- 8 entrées V3 actives : Dashboard V2, Leads, Projets En cours, Projets Terminés,
-  Comm. Production, Comm. KPI, Gestion des projets, Procédures
-- Section "Pôles V2" (renommée depuis "Projets") conservée
-- V1 conservée intacte en bas
+### Infrastructure tests (process pérenne)
+- Vitest installé + config + setup
+- 5 fichiers unit (105 tests, 1.4s) sur documentMimeType / leadStatusMapping / leadAdapters / poleMapping / statusMapping
+- 6 specs E2E Playwright (12 tests, 22s) sur navigation, création projet, terminés, leads, détail Lolett, comm wiring
+- Process futur acté : chaque nouvelle feature livre 1 test unit + 1 test E2E happy path
 
-### Nouveaux modules V3
-- **`src/modules/LeadsV3/`** — fusion CRM Principal + CRM ERP en 2 onglets,
-  3 variantes UX (Kanban / Compact / Inbox) avec toggle persistant
-- **`src/modules/ProjectsV3Completed/`** — vue liste compacte des projets
-  archivés ou livrés, filtres recherche/responsable/pôles
+### Lint cleanup
+- temp_files/ + next-public/ ignorés (code legacy hors scope)
+- Auto-fix triviales (let→const)
+- 420 → 329 erreurs (-91), reste dette technique préexistante dans src/
 
-### Détail projet V3 Preview
-- Modale d'édition : champ "Date de début" ajouté
-- Sidebar "À propos" : SIRET formaté + enrichissement Pappers (raison sociale,
-  forme juridique, effectif) + badge "✓ Enrichi via Pappers"
-- Tab Production : cycle 2 états (1 clic = validé), suppression UI in_progress
-- Tab Synthèse : MetricCards Budget/Échéance cliquables vers modale
-- Onglet Documents : preview natif PDF / images / vidéo / Office (Google Docs
-  viewer), modale plein écran avec ESC + click-outside, signed URL TTL 600s
-- Refacto : useChecklistV3 hissé dans index.tsx → source unique de vérité
-  pour la progression (sidebar et tab Production partagent le même state)
-- Refetch projet silencieux (plus de flash de chargement à chaque toggle)
+## État final
+- TypeScript : clean
+- Tests : 105/105 unit + 12/12 E2E
+- Build prod : OK (Vite 7.4s)
+- V1/V2 : intacts, aucun fichier modifié hors scope V3
+- Push : aucun (commits locaux uniquement)
 
-### Conversion lead → projet
-- Bouton "Convertir en projet" sur cards leads "signés" (variantes A et C)
-- Crée un projects_v2 minimal préfilé (nom, client, responsable, budget, source)
-- Non destructif : le lead source reste intact
-- Toast confirmation avec action "Ouvrir le projet"
+## Next Task — Production templates
 
-## Routes V3 actives
+L'utilisateur veut ouvrir une **nouvelle session dédiée aux templates production**.
 
-- `/leads-v3` — Leads V3 (CRM Principal + ERP fusionnés)
-- `/projets-en-cours` — Projets V3 kanban
-- `/projets-v3-termines` — Projets V3 terminés
-- `/projets-v3-preview/:id` — Détail projet V3 (avec preview docs)
-- `/communication-v3/production` — wiring vers Communication V2
-- `/communication-v3/kpi` — wiring vers CommunicationKPI V2
-- `/coffre-fort` — Coffre-fort agence (admin)
+### État actuel (à lire en début de session suivante)
+- Fichier : `src/modules/ProjectDetailsV3Preview/tabs/production/templates.ts`
+- **7 templates** : web (16 tâches), site_web (21), seo (13), erp (13), erp_v2 (9), saas (12), communication (7)
+- Total : 91 tâches templates
+- Problème : avec la nouvelle modale création qui n'expose que Communication/ERP/Site Web, les anciens templates `web`, `seo`, `saas`, `erp_v2` deviennent non utilisés pour les nouveaux projets mais restent pour la compat des projets V1/V2 existants en BDD
 
-## À tester en priorité au retour
+### Options présentées
+- A. Garder tels quels (rétrocompat)
+- B. Supprimer les 4 legacy (-49 tâches)
+- C. Fusionner web + site_web et erp + erp_v2
 
-1. **Leads V3** — http://localhost:5174/leads-v3
-   - Switcher Site web ↔ ERP en haut
-   - Switcher Variante A / B / C dans le header
-   - Drag&drop colonne en variante A (vérif optimistic update)
-   - Filtres : recherche, responsable
-   - Sur un lead "signé" → bouton "Convertir en projet" en bas de carte
-
-2. **Projets V3 Terminés** — http://localhost:5174/projets-v3-termines
-   - Liste devrait montrer ~20 projets (BDD = 20 archivés/livrés)
-   - Filtres + recherche
-
-3. **Détail projet V3 (Lolett)** — http://localhost:5174/projets-v3-preview/d570010a-553f-4171-88a2-ecb637a4663e
-   - Onglet Documents : cliquer un document → preview modale
-   - Tester PDF, image, vidéo si dispo
-   - Onglet Production : 1 clic = validé (cycle 2 états)
-   - Sidebar Progression = Production %, en cohérence
-
-## Choix à valider au retour (variantes Leads V3)
-
-Tu dois choisir LA variante que tu préfères et on supprimera les 2 autres :
-- **A — Kanban classique** : familier, drag&drop, vue d'ensemble
-- **B — Compact** : dense, dropdown statut par ligne, voit beaucoup de leads
-- **C — Inbox** : pills filtres en haut, cards détaillées, mode "boîte de réception"
-
-Le toggle actuel persiste en localStorage : `propulseo:leads-v3:variant`.
-
-## Issues identifiées NON corrigées (différées)
-
-| Issue | Sévérité | Pourquoi différé |
-|---|---|---|
-| Pas de realtime subscription dans Leads V3 (vs V1) | HIGH | Pas bloquant en mono-user, à brancher au retour |
-| Signed URL TTL 600s sans refresh dans preview docs | HIGH info | Acceptable pour preview rapide |
-| DocumentsTabV3.tsx 247 lignes (> 200) | HIGH | Préexistant, +11 lignes uniquement par moi |
-| MetricCards Score retirée (pas d'algo) | LOW | À redéfinir avec toi |
+### Pistes connexes pour la session templates
+- Permettre la création de templates custom côté UI (BDD ?)
+- Templater aussi le brief, les accès attendus, les documents requis
+- Éditer un template existant sans toucher au code
 
 ## Blockers
+Aucun.
 
-Aucun. Toutes les phases planifiées sont livrées.
+## Key Context
+- Dev server : http://localhost:5174
+- Login admin : lyestriki@yahoo.fr
+- Branche : preview/v3-ux-overhaul, ahead of origin by 12 commits, **AUCUN PUSH**
+- Tag retour catastrophe : v3-pre-autonomous-session
+- Routes V3 actives : /leads-v3, /projets-en-cours, /projets-v3-termines, /projets-v3-preview/:id, /communication-v3/production, /communication-v3/kpi, /coffre-fort
+- Variante Leads V3 retenue : A (Kanban). B et C supprimées.
+- Tests : `npm run test` (unit), `npm run test:e2e` (E2E)
+- Issues différées (non bloquantes) :
+  - Realtime Supabase pas branché dans Leads V3 (mono-user OK)
+  - DocumentsTabV3 préexistant à 247 lignes (>200)
+  - 329 erreurs ESLint préexistantes dans src/ (no-any, exhaustive-deps)
+  - MetricCard Score retirée du détail projet (pas d'algo défini)
 
-## Key context
-
-- **Dev server** : http://localhost:5174 (toujours actif)
-- **Login admin** : lyestriki@yahoo.fr
-- **Tag retour** : `v3-pre-autonomous-session` (commit 9146b62, état d'avant session)
-- **6 commits ajoutés cette session** : 4ab1ac6 7ff1181 c3ed12a 3e5d795 984916a (+ ce save)
-- **Branch state** : preview/v3-ux-overhaul, AUCUN PUSH effectué (commits locaux uniquement)
-- **AUDIT_PHASE6.md** : checklist détaillée de l'audit des tabs Accès/Brief/Sidebar droite
-
-## Next session (priorités suggérées)
-
-1. **Tu choisis 1 variante Leads V3** parmi A/B/C → on supprime les 2 autres
-2. Brancher realtime Supabase sur Leads V3 (parité V1)
-3. Refactoriser DocumentsTabV3 sous 200 lignes via extraction useDocumentsTabV3
-4. Décider quoi faire de la MetricCard Score (algo ou suppression définitive)
-5. Push une fois tout validé : `git push origin preview/v3-ux-overhaul`
+## Push manuel (à faire quand tu valides)
+```bash
+git push origin preview/v3-ux-overhaul
+```
