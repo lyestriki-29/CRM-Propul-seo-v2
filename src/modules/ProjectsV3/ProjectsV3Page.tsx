@@ -17,6 +17,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { useProjectsV2 } from '@/modules/ProjectsManagerV2/hooks/useProjectsV2'
 import { supabase } from '@/lib/supabase'
 import { ProjectsV3Header, type V3ViewMode } from './components/ProjectsV3Header'
+import { NewProjectModalV3 } from './components/NewProjectModalV3'
 import { ProjectColumnV3 } from './components/ProjectColumnV3'
 import { ProjectCardV3 } from './components/ProjectCardV3'
 import { ProjectCardV3Compact } from './components/ProjectCardV3Compact'
@@ -46,7 +47,8 @@ function useDebounced<T>(value: T, delay: number): T {
 
 export function ProjectsV3Page() {
   const navigate = useNavigate()
-  const { projects, loading, updateProjectStatus } = useProjectsV2()
+  const { projects, loading, updateProjectStatus, addProject } = useProjectsV2()
+  const [newOpen, setNewOpen] = useState(false)
 
   const [filterUserId, setFilterUserId] = useState('')
   const [activePoles, setActivePoles] = useState<Set<V3Pole>>(new Set())
@@ -154,9 +156,7 @@ export function ProjectsV3Page() {
         onTogglePole={togglePole}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onNewProject={() => {
-          // TODO étape ultérieure : modal création (réutiliser celle de V2 ?)
-        }}
+        onNewProject={() => setNewOpen(true)}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
       />
@@ -222,6 +222,13 @@ export function ProjectsV3Page() {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      <NewProjectModalV3
+        open={newOpen}
+        users={users}
+        onClose={() => setNewOpen(false)}
+        onCreate={addProject}
+      />
     </div>
   )
 }
