@@ -97,14 +97,13 @@ export function Sidebar() {
     section: 'v3',
     title: '✦ V3 Preview',
     items: [
-      { to: routes.dashboard,             label: 'Dashboard V2',        icon: LayoutDashboard, permission: 'can_view_dashboard' },
-      { to: routes.leadsV3,               label: 'Leads',               icon: UserCheck,       permission: 'can_view_leads' },
+      { to: routes.dashboard,             label: 'Dashboard',           icon: LayoutDashboard, permission: 'can_view_dashboard' },
       { to: routes.projectsV3,            label: 'Projets — En cours',  icon: Briefcase,       permission: 'can_view_projects' },
-      { to: routes.projectsV3Completed,   label: 'Projets — Terminés',  icon: Archive,         permission: 'can_view_projects' },
+      { to: routes.leadsV3,               label: 'Leads',               icon: UserCheck,       permission: 'can_view_leads' },
       { to: routes.communicationV3Production, label: 'Comm. — Production', icon: Megaphone,    permission: 'can_view_communication' },
       { to: routes.communicationV3Kpi,    label: 'Comm. — KPI',         icon: BarChart3,       permission: 'can_view_communication' },
-      { to: routes.projects,              label: 'Gestion des projets', icon: Sparkles,        permission: 'can_view_projects' },
       { to: routes.procedures,            label: 'Procédures',          icon: BookOpen,        permission: 'can_view_procedures' },
+      { to: routes.projectsV3Completed,   label: 'Projets — Terminés',  icon: Archive,         permission: 'can_view_projects' },
     ]
   };
 
@@ -112,6 +111,7 @@ export function Sidebar() {
     section: 'en-cours',
     title: 'Pôles V2',
     items: [
+      { to: routes.projects,      label: 'Gestion des projets', icon: Sparkles,  permission: 'can_view_projects' },
       { to: routes.communication, label: 'Communication',  icon: Megaphone, permission: 'can_view_projects' },
       { to: routes.erp,           label: 'ERP Sur Mesure', icon: Settings2, permission: 'can_view_projects' },
       { to: routes.siteWeb,       label: 'Site Web & SEO', icon: Globe,     permission: 'can_view_projects' },
