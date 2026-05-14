@@ -1,82 +1,159 @@
-# Session State — 2026-05-14 fin (sécurité Supabase + Coolify live)
+# Session State — 2026-05-14 fin (V3 live + alerte service_role fuitée)
 
 ## Branch
-**main** (chantier V3 mergé, prod live sur Coolify)
+**main** — synchronisée avec origin/main (commit `8fcabff`)
 
-## Completed This Session
+## 🚨 ACTION URGENTE POUR DEMAIN — Fuite service_role_key
 
-### V3 finalisation & merge main
-- Templates production V3 refondus (site_web 18 / erp_v2 17) basés sur ses vrais projets (Lutins, Lorett, Précieuse, ServicImmo, Remplacare, Tracker)
-- Onglet Documents V3 — Variante A (dropzone XL + filtres pills + liste plate) + 5 sous-composants
-- Sidebar V3 PREVIEW réorganisée : Dashboard / Projets en cours / Leads / Comm Production / Comm KPI / Procédures / Projets Terminés. "Gestion des projets" déplacée vers Pôles V2.
-- Migration BDD : 37 anciens projets re-matérialisés avec nouveaux templates (Lolett préservé, 14 tâches done)
-- Merge `preview/v3-ux-overhaul` → `main` (48 commits, no-ff)
-- Push main → GitHub `Propul-Seo/CRM-Propul-seo-v2`
+### Constat de fin de session
+La `SUPABASE_SERVICE_ROLE_KEY` est exposée dans 2 commits GitHub publics :
+- `e727d85` feat(kanban): show next_action badge on project cards
+- `af1012d` feat(v2): init — suivi refonte, gmail-sync ICS, migrations Supabase
 
-### Sécurité Supabase (chantier majeur)
-**Avant : 191 findings advisors (4 ERROR + 187 WARN). Après : 181 findings (0 ERROR).**
+Fichiers concernés :
+- `database/diagnostics/diagnostic.js`
+- `scripts/test-supabase-connection.js`
+- `docs/archive/DEPLOY_ADMIN_UPDATE_PASSWORD.md`
+- `docs/runbooks/DEPLOY_ADMIN_UPDATE_PASSWORD.md`
+- `next-public/lib/supabase-server.ts`
 
-- DROP 3 tables backup avec données sensibles (incluait colonne `password` exposée)
-- Activation RLS sur `automation_logs`
-- DROP 33 policies "public always-true" sur 16 tables CRM critiques
-- CREATE policies `authenticated_all_*` propres
-- DROP 14 policies anon trop larges sur portail/brief
-- CREATE 3 RPC SECURITY DEFINER (`get_portal_data`, `get_brief_by_short_code`, `upsert_brief_by_short_code`) avec search_path figé + GRANT explicite anon
+### Gravité
+🔴 **CRITIQUE.** La service_role bypasse TOUTES les RLS qu'on a mises en place hier. Quiconque scrape GitHub peut avoir accès admin total à la BDD.
+
+### Ce qui a été tenté pendant la session
+- ❌ Click "Disable JWT-based API keys" sur Supabase → a cassé l'app prod (HTTP 401)
+- ✅ Re-enable legacy keys → app prod fonctionne à nouveau
+- ❌ Bouton "Rotate JWT secret" introuvable dans l'UI Supabase actuelle
+
+### Plan d'action pour demain (3 options)
+
+**Option A (recommandée) — Migration vers nouvelles "Publishable / Secret API keys"**
+1. Supabase Dashboard → Settings → API Keys → onglet "Publishable and secret API keys"
+2. Générer 1 publishable + 1 secret (si pas déjà fait)
+3. Mettre à jour `.env` local :
+   - `VITE_SUPABASE_ANON_KEY=sb_publishable_xxx`
+   - `SUPABASE_SERVICE_ROLE_KEY=sb_secret_xxx`
+4. Mettre à jour Coolify env vars (VITE_SUPABASE_ANON_KEY) + "Available at Buildtime"
+5. Redéployer Coolify
+6. Tester que l'app marche avec les nouvelles clés
+7. Désactiver les "Legacy JWT-based API keys" sur Supabase → l'ancienne service_role fuitée devient invalide
+
+**Option B — Rotation JWT secret classique** (si on retrouve le bouton)
+- Settings → JWT Keys → Rotate secret
+- Mettre à jour anon dans `.env` + Coolify, redéployer
+
+**Option C — Support Supabase**
+- Ticket via dashboard "I need to rotate my service_role key (leaked credential)"
+- Réponse < 24h
+
+### Anon key fuitée (moins critique)
+Même problème pour l'anon key dans les mêmes fichiers, mais elle est publique par design.
+Si rotation JWT effectuée → elle change aussi automatiquement → bénéfice secondaire.
+
+---
+
+## ⚠️ Coolify pas à jour avec le dernier code
+
+Dernier déploiement Coolify Healthy : commit `87e6857` (vers 10h38 UTC).
+
+**Commits poussés sur main NON DÉPLOYÉS** :
+- `9628fb1` security RLS (RPC SECURITY DEFINER)
+- `9d6c669` fixes review (cleanup useEffect, Array RPC payload)
+- `29c8de3` fix CSP nginx (Google Photos)
+- `b981cb4` 4 previews dashboard (WIP supprimé ensuite)
+- `08628b1` sidebar fixes (path aliases + type User)
+- `7339457` session save
+- **`8fcabff` DashboardV3 swap (CRITIQUE — l'utilisateur voit encore V2 en prod)**
+
+### Pour redéployer demain
+```bash
+TOKEN=$(grep "^CoolifyToken=" .env | cut -d'=' -f2-)
+curl -X GET "http://146.59.228.186:8000/api/v1/deploy?uuid=el094rjbgs6iefsvaws6qs0w&force=true" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Ou via UI Coolify** : projet `c-r-m--propul-seo-v2` → Redeploy.
+
+⚠️ **AVANT redeploy** : si tu fais l'Option A des nouvelles clés, mets à jour Coolify env vars d'abord, sinon l'app va casser avec les anciennes clés invalidées.
+
+---
+
+## ✅ Completed cette session (récap)
+
+### V3 finalisation
+- Templates production V3 (site_web 18 / erp_v2 17) basés sur projets réels
+- Onglet Documents V3 Variante A (dropzone + filtres + liste plate, 5 sous-composants)
+- Sidebar V3 PREVIEW réorganisée : Dashboard / Projets / Leads / Comm / Procédures / Terminés
+- **DashboardV2 supprimé, DashboardV3 officiel créé** (commit `8fcabff`)
+- Migration BDD : 37 anciens projets re-matérialisés avec nouveaux templates
+- Merge `preview/v3-ux-overhaul` → main (48 commits, no-ff)
+
+### Sécurité Supabase (énorme chantier)
+- **191 findings advisors → 181** (4 ERROR éliminés)
+- DROP 3 tables backup avec données sensibles (password)
+- RLS activée sur `automation_logs`
+- DROP 33 policies "public always-true" sur 16 tables CRM
+- CREATE policies `authenticated_all_*`
+- DROP 14 policies anon trop larges (portail/brief)
+- **CREATE 3 RPC SECURITY DEFINER** (`get_portal_data`, `get_brief_by_short_code`, `upsert_brief_by_short_code`) avec search_path figé + GRANT explicite anon
 - Migration frontend `useClientPortal` + `useBriefV2` vers RPC
-- Tests live confirmés : 27 tables critiques renvoient `[]` en anon, RPC fonctionnent avec token valide
+- 27 tables critiques bloquées en anon (test live confirmé)
+
+### Code review fixes
+- Sidebar.tsx : `any` → `User | null`, imports relatifs → path aliases
+- nginx.conf : CSP + headers répliqués dans chaque bloc location
+- useClientPortal/useBriefV2 : Array RPC payload handling + cleanup useEffect + deps token
 
 ### Déploiement Coolify
-- Dockerfile multi-stage (Node 22 alpine builder → nginx alpine serve)
-- nginx.conf avec SPA fallback + gzip + cache + CSP + headers sécurité dans chaque bloc location
-- .dockerignore complet
-- Switch Build Pack Coolify : Nixpacks → Dockerfile (Nixpacks détectait à tort comme "deno")
-- Variables d'env VITE_SUPABASE_* configurées avec "Available at Buildtime"
-- Container running healthy sur https://crm.propulseo-site.com
-- Fix CSP img-src trop restrictif (Google Photos bloqué) → relax `https:` global pour images
+- Dockerfile multi-stage Node 22 + nginx
+- nginx.conf SPA fallback + gzip + CSP
+- .dockerignore
+- Switch Build Pack Nixpacks → Dockerfile
+- Variables env VITE_SUPABASE_* avec Buildtime
+- App live sur https://crm.propulseo-site.com
 
-### Code review fin de session
-- 2 Critical fixés sur Sidebar.tsx : `any` → `User | null`, imports relatifs → path aliases `@/`
-- 124/124 tests unit verts, tsc clean
+---
 
-## Next Tasks (ordre de priorité)
+## Next Tasks (par priorité)
 
-### P0 — Strict minimum prod stable
-- Aucun. **Tout est live et fonctionne.**
+### 🔴 P0 — Demain matin (CRITIQUE)
+1. **Rotater la service_role_key** (Option A migration recommandée)
+2. **Mettre à jour `.env` local + Coolify** avec nouvelles clés
+3. **Redéployer Coolify** pour avoir le DashboardV3 + tous les fixes
+4. **Vérifier** que l'app marche avec les nouvelles clés + nouveau Dashboard visible
 
-### P1 — Cette semaine (hardening Supabase, 1h)
-1. Activer **leaked password protection** dans Supabase Auth Settings (1 clic)
-2. Réduire **OTP expiry** à 600s max
-3. Restreindre les 2 buckets Storage publics (`client-post-assets`, `post-assets`)
-4. Retirer 3 materialized views de l'API REST (`kpi_monthly_overview`, `kpi_daily_metrics`, `kpi_top_posts`)
-5. Upgrade Postgres (version vulnérable détectée, ~5 min downtime)
-6. Fix récursion infinie policy `channel_members` (bug RLS préexistant)
+### 🟠 P1 — Hardening Supabase (1h)
+5. Activer leaked password protection (Auth Settings)
+6. Réduire OTP expiry à 600s
+7. Restreindre 2 buckets Storage publics (`client-post-assets`, `post-assets`)
+8. Retirer 3 materialized views de l'API REST (kpi_*)
+9. Upgrade Postgres (version vulnérable)
+10. Fix récursion infinie policy `channel_members`
 
-### P2 — Polish code (différé)
-- `Sidebar.tsx` > 200L (314L) : extraire NavSection config dans `sidebarConfig.ts`
-- `DocumentsTabV3.tsx` : `uploader_name` hardcodé `'Admin'` → utiliser `currentUser?.name`
-- `nginx.conf` : ajouter `Content-Security-Policy` au bloc `location` SVG/images
-- 5 fichiers V3 > 200L (ProjectEditModalV3 312L, ProductionTabV3 289L, etc.)
-- Rotation anon key + cleanup 4 fichiers du repo avec clé hardcodée
-- 55 fonctions avec `search_path` mutable → ajouter `SET search_path`
-- 38 fonctions SECURITY DEFINER anon → audit revoke
-- Race condition possible dans `useBriefV2` legacy (avant `useBriefByToken`)
+### 🟡 P2 — Polish (différé)
+- `Sidebar.tsx` > 200L : extraire NavSection config
+- `DocumentsTabV3.tsx` uploader_name hardcodé `'Admin'`
+- nginx.conf : CSP sur bloc location SVG
+- 5 fichiers V3 > 200L (ProjectEditModalV3, ProductionTabV3, etc.)
+- Cleanup 4 fichiers du repo avec anon key hardcodée
+- 55 fonctions `search_path` mutable
+- 38 fonctions SECURITY DEFINER anon — audit revoke
 
-### P3 — Features WIP
-- DashboardV3Preview : 4 variantes (Cockpit/Hero/Bento/Editorial) commitées en WIP, à valider avant intégration sidebar V3
-- Supprimer backups checklist_items_v2_backup_20260513 quand prod stable depuis quelques jours
-- Nettoyer templates legacy `web`, `seo`, `saas` quand confirmation plus jamais utilisés
+---
 
 ## Blockers
-Aucun.
+- Rotation service_role bloquée par UI Supabase qui a changé (bouton introuvable)
+- Coolify pas à jour avec le dernier DashboardV3
 
 ## Key Context
-- Branche : **main** (synchronisée avec origin/main)
-- Prod : https://crm.propulseo-site.com (Coolify, container healthy)
-- Repo GitHub : Propul-Seo/CRM-Propul-seo-v2 (déplacé de lyestriki-29/)
-- Tag de safety pré-V3 : `v3-pre-autonomous-session`
-- Tests : 124/124 unit + 12/12 E2E
-- Architecture portail client : RPC SECURITY DEFINER (pas de policy anon directe) — gold standard Supabase
+- Branch : **main** (clean, synchronisée)
+- Prod : https://crm.propulseo-site.com (legacy keys actives, tourne avec ANCIEN code)
+- GitHub : Propul-Seo/CRM-Propul-seo-v2
+- Tag safety : `v3-pre-autonomous-session`
+- Tests : 124/124 unit
+- Coolify : http://146.59.228.186:8000, app UUID `el094rjbgs6iefsvaws6qs0w`
+- Token Coolify : dans `.env` (`CoolifyToken=...`) — autorisé par utilisateur pour scripts
 - Login admin : lyestriki@yahoo.fr
-- Coolify dashboard : http://146.59.228.186:8000 (projet `crm-propulseo`)
-- Variables env Coolify : VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY avec "Available at Buildtime"
-- Backup BDD : `checklist_items_v2_backup_20260513` (148 lignes) — peut être droppé une fois prod validée
+
+## Push manuel à faire pour la prochaine session
+Working tree clean. Rien à pusher. Le commit `8fcabff` attend juste d'être déployé sur Coolify.
