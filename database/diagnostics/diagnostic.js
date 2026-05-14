@@ -8,9 +8,16 @@
 import https from 'https';
 import { createClient } from '@supabase/supabase-js';
 
-// Configuration par défaut
-const SUPABASE_URL = 'https://tbuqctfgjjxnevmsvucl.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidXFjdGZnamp4bmV2bXN2dWNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDY1NTAsImV4cCI6MjA2NzEyMjU1MH0.oLJWwUkC0Cd676iMOuSCjGdC1cdXaVMxzprN1njowEs';
+// Configuration : lue depuis .env (process.env)
+// Lancer le script avec : `node --env-file=.env database/diagnostics/diagnostic.js`
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('❌ Variables d\'environnement manquantes (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).');
+  console.error('   Lance avec : node --env-file=.env database/diagnostics/diagnostic.js');
+  process.exit(1);
+}
 
 console.log('🔍 Diagnostic Propulseo CRM - Test de Connexion\n');
 

@@ -94,8 +94,8 @@ supabase secrets set MY_CUSTOM_VAR=value
 Assurez-vous que ces variables sont définies :
 
 ```env
-VITE_SUPABASE_URL=https://tbuqctfgjjxnevmsvucl.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidXFjdGZnamp4bmV2bXN2dWNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDY1NTAsImV4cCI6MjA2NzEyMjU1MH0.oLJWwUkC0Cd676iMOuSCjGdC1cdXaVMxzprN1njowEs
+VITE_SUPABASE_URL=<URL Supabase du projet>
+VITE_SUPABASE_ANON_KEY=<récupérer depuis Supabase Dashboard → Settings → API Keys>
 ```
 
 **Note :** Ces valeurs sont déjà configurées par défaut dans `src/lib/supabase.ts`, mais il est recommandé d'utiliser des variables d'environnement pour la production.

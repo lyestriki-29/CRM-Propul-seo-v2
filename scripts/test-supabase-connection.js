@@ -5,8 +5,15 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://tbuqctfgjjxnevmsvucl.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidXFjdGZnamp4bmV2bXN2dWNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NDY1NTAsImV4cCI6MjA2NzEyMjU1MH0.oLJWwUkC0Cd676iMOuSCjGdC1cdXaVMxzprN1njowEs';
+// Variables lues depuis .env (lance avec : node --env-file=.env scripts/test-supabase-connection.js)
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Variables d\'environnement manquantes.');
+  console.error('   Lance avec : node --env-file=.env scripts/test-supabase-connection.js');
+  process.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
