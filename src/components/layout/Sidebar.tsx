@@ -51,7 +51,7 @@ export function Sidebar() {
   const { getUserByAuthId } = useUsers();
   const [currentUserData, setCurrentUserData] = useState<any>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['finance', 'admin', 'perso', 'v3'])
+    new Set(['admin', 'perso', 'v3'])
   );
 
   const isCollapsed = sidebarCollapsed;
@@ -86,16 +86,17 @@ export function Sidebar() {
 
   const persoSection: NavSection[] = isAdmin ? [{
     section: 'perso',
-    title: 'Personnel',
+    title: 'Admin',
     items: [
-      { to: routes.personalTasks, label: 'Mes Tâches',  icon: ListTodo, permission: 'can_view_dashboard' },
-      { to: routes.agencyVault,   label: 'Coffre-fort', icon: Vault,    permission: 'can_view_dashboard' },
+      { to: routes.personalTasks, label: 'Mes Tâches',   icon: ListTodo,   permission: 'can_view_dashboard' },
+      { to: routes.agencyVault,   label: 'Coffre-fort',  icon: Vault,      permission: 'can_view_dashboard' },
+      { to: routes.accounting,    label: 'Comptabilité', icon: Calculator, permission: 'can_view_finance' },
     ]
   }] : [];
 
   const v3Section: NavSection = {
     section: 'v3',
-    title: '✦ V3 Preview',
+    title: 'CRM Propulseo',
     items: [
       { to: routes.dashboard,             label: 'Dashboard',           icon: LayoutDashboard, permission: 'can_view_dashboard' },
       { to: routes.projectsV3,            label: 'Projets actifs',      icon: Briefcase,       permission: 'can_view_projects' },
@@ -135,13 +136,6 @@ export function Sidebar() {
         { to: routes.productionLegacy,   label: 'Production',      icon: Megaphone, permission: 'can_view_communication' },
         { to: routes.productionKpi,      label: 'KPI',             icon: BarChart3, permission: 'can_view_communication' },
         { to: routes.productionClients,  label: 'Clients',         icon: Users,     permission: 'can_view_communication' }
-      ]
-    },
-    {
-      section: 'finance',
-      title: 'Finance',
-      items: [
-        { to: routes.accounting, label: 'Comptabilité', icon: Calculator, permission: 'can_view_finance' }
       ]
     },
     {
