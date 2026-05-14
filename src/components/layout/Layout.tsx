@@ -29,7 +29,6 @@ const CommunicationKPI = lazy(() => import('../../modules/CommunicationKPI').the
 const PersonalTasks = lazy(() => import('../../modules/PersonalTasks').then(m => ({ default: m.PersonalTasks })));
 const CommunicationClients = lazy(() => import('../../modules/CommunicationClients').then(m => ({ default: m.CommunicationClients })));
 const ProjectsManagerV2 = lazy(() => import('../../modules/ProjectsManagerV2').then(m => ({ default: m.ProjectsManagerV2 })))
-const DashboardV2 = lazy(() => import('../../modules/DashboardV2').then(m => ({ default: m.DashboardV2 })))
 const SiteWebManager = lazy(() => import('../../modules/SiteWebManager').then(m => ({ default: m.SiteWebManager })))
 const ERPManager = lazy(() => import('../../modules/ERPManager').then(m => ({ default: m.ERPManager })))
 const CommunicationManager = lazy(() => import('../../modules/CommunicationManager').then(m => ({ default: m.CommunicationManager })))
@@ -40,10 +39,7 @@ const AgencyVaultPage = lazy(() => import('../../modules/AgencyVault').then(m =>
 const ProjectsV3Page = lazy(() => import('../../modules/ProjectsV3').then(m => ({ default: m.ProjectsV3Page })))
 const LeadsV3PlaceholderRoute = lazy(() => import('../../modules/LeadsV3').then(m => ({ default: m.LeadsV3Page })))
 const ProjectsV3CompletedPage = lazy(() => import('../../modules/ProjectsV3Completed').then(m => ({ default: m.ProjectsV3CompletedPage })))
-const Variant1Cockpit = lazy(() => import('../../modules/DashboardV3Preview/Variant1Cockpit').then(m => ({ default: m.Variant1Cockpit })))
-const Variant2Hero = lazy(() => import('../../modules/DashboardV3Preview/Variant2Hero').then(m => ({ default: m.Variant2Hero })))
-const Variant3Bento = lazy(() => import('../../modules/DashboardV3Preview/Variant3Bento').then(m => ({ default: m.Variant3Bento })))
-const Variant4Editorial = lazy(() => import('../../modules/DashboardV3Preview/Variant4Editorial').then(m => ({ default: m.Variant4Editorial })))
+const DashboardV3 = lazy(() => import('../../modules/DashboardV3').then(m => ({ default: m.DashboardV3 })))
 
 const ModuleLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -214,8 +210,8 @@ export function Layout() {
             <Routes>
               <Route path="/" element={<Navigate to={routes.dashboard} replace />} />
 
-              {/* V2 (par défaut) */}
-              <Route path={routes.dashboard} element={wrap(DashboardV2)} />
+              {/* Dashboard V3 — clone du V1 avec DA V3 (route /dashboard par défaut) */}
+              <Route path={routes.dashboard} element={wrap(DashboardV3)} />
               {/* /projets/termines doit être DÉCLARÉ AVANT /projets/* pour gagner */}
               <Route path={routes.projectsCompleted} element={wrap(CompletedProjectsManager)} />
               {/* Projets V2 : sous-routes (list / :id) */}
@@ -250,11 +246,6 @@ export function Layout() {
               {/* Leads V3 — module en cours de construction (Phase 4) */}
               <Route path={routes.leadsV3} element={wrap(LeadsV3PlaceholderRoute)} />
 
-              {/* Dashboard V3 previews — 4 variantes à valider */}
-              <Route path="/dashboard-preview-1" element={wrap(Variant1Cockpit)} />
-              <Route path="/dashboard-preview-2" element={wrap(Variant2Hero)} />
-              <Route path="/dashboard-preview-3" element={wrap(Variant3Bento)} />
-              <Route path="/dashboard-preview-4" element={wrap(Variant4Editorial)} />
 
               {/* CRM v1 */}
               <Route path={routes.dashboardLegacy} element={<Dashboard />} />
