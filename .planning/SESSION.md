@@ -1,128 +1,73 @@
-# Session State — 2026-05-14 fin (PROD LIVE + SÉCURISÉ ✅)
+# Session State — 2026-05-15 fin
 
 ## Branch
-**main** — synchronisée avec origin/main (commit `77da38f`)
+**main** — synchronisée avec origin/main (dernier commit pushé : `51efffc`)
 
-## 🎯 Sommaire éclair
-
-✅ **App prod LIVE** : https://crm.propulseo-site.com (DashboardV3 visible, RLS actives)
-✅ **Migration complète vers nouveau système Supabase API keys** (sb_publishable_* + sb_secret_*)
-✅ **Ancienne anon legacy DISABLED** côté Supabase (vérifié via MCP get_publishable_keys)
-✅ **JWT signing keys rotatés** (asymmetric)
-✅ **Hook gitleaks pre-commit** → impossible de re-pousser une clé par erreur
-✅ **4 fichiers du repo nettoyés** (clés hardcodées → process.env)
-✅ **124/124 tests unit verts + tsc clean**
+## Sommaire éclair
+Session post-prod : polish UX V3 et Dashboard final. Pas de chantier sécurité aujourd'hui.
 
 ## Completed cette session
 
-### V3 finalisation
-- Templates production V3 (site_web 18 / erp_v2 17) basés sur vrais projets
-- Onglet Documents V3 Variante A (dropzone + filtres + 5 sous-composants)
-- Sidebar V3 PREVIEW réorganisée + "Gestion projets" déplacée vers Pôles V2
-- **DashboardV2 supprimé, DashboardV3 officiel** (visible en prod désormais)
-- 4 variantes WIP supprimées (choix fait sur DashboardV3 final)
-- Migration BDD : 37 anciens projets re-matérialisés
-- Merge `preview/v3-ux-overhaul` → main (48 commits, no-ff)
+### Routes V3 (cohérence navigation)
+- Breadcrumb fiche projet V3 (`← Site Web/ERP/Communication`) → toujours `← Projets` vers `/projets-en-cours`
+- Fallback erreur fiche projet → `routes.projectsV3` au lieu de `/projets` (V2)
+- Audit complet effectué : un seul autre lead-V3 → V1/V2 noté comme dette technique (clic lead ouvre détail V1 car pas de fiche lead V3 dispo)
 
-### Sécurité Supabase (énorme chantier)
-- **191 findings → 181** (4 ERROR → 0)
-- DROP 3 tables backup avec données sensibles (passwords)
-- RLS activée sur `automation_logs`
-- DROP 33 policies "public always-true" sur 16 tables CRM
-- CREATE policies `authenticated_all_*`
-- DROP 14 policies anon trop larges (portail/brief)
-- **3 RPC SECURITY DEFINER** : `get_portal_data`, `get_brief_by_short_code`, `upsert_brief_by_short_code`
-- Migration frontend `useClientPortal` + `useBriefV2` vers RPC
-- 27 tables critiques bloquées en anon (test live confirmé)
+### Tri Leads V3 par dernière activité
+- Site Web : reprend la logique exacte de `sortContacts` V1 (next_activity_date asc, puis created_at asc)
+- ERP : tri par `last_activity_at` desc, fallback `created_at` desc
+- Implémenté via 2 nouvelles fonctions `sortSiteWebLeads` / `sortErpLeads` dans `leadAdapters.ts`
 
-### Rotation clés Supabase (résolution fuite GitHub)
-- **Migration vers nouveau système** `sb_publishable_*` + `sb_secret_*`
-- **Rotation JWT signing keys** vers asymétrique (ES256)
-- `Disable JWT-based API keys` → anciennes clés legacy INVALIDES
-- `.env` local : nouvelles clés + retrait préfixe VITE_ sur service_role
-- Coolify env vars : nouvelles clés avec Build Time flag
-- **4 fichiers du repo nettoyés** :
-  - `database/diagnostics/diagnostic.js` → process.env
-  - `scripts/test-supabase-connection.js` → process.env + check
-  - `docs/archive/DEPLOY_ADMIN_UPDATE_PASSWORD.md` → placeholder
-  - `docs/runbooks/DEPLOY_ADMIN_UPDATE_PASSWORD.md` → placeholder
+### Dashboard V3 (chemin sinueux mais clean au final)
+- **D'abord** : créé 4 previews navigables (Cockpit, Hero, Bento, Éditorial) sur routes `/dashboard-preview-{1..4}` avec PreviewSwitcher
+- **Décision utilisateur** : préférait le V1 existant → cloner V1 (intact) vers `src/modules/DashboardV3/` puis appliquer DA V3 (background violet)
+- **Cleanup** : 4 previews supprimées + module `DashboardV2` supprimé entièrement (mort code)
+- `/dashboard` pointe désormais directement sur `DashboardV3` (le V1 cloné)
+- Le V1 d'origine `src/modules/Dashboard/` reste intact (cohérent avec règle d'isolation stricte)
 
-### Protection anti-future-fuite
-- **gitleaks** installé via brew
-- **`.githooks/pre-commit`** scanne le staging area
-- **`.gitleaks.toml`** avec 3 règles custom Supabase (legacy JWT + sb_secret + sb_publishable hardcoded)
-- `git config core.hooksPath .githooks` actif
-- Test live : hook bloque correctement un commit avec `sb_secret_*`
-
-### Déploiement Coolify
-- Dockerfile multi-stage Node 22 + nginx
-- nginx.conf SPA fallback + gzip + CSP + headers
-- Switch Build Pack Nixpacks → Dockerfile
-- **Redeploy via API Coolify** (token dans .env, monitor automatique)
-- Build prod : 1m47 (HTTP 200, bundle `index-BslcMQYn.js` contient `sb_publishable_*`)
-
-### Code review fixes
-- Sidebar.tsx : `any` → `User | null`, imports relatifs → `@/`
-- nginx.conf : CSP + headers répliqués dans chaque bloc location
-- useClientPortal/useBriefV2 : Array RPC payload handling, cleanup useEffect, deps token
-
-### Résolution finale 401/403
-- Erreur 403 `/auth/v1/user` + 401 `/rest/v1/*` après rotation = session JWT obsolète
-- Fix : clear localStorage + re-login dans le navigateur
-- Tout marche après reconnexion
+### Sidebar nettoyage
+- "Personnel" renommée → **Admin** (admin-only conservé)
+- "V3 Preview" renommée → **CRM Propulseo**
+- Comptabilité montée dans Admin (section Finance supprimée car vide)
+- État initial : V3 ouvert par défaut, V2 fermé
+- Labels V3 simplifiés : "Projets actifs", "Communication", "KPI", "Projets terminés"
 
 ## Next Tasks (par priorité)
 
-### 🟠 P1 — Hardening Supabase (1h, optionnel)
-1. Supabase Auth Settings → activer **leaked password protection**
-2. Réduire **OTP expiry** à 600s
-3. Restreindre 2 buckets Storage publics (`client-post-assets`, `post-assets`)
+### En attente de feedback utilisateur
+- DA Dashboard V3 : tester en prod et ajuster si le rendu visuel n'est pas exactement V3 (les variables CSS `--surface-*` correspondent déjà à la DA V3, donc 90% du chemin est fait, à voir si touches finales nécessaires)
+
+### 🟠 P1 — Hardening Supabase (différé d'hier)
+1. Supabase Auth Settings → activer leaked password protection
+2. Réduire OTP expiry à 600s
+3. Restreindre 2 buckets Storage publics
 4. Retirer 3 materialized views de l'API REST (kpi_*)
-5. Upgrade Postgres (version vulnérable détectée)
+5. Upgrade Postgres
 6. Fix récursion infinie policy `channel_members`
 
-### 🟡 P2 — Polish (différé)
-- `Sidebar.tsx` > 200L (314L) : extraire NavSection config dans `sidebarConfig.ts`
-- `DocumentsTabV3.tsx` uploader_name hardcodé `'Admin'` → utiliser `currentUser?.name`
-- nginx.conf : CSP sur bloc location SVG/images
-- 5 fichiers V3 > 200L (ProjectEditModalV3, ProductionTabV3, etc.)
-- 55 fonctions `search_path` mutable → ajouter `SET search_path`
-- 38 fonctions SECURITY DEFINER anon → audit revoke
+### 🟡 P2 — Dette technique notée ce sprint
+- **Fiche détail Lead V3 absente** : clic sur lead V3 ouvre fiche V1 (`/clients/:id`) ou ERP V1 (`/crm-erp/leads/:leadId`). À créer un jour pour cohérence totale.
+- `Sidebar.tsx` > 200L (toujours à refactor)
+- 5 fichiers V3 > 200L
 
-### 🟢 P3 — Nice to have
-- GitHub Secret Scanning activé sur le repo (Settings → Security)
-- Supprimer le backup BDD `checklist_items_v2_backup_20260513` quand prod stable
-- Nettoyer templates legacy `web`, `seo`, `saas` si plus utilisés
-- "Multiple GoTrueClient instances" warning : refactor pour unifier les 3 clients Supabase
+### 🟢 P3 — Refacto Dashboard
+- Le module `DashboardV3` est un clone complet de `Dashboard` V1. Si V1 est supprimé un jour, mutualiser les composants partagés (RevenueChart, etc.)
 
 ## Blockers
-Aucun. Tout fonctionne.
+Aucun.
 
 ## Key Context
-- Branch : **main** (clean, synchronisée, commit `77da38f`)
-- Prod : https://crm.propulseo-site.com (HEALTHY, bundle `index-BslcMQYn.js`)
-- GitHub : Propul-Seo/CRM-Propul-seo-v2
-- Tag safety : `v3-pre-autonomous-session`
-- Tests : 124/124 unit + 12/12 E2E
-- Coolify : http://146.59.228.186:8000, app UUID `el094rjbgs6iefsvaws6qs0w`
-- Token Coolify : dans `.env` (`CoolifyToken=...`) — utilisable via API directement
+- Branch : **main** (clean, commit `51efffc`)
+- Prod : https://crm.propulseo-site.com (HEALTHY)
+- Dev local : `npm run dev` → http://localhost:5173 (ou 5174 si 5173 occupé)
+- Coolify : token API dans `.env` (`CoolifyToken=...`), UUID app `el094rjbgs6iefsvaws6qs0w`
 - Login admin : lyestriki@yahoo.fr
-- Format clés Supabase : nouveau système `sb_publishable_*` + `sb_secret_*` + JWT asymétrique
+- Format clés Supabase : `sb_publishable_*` + `sb_secret_*` + JWT asymétrique
 - Hook gitleaks : actif sur `.githooks/pre-commit`
 
-## Comment redeployer (rappel)
+## Comment redeployer
 ```bash
 TOKEN=$(grep "^CoolifyToken=" .env | cut -d'=' -f2-)
-curl -X GET "http://146.59.228.186:8000/api/v1/deploy?uuid=el094rjbgs6iefsvaws6qs0w&force=true" \
+curl -X GET "https://coolify.propulseo-site.com/api/v1/deploy?uuid=el094rjbgs6iefsvaws6qs0w&force=false" \
   -H "Authorization: Bearer $TOKEN"
 ```
-
-## Comment skipper le hook gitleaks (rare, à éviter)
-```bash
-git commit --no-verify
-```
-
-## Si erreur 401/403 après rotation de clés
-1. Ouvrir DevTools → Application → Storage → "Clear site data"
-2. Recharger avec Cmd+Shift+R
-3. Se relogger normalement
