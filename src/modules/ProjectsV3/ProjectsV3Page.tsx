@@ -14,7 +14,7 @@ import {
   type CollisionDetection,
 } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { useProjectsV2 } from '@/modules/ProjectsManagerV2/hooks/useProjectsV2'
+import { useProjectsV3 } from '@/modules/ProjectsV3/hooks/useProjectsV3'
 import { supabase } from '@/lib/supabase'
 import { ProjectsV3Header, type V3ViewMode } from './components/ProjectsV3Header'
 import { NewProjectModalV3 } from './components/NewProjectModalV3'
@@ -47,7 +47,7 @@ function useDebounced<T>(value: T, delay: number): T {
 
 export function ProjectsV3Page() {
   const navigate = useNavigate()
-  const { projects, loading, updateProjectStatus, addProject } = useProjectsV2()
+  const { projects, loading, updateProjectStatus, addProject } = useProjectsV3()
   const [newOpen, setNewOpen] = useState(false)
 
   const [filterUserId, setFilterUserId] = useState('')

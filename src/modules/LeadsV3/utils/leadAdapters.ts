@@ -1,5 +1,5 @@
 import type { SiteWebLead } from '../hooks/useLeadsV3SiteWeb'
-import type { CRMERPLead } from '@/modules/CRMERP/types'
+import type { CRMERPLead } from '@/modules/CRMERPLeadDetails/types'
 import type { LeadCardData } from '../components/LeadCardV3'
 import {
   SITE_WEB_STATUS_COLORS,

@@ -7,8 +7,8 @@ import {
   Menu,
   Calculator,
   Settings,
-  Bot,
   Archive,
+  Megaphone,
   X
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -22,15 +22,14 @@ interface NavItem {
 
 const MAIN_NAV_ITEMS: NavItem[] = [
   { to: routes.dashboard, icon: Home, label: 'Accueil' },
-  { to: routes.crm, icon: Users, label: 'CRM' },
-  { to: routes.projects, icon: Briefcase, label: 'Projets' },
+  { to: routes.leadsV3, icon: Users, label: 'Leads' },
+  { to: routes.projectsV3, icon: Briefcase, label: 'Projets' },
   { to: routes.accounting, icon: Calculator, label: 'Compta' },
 ];
 
 const MORE_NAV_ITEMS: NavItem[] = [
-  { to: routes.botOne, icon: Bot, label: 'CRM Bot One' },
-  { to: routes.crmErp, icon: Briefcase, label: 'CRM ERP' },
-  { to: routes.projectsCompleted, icon: Archive, label: 'Projets terminés' },
+  { to: routes.communicationV3Production, icon: Megaphone, label: 'Communication' },
+  { to: routes.projectsV3Completed, icon: Archive, label: 'Projets terminés' },
   { to: routes.settings, icon: Settings, label: 'Paramètres' },
 ];
 

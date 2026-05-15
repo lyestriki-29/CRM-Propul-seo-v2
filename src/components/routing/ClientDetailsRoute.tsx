@@ -4,7 +4,7 @@ import { routes } from '@/lib/routes'
 
 /**
  * Route wrapper pour `/clients/:id` — détail d'un lead/contact CRM.
- * Lit l'id depuis l'URL, retour vers /crm.
+ * Lit l'id depuis l'URL, retour vers la liste Leads V3.
  */
 export function ClientDetailsRoute() {
   const { id = '' } = useParams<{ id: string }>()
@@ -15,7 +15,7 @@ export function ClientDetailsRoute() {
   return (
     <ContactDetails
       contactId={id}
-      onBack={() => navigate(routes.crm)}
+      onBack={() => navigate(routes.leadsV3)}
     />
   )
 }

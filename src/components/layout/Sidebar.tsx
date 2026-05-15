@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Home,
   Briefcase,
   Calculator,
   Settings,
@@ -9,17 +8,11 @@ import {
   PanelLeft,
   ChevronRight,
   Shield,
-  Bot,
   BarChart3,
   Archive,
   UserCheck,
-  Database,
   Megaphone,
-  Users,
-  Sparkles,
   LayoutDashboard,
-  Globe,
-  Settings2,
   BookOpen,
   Vault,
   ListTodo,
@@ -108,36 +101,9 @@ export function Sidebar() {
     ]
   };
 
-  const enCoursSection: NavSection = {
-    section: 'en-cours',
-    title: 'Pôles V2',
-    items: [
-      { to: routes.projects,      label: 'Gestion des projets', icon: Sparkles,  permission: 'can_view_projects' },
-      { to: routes.communication, label: 'Communication',  icon: Megaphone, permission: 'can_view_projects' },
-      { to: routes.erp,           label: 'ERP Sur Mesure', icon: Settings2, permission: 'can_view_projects' },
-      { to: routes.siteWeb,       label: 'Site Web & SEO', icon: Globe,     permission: 'can_view_projects' },
-    ]
-  };
-
   const navigationItems: NavSection[] = [
     ...persoSection,
     v3Section,
-    enCoursSection,
-    {
-      section: 'crm-v1',
-      title: 'CRM v1',
-      items: [
-        { to: routes.dashboardLegacy,    label: 'Tableau de bord', icon: Home,      permission: 'can_view_dashboard' },
-        { to: routes.crm,                label: 'CRM Principal',   icon: Database,  permission: 'can_view_leads' },
-        { to: routes.botOne,             label: 'Bot One',         icon: Bot,       permission: 'can_view_crm_bot_one' },
-        { to: routes.crmErp,             label: 'CRM ERP',         icon: UserCheck, permission: 'can_view_crm_erp' },
-        { to: routes.projectsLegacy,     label: 'Projets actifs',  icon: Briefcase, permission: 'can_view_projects' },
-        { to: routes.projectsCompleted,  label: 'Terminés',        icon: Archive,   permission: 'can_view_projects' },
-        { to: routes.productionLegacy,   label: 'Production',      icon: Megaphone, permission: 'can_view_communication' },
-        { to: routes.productionKpi,      label: 'KPI',             icon: BarChart3, permission: 'can_view_communication' },
-        { to: routes.productionClients,  label: 'Clients',         icon: Users,     permission: 'can_view_communication' }
-      ]
-    },
     {
       section: 'admin',
       title: 'Système',

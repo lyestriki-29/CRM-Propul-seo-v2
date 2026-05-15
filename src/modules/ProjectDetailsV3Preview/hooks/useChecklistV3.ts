@@ -6,8 +6,8 @@ import { supabase } from '@/lib/supabase'
 // Les projets réels en BDD ont des UUID — la fonction `isMockProject` ci-dessous
 // retourne false pour tout UUID, donc cette branche n'est jamais exécutée en prod.
 // À supprimer le jour où on n'a plus besoin du mode démo offline.
-import { MOCK_SITEWEB_CHECKLISTS } from '@/modules/SiteWebManager/mocks/mockSiteWebChecklists'
-import { MOCK_ERP_CHECKLISTS } from '@/modules/ERPManager/mocks/mockERPChecklists'
+import { MOCK_SITEWEB_CHECKLISTS } from '@/modules/ProjectDetailsV3Preview/mocks/mockSiteWebChecklists'
+import { MOCK_ERP_CHECKLISTS } from '@/modules/ProjectDetailsV3Preview/mocks/mockERPChecklists'
 import { buildTemplateForProject } from './checklistTemplates'
 import type { ChecklistItemV2, ChecklistPhase, ChecklistStatus, PrestaType } from '@/types/project-v2'
 

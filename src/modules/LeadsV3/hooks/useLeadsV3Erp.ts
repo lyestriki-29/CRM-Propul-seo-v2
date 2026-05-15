@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { CRMERPLead } from '@/modules/CRMERP/types'
+import type { CRMERPLead } from '@/modules/CRMERPLeadDetails/types'
 import type { ErpStatus } from '../utils/leadStatusMapping'
 
 /**

@@ -7,37 +7,23 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { BottomNav } from '../mobile/BottomNav';
 import { MobileNavFAB } from '../mobile/MobileNavFAB';
-import { Dashboard } from '../../modules/Dashboard';
 import { Lock, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { ProjectsV2Provider } from '../../modules/ProjectsManagerV2/context/ProjectsV2Context';
 import { routes, getPermissionForPath, isAdminOnlyPath } from '../../lib/routes';
 
 // Lazy load heavy modules
-const CRM = lazy(() => import('../../modules/CRM').then(m => ({ default: m.CRM })));
-const CRMBotOne = lazy(() => import('../../modules/CRMBotOne').then(m => ({ default: m.CRMBotOne })));
-const ClientDetailsBotOne = lazy(() => import('../../pages/ClientDetailsBotOne').then(m => ({ default: m.ClientDetailsBotOne })));
-const ProjectsManager = lazy(() => import('../../modules/ProjectsManager').then(m => ({ default: m.ProjectsManager })));
-const CompletedProjectsManager = lazy(() => import('../../modules/CompletedProjectsManager').then(m => ({ default: m.CompletedProjectsManager })));
-const Accounting = lazy(() => import('../../modules/Accounting').then(m => ({ default: m.Accounting })));
-const Contacts = lazy(() => import('../../modules/Contacts'));
-const Settings = lazy(() => import('../../modules/Settings').then(m => ({ default: m.Settings })));
-const CRMERP = lazy(() => import('../../modules/CRMERP').then(m => ({ default: m.CRMERP })));
 const CRMERPLeadDetails = lazy(() => import('../../modules/CRMERPLeadDetails').then(m => ({ default: m.CRMERPLeadDetails })));
 const Communication = lazy(() => import('../../modules/Communication').then(m => ({ default: m.Communication })));
 const CommunicationKPI = lazy(() => import('../../modules/CommunicationKPI').then(m => ({ default: m.CommunicationKPI })));
+const Accounting = lazy(() => import('../../modules/Accounting').then(m => ({ default: m.Accounting })));
+const Settings = lazy(() => import('../../modules/Settings').then(m => ({ default: m.Settings })));
 const PersonalTasks = lazy(() => import('../../modules/PersonalTasks').then(m => ({ default: m.PersonalTasks })));
-const CommunicationClients = lazy(() => import('../../modules/CommunicationClients').then(m => ({ default: m.CommunicationClients })));
-const ProjectsManagerV2 = lazy(() => import('../../modules/ProjectsManagerV2').then(m => ({ default: m.ProjectsManagerV2 })))
-const SiteWebManager = lazy(() => import('../../modules/SiteWebManager').then(m => ({ default: m.SiteWebManager })))
-const ERPManager = lazy(() => import('../../modules/ERPManager').then(m => ({ default: m.ERPManager })))
-const CommunicationManager = lazy(() => import('../../modules/CommunicationManager').then(m => ({ default: m.CommunicationManager })))
 const ProceduresManager = lazy(() => import('../../modules/ProceduresManager').then(m => ({ default: m.ProceduresManager })))
 const ClientDetailsRoute = lazy(() => import('../routing/ClientDetailsRoute').then(m => ({ default: m.ClientDetailsRoute })))
 const ProjectDetailsV3Preview = lazy(() => import('../../modules/ProjectDetailsV3Preview').then(m => ({ default: m.ProjectDetailsV3Preview })))
 const AgencyVaultPage = lazy(() => import('../../modules/AgencyVault').then(m => ({ default: m.AgencyVaultPage })))
 const ProjectsV3Page = lazy(() => import('../../modules/ProjectsV3').then(m => ({ default: m.ProjectsV3Page })))
-const LeadsV3PlaceholderRoute = lazy(() => import('../../modules/LeadsV3').then(m => ({ default: m.LeadsV3Page })))
+const LeadsV3Page = lazy(() => import('../../modules/LeadsV3').then(m => ({ default: m.LeadsV3Page })))
 const ProjectsV3CompletedPage = lazy(() => import('../../modules/ProjectsV3Completed').then(m => ({ default: m.ProjectsV3CompletedPage })))
 const DashboardV3 = lazy(() => import('../../modules/DashboardV3').then(m => ({ default: m.DashboardV3 })))
 
@@ -52,12 +38,6 @@ const ModuleLoader = () => (
 
 const wrap = (Component: React.ComponentType) => (
   <Suspense fallback={<ModuleLoader />}><Component /></Suspense>
-);
-
-const wrapWithProjects = (Component: React.ComponentType) => (
-  <ProjectsV2Provider>
-    <Suspense fallback={<ModuleLoader />}><Component /></Suspense>
-  </ProjectsV2Provider>
 );
 
 function AccessDenied({ email, path }: { email?: string; path: string }) {
@@ -137,16 +117,13 @@ export function Layout() {
     // Cherche la première route accessible (ordre de priorité = sidebar)
     const fallbackOrder = [
       routes.dashboard,
-      routes.communication,
-      routes.erp,
-      routes.siteWeb,
-      routes.projects,
+      routes.projectsV3,
+      routes.leadsV3,
+      routes.communicationV3Production,
+      routes.communicationV3Kpi,
       routes.procedures,
-      routes.crm,
-      routes.botOne,
-      routes.crmErp,
-      routes.projectsLegacy,
-      routes.productionLegacy,
+      routes.projectsV3Completed,
+      routes.personalTasks,
       routes.accounting,
       routes.settings,
     ];
@@ -210,61 +187,34 @@ export function Layout() {
             <Routes>
               <Route path="/" element={<Navigate to={routes.dashboard} replace />} />
 
-              {/* Dashboard V3 — clone du V1 avec DA V3 (route /dashboard par défaut) */}
+              {/* Dashboard V3 (clone V1 avec DA V3) */}
               <Route path={routes.dashboard} element={wrap(DashboardV3)} />
-              {/* /projets/termines doit être DÉCLARÉ AVANT /projets/* pour gagner */}
-              <Route path={routes.projectsCompleted} element={wrap(CompletedProjectsManager)} />
-              {/* Projets V2 : sous-routes (list / :id) */}
-              <Route path="/projets/*" element={wrap(ProjectsManagerV2)} />
-              {/* Procédures : sous-routes gérées en interne (list/new/:slug/edit/revisions) */}
-              <Route path="/procedures/*" element={wrap(ProceduresManager)} />
 
-              {/* Pôles V2 — sous-routes (list / :id) gérées en interne */}
-              <Route path="/communication/*" element={wrapWithProjects(CommunicationManager)} />
-              <Route path="/erp/*" element={wrapWithProjects(ERPManager)} />
-              <Route path="/site-web/*" element={wrapWithProjects(SiteWebManager)} />
-
-              {/* Détail client / lead (depuis CRM) */}
-              <Route path="/clients/:id" element={wrap(ClientDetailsRoute)} />
-
-              {/* V3 Preview — chantier de refonte en cours, accessible pour validation */}
+              {/* Projets V3 — kanban + fiche détail */}
+              <Route path={routes.projectsV3} element={wrap(ProjectsV3Page)} />
+              <Route path={routes.projectsV3Completed} element={wrap(ProjectsV3CompletedPage)} />
               <Route path="/projets-v3-preview/:id" element={wrap(ProjectDetailsV3Preview)} />
 
-              {/* Coffre-fort agence (admin only — garde côté RPC) */}
-              <Route path={routes.agencyVault} element={wrap(AgencyVaultPage)} />
+              {/* Leads V3 */}
+              <Route path={routes.leadsV3} element={wrap(LeadsV3Page)} />
 
-              {/* Projets en cours V3 — refonte kanban 3 colonnes */}
-              <Route path={routes.projectsV3} element={wrap(ProjectsV3Page)} />
-
-              {/* Communication V3 — wiring vers modules V2 existants */}
+              {/* Communication V3 (fonctions mère) */}
               <Route path={routes.communicationV3Production} element={wrap(Communication)} />
               <Route path={routes.communicationV3Kpi} element={wrap(CommunicationKPI)} />
 
-              {/* Projets V3 Terminés — module V3 dédié, vue liste compacte */}
-              <Route path={routes.projectsV3Completed} element={wrap(ProjectsV3CompletedPage)} />
+              {/* Procédures (wiki interne) */}
+              <Route path="/procedures/*" element={wrap(ProceduresManager)} />
 
-              {/* Leads V3 — module en cours de construction (Phase 4) */}
-              <Route path={routes.leadsV3} element={wrap(LeadsV3PlaceholderRoute)} />
-
-
-              {/* CRM v1 */}
-              <Route path={routes.dashboardLegacy} element={<Dashboard />} />
-              <Route path={routes.crm} element={wrap(CRM)} />
-              <Route path={routes.botOne} element={wrap(CRMBotOne)} />
-              <Route path="/bot-one/:recordId" element={wrap(ClientDetailsBotOne)} />
-              <Route path={routes.crmErp} element={wrap(CRMERP)} />
+              {/* Fiches détail leads (fonctions mère utilisées par Leads V3) */}
+              <Route path="/clients/:id" element={wrap(ClientDetailsRoute)} />
               <Route path="/crm-erp/leads/:leadId" element={wrap(CRMERPLeadDetails)} />
-              <Route path={routes.projectsLegacy} element={wrap(ProjectsManager)} />
-              <Route path={routes.productionLegacy} element={wrap(Communication)} />
-              <Route path={routes.productionKpi} element={wrap(CommunicationKPI)} />
-              <Route path={routes.productionClients} element={wrap(CommunicationClients)} />
 
-              {/* Personnel */}
+              {/* Admin */}
               <Route path={routes.personalTasks} element={wrap(PersonalTasks)} />
+              <Route path={routes.agencyVault} element={wrap(AgencyVaultPage)} />
+              <Route path={routes.accounting} element={wrap(Accounting)} />
 
               {/* Système */}
-              <Route path={routes.contacts} element={wrap(Contacts)} />
-              <Route path={routes.accounting} element={wrap(Accounting)} />
               <Route path={routes.settings} element={wrap(Settings)} />
 
               {/* Fallback */}

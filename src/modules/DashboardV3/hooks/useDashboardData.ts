@@ -1,14 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '../../../store/useStore';
-import { routes } from '../../../lib/routes';
+import { useStore } from '@/store/useStore';
+import { routes } from '@/lib/routes';
 import {
   useSupabaseContacts,
   useSupabaseProjects,
   useSupabaseTasks,
   useSupabaseAccountingEntries,
   useSupabaseLeads,
-} from '../../../hooks/useSupabaseData';
+} from '@/hooks/useSupabaseData';
+
+interface AccountingEntryShape {
+  month_key?: string;
+  created_at: string;
+  type: string;
+  amount: string | number;
+}
+
+interface TaskShape {
+  priority?: string;
+  status: string;
+}
 
 export function useDashboardData() {
   const navigate = useNavigate();
@@ -28,10 +40,11 @@ export function useDashboardData() {
   const currentYear = new Date().getFullYear();
   let currentYearRevenue = 0;
   try {
-    currentYearRevenue = accountingEntries
+    currentYearRevenue = (accountingEntries as unknown as AccountingEntryShape[] | undefined)
       ?.filter(entry => {
-        const e = entry as any;
-        const entryYear = e.month_key ? parseInt(e.month_key.split('-')[0]) : new Date(entry.created_at).getFullYear();
+        const entryYear = entry.month_key
+          ? parseInt(entry.month_key.split('-')[0])
+          : new Date(entry.created_at).getFullYear();
         return entryYear === currentYear && entry.type === 'revenue';
       })
       ?.reduce((sum, entry) => sum + parseFloat(String(entry.amount) || '0'), 0) || 0;
@@ -46,7 +59,9 @@ export function useDashboardData() {
     p.status === 'started'
   )?.length || 0;
 
-  const urgentTasks = tasks?.filter(t => (t as any).priority === 'urgent' && (t.status as string) !== 'completed') || [];
+  const urgentTasks = (tasks as unknown as TaskShape[] | undefined)?.filter(
+    t => t.priority === 'urgent' && t.status !== 'completed'
+  ) || [];
   const pendingTasks = tasks?.filter(t => (t.status as string) === 'pending' || t.status === 'in_progress') || [];
 
   const objectives = dashboardObjectives.map(obj => {
@@ -68,10 +83,10 @@ export function useDashboardData() {
   });
 
   const handleNavigateToAccounting = () => navigate(routes.accounting);
-  const handleNavigateToCRM = () => navigate(routes.crm);
-  const handleNavigateToProjects = () => navigate(routes.projectsLegacy);
+  const handleNavigateToCRM = () => navigate(routes.leadsV3);
+  const handleNavigateToProjects = () => navigate(routes.projectsV3);
   const handleNavigateToTasks = () => navigate(routes.personalTasks);
-  const handleNavigateToProject = (id: string) => navigate(`${routes.projects}?p=${id}`);
+  const handleNavigateToProject = (id: string) => navigate(routes.projectV3Preview(id));
 
   const formattedDate = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long',

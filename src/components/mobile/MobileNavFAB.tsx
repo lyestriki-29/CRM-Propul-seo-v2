@@ -6,7 +6,6 @@ import {
   ListTodo,
   BarChart3,
   UserCheck,
-  Bot,
   Briefcase,
   Archive,
   MessageSquare,
@@ -23,18 +22,15 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: routes.personalTasks,     icon: ListTodo,       label: 'Mes Tâches' },
-  { to: routes.dashboard,         icon: BarChart3,      label: 'Dashboard' },
-  { to: routes.crm,               icon: UserCheck,      label: 'CRM Principal' },
-  { to: routes.botOne,            icon: Bot,            label: 'CRM Bot One' },
-  { to: routes.crmErp,            icon: Briefcase,      label: 'CRM ERP' },
-  { to: routes.projectsLegacy,    icon: Briefcase,      label: 'Projets actifs' },
-  { to: routes.projectsCompleted, icon: Archive,        label: 'Projets terminés' },
-  { to: routes.productionLegacy,  icon: MessageSquare,  label: 'Communication' },
-  { to: routes.productionKpi,     icon: BarChart3,      label: 'KPI Communication' },
-  { to: routes.productionClients, icon: MessageSquare,  label: 'Comm. Clients' },
-  { to: routes.accounting,        icon: DollarSign,     label: 'Comptabilité' },
-  { to: routes.settings,          icon: Settings,       label: 'Paramètres' },
+  { to: routes.personalTasks,             icon: ListTodo,       label: 'Mes Tâches' },
+  { to: routes.dashboard,                 icon: BarChart3,      label: 'Dashboard' },
+  { to: routes.leadsV3,                   icon: UserCheck,      label: 'Leads' },
+  { to: routes.projectsV3,                icon: Briefcase,      label: 'Projets actifs' },
+  { to: routes.projectsV3Completed,       icon: Archive,        label: 'Projets terminés' },
+  { to: routes.communicationV3Production, icon: MessageSquare,  label: 'Communication' },
+  { to: routes.communicationV3Kpi,        icon: BarChart3,      label: 'KPI Communication' },
+  { to: routes.accounting,                icon: DollarSign,     label: 'Comptabilité' },
+  { to: routes.settings,                  icon: Settings,       label: 'Paramètres' },
 ];
 
 export const MobileNavFAB = memo(function MobileNavFAB() {

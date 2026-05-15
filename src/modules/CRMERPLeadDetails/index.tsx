@@ -40,7 +40,7 @@ export function CRMERPLeadDetails() {
 
   const handleEdit = useCallback(() => {
     if (!leadId) return;
-    navigate(`${routes.crmErp}?edit=${leadId}`);
+    navigate(`${routes.leadsV3}?edit=${leadId}`);
   }, [navigate, leadId]);
 
   const handleAddActivity = useCallback(async (type: ActivityType, content: string) => {
