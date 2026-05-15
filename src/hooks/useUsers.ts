@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -198,8 +198,14 @@ export function useUsers() {
     fetchUsers();
   }, [fetchUsers]);
 
+  const activeUsers = useMemo(
+    () => users.filter((u) => u.is_active !== false),
+    [users]
+  );
+
   return {
     users,
+    activeUsers,
     loading,
     error,
     fetchUsers,

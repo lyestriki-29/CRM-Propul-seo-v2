@@ -65,7 +65,7 @@ export function ProjectsV3Page() {
   }
 
   useEffect(() => {
-    supabase.from('users').select('id, name').order('name').then(({ data, error }) => {
+    supabase.from('users').select('id, name').eq('is_active', true).order('name').then(({ data, error }) => {
       if (error) {
         console.error('[ProjectsV3] users fetch failed:', error)
         return

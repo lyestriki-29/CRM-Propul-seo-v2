@@ -28,7 +28,7 @@ export function ProductionTabV3({ project, checklist }: Props) {
   const { items, loading, pendingIds, progress, progressByPhase, setItemStatus, addItem, addItems, deleteItem } =
     checklist
   const { isAdmin } = useIsProjectV3Admin()
-  const { users } = useUsers()
+  const { users, activeUsers } = useUsers()
 
   const [isApplyingTemplate, setIsApplyingTemplate] = useState(false)
   const [collapsed, setCollapsed] = useState<Partial<Record<ChecklistPhase, boolean>>>({})
@@ -240,7 +240,7 @@ export function ProductionTabV3({ project, checklist }: Props) {
               </SelectTrigger>
               <SelectContent side="top" align="start" avoidCollisions={false}>
                 <SelectItem value="__none__">Non assigné</SelectItem>
-                {users.map((u) => (
+                {activeUsers.map((u) => (
                   <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
                 ))}
               </SelectContent>

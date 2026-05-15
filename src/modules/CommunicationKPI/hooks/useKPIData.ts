@@ -138,7 +138,7 @@ export function useKPIData() {
     leadsRevenueDaily,
     typeBreakdown,
     topPosts: filteredTopPosts,
-    users: users || [],
+    users: (users || []).filter(u => u.is_active !== false),
     ...filtersHook,
   };
 }

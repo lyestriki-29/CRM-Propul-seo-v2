@@ -24,7 +24,7 @@ export function useLeadsV3SiteWeb() {
         .from('contacts')
         .select(`
           *,
-          assigned_user:users!assigned_to (id, name, email)
+          assigned_user:users!assigned_to (id, name, email, is_active)
         `)
         .order('created_at', { ascending: false })
 
@@ -33,7 +33,7 @@ export function useLeadsV3SiteWeb() {
       const rows = (data ?? []) as ContactRow[]
       const enriched: SiteWebLead[] = rows.map(c => ({
         ...c,
-        assigned_user_name: c.assigned_user?.name ?? null,
+        assigned_user_name: c.assigned_user?.is_active === false ? null : (c.assigned_user?.name ?? null),
         normalized_status: normalize(c.status as unknown as string),
       }))
       setLeads(enriched)

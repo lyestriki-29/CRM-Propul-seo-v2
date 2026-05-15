@@ -17,7 +17,7 @@ export function ProjectDetailsV3Preview() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { project, loading: loadingProject, error, refetch } = useProjectV3(id ?? '')
-  const { users, loading: loadingUsers } = useUsers()
+  const { users, activeUsers, loading: loadingUsers } = useUsers()
   const { updateProject } = useProjectUpdateV3()
   // Source de vérité unique pour la progression : hissé ici pour que sidebar et tabs
   // partagent la même instance (un seul SELECT, un seul state, pas de drift possible).
@@ -81,7 +81,7 @@ export function ProjectDetailsV3Preview() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
-  const teamUsers = users.map((u) => ({ id: u.id, name: u.name, email: u.email }))
+  const teamUsers = activeUsers.map((u) => ({ id: u.id, name: u.name, email: u.email }))
 
   if (loading) {
     return (

@@ -58,7 +58,7 @@ export function LeadsV3Page() {
   const [convertingId, setConvertingId] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase.from('users').select('id, name').order('name').then(({ data, error }) => {
+    supabase.from('users').select('id, name').eq('is_active', true).order('name').then(({ data, error }) => {
       if (error) { console.error('[LeadsV3] users fetch failed:', error); return }
       if (data) setUsers(data as { id: string; name: string }[])
     })

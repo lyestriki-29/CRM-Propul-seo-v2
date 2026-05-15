@@ -96,7 +96,7 @@ export function CommunicationPage({
     );
   }
 
-  const usersList = data.users.map(u => ({ id: u.id, name: u.name }));
+  const usersList = data.users.filter(u => u.is_active !== false).map(u => ({ id: u.id, name: u.name }));
 
   return (
     <div className="p-3 md:p-6 space-y-3 md:space-y-4 min-h-screen pb-24 md:pb-6">

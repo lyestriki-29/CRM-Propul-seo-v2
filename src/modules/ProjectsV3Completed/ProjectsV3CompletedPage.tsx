@@ -27,7 +27,7 @@ export function ProjectsV3CompletedPage() {
   const [users, setUsers] = useState<{ id: string; name: string }[]>([])
 
   useEffect(() => {
-    supabase.from('users').select('id, name').order('name').then(({ data, error: err }) => {
+    supabase.from('users').select('id, name').eq('is_active', true).order('name').then(({ data, error: err }) => {
       if (err) {
         console.error('[ProjectsV3Completed] users fetch failed:', err)
         return
