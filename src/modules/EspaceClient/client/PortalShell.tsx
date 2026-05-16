@@ -23,12 +23,13 @@ function pathToTab(pathname: string): PortalTab {
 }
 
 export function PortalShell() {
-  const { userRow, project, signOut } = usePortal();
+  const { email, project, signOut } = usePortal();
   const location = useLocation();
   const navigate = useNavigate();
   const activeTab = pathToTab(location.pathname);
 
-  const clientName = userRow.email.split('@')[0] ?? userRow.email;
+  // Préfère le nom client défini sur le projet, sinon dérive de l'email.
+  const clientName = project.client_name ?? email.split('@')[0] ?? email;
 
   return (
     <PortalLayout

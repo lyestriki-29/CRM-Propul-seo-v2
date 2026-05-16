@@ -2,32 +2,22 @@ import { useEffect, useState, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
-export interface PortalUserRow {
-  id: string;
-  email: string;
-  auth_user_id: string | null;
-  is_active: boolean | null;
-  portal_enabled: boolean | null;
-  portal_linked_project_id: string | null;
-  onboarding_completed: boolean;
-}
-
 export interface PortalProject {
   id: string;
   name: string | null;
   client_name: string | null;
   status: string | null;
+  portal_client_email: string | null;
 }
 
-// État de l'authentification portail. Combine session Supabase + ligne `users`
-// + projet lié. Permet aux guards de prendre une décision sans re-fetcher.
+// État de l'auth portail. Source de vérité : projects_v2.portal_client_email
+// matche l'email de la session Supabase Auth. Le client n'a JAMAIS besoin
+// d'une row dans public.users (réservée aux internes Propul'SEO).
 export type PortalAuthState =
   | { status: 'loading' }
   | { status: 'unauthenticated' }
-  | { status: 'no-user-row';      session: Session }
-  | { status: 'portal-disabled';  session: Session; userRow: PortalUserRow }
-  | { status: 'no-project';       session: Session; userRow: PortalUserRow }
-  | { status: 'ready';            session: Session; userRow: PortalUserRow; project: PortalProject };
+  | { status: 'no-project';  session: Session; email: string }
+  | { status: 'ready';       session: Session; email: string; project: PortalProject };
 
 export interface UsePortalAuthResult {
   state: PortalAuthState;
@@ -38,37 +28,17 @@ export interface UsePortalAuthResult {
 
 async function loadAuthState(session: Session | null): Promise<PortalAuthState> {
   if (!session) return { status: 'unauthenticated' };
+  const email = session.user.email;
+  if (!email) return { status: 'no-project', session, email: '' };
 
-  const { data: userRow, error: userErr } = await supabase
-    .from('users')
-    .select('id, email, auth_user_id, is_active, portal_enabled, portal_linked_project_id, onboarding_completed')
-    .eq('auth_user_id', session.user.id)
-    .maybeSingle();
-
-  if (userErr || !userRow) return { status: 'no-user-row', session };
-
-  const row = userRow as PortalUserRow;
-  if (!row.portal_enabled || row.is_active === false) {
-    return { status: 'portal-disabled', session, userRow: row };
-  }
-  if (!row.portal_linked_project_id) {
-    return { status: 'no-project', session, userRow: row };
-  }
-
-  const { data: project, error: projErr } = await supabase
+  const { data, error } = await supabase
     .from('projects_v2')
-    .select('id, name, client_name, status')
-    .eq('id', row.portal_linked_project_id)
+    .select('id, name, client_name, status, portal_client_email')
+    .eq('portal_client_email', email)
     .maybeSingle();
 
-  if (projErr || !project) return { status: 'no-project', session, userRow: row };
-
-  return {
-    status: 'ready',
-    session,
-    userRow: row,
-    project: project as PortalProject,
-  };
+  if (error || !data) return { status: 'no-project', session, email };
+  return { status: 'ready', session, email, project: data as PortalProject };
 }
 
 export function usePortalAuth(): UsePortalAuthResult {
@@ -101,13 +71,15 @@ export function usePortalAuth(): UsePortalAuthResult {
     };
   }, []);
 
+  // shouldCreateUser: true — les clients externes n'ont pas de row préexistante
+  // dans auth.users. Supabase la crée automatiquement à la 1re connexion.
   const signInWithMagicLink = useCallback<UsePortalAuthResult['signInWithMagicLink']>(
     async (email, redirectTo) => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: redirectTo ?? `${window.location.origin}/espace-client`,
-          shouldCreateUser: false,
+          shouldCreateUser: true,
         },
       });
       return { error: error?.message ?? null };

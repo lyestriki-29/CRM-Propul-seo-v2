@@ -10,7 +10,8 @@ interface PortalGuardProps {
 }
 
 // Gate d'accès aux routes /espace-client/* (hors login + pages de statut).
-// Redirige selon l'état de PortalAuth, ou pose le PortalProvider quand prêt.
+// Redirige selon l'état ou pose le PortalProvider quand un projet est
+// trouvé pour l'email connecté.
 export function PortalGuard({ children }: PortalGuardProps) {
   const { state, signOut } = usePortalAuth();
 
@@ -22,20 +23,18 @@ export function PortalGuard({ children }: PortalGuardProps) {
     );
   }
 
-  if (state.status === 'unauthenticated' || state.status === 'no-user-row') {
+  if (state.status === 'unauthenticated') {
     return <Navigate to="/espace-client/login" replace />;
   }
 
-  if (state.status === 'portal-disabled') {
-    return <Navigate to="/espace-client/suspended" replace />;
-  }
-
   if (state.status === 'no-project') {
+    // Email connecté mais pas de projet associé → on traite comme
+    // session expirée / lien invalide.
     return <Navigate to="/espace-client/expired" replace />;
   }
 
   return (
-    <PortalProvider value={{ userRow: state.userRow, project: state.project, signOut }}>
+    <PortalProvider value={{ email: state.email, project: state.project, signOut }}>
       {children}
     </PortalProvider>
   );

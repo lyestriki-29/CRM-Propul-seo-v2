@@ -16,8 +16,8 @@ function formatShortDate(iso: string | null): string {
 }
 
 export function DashboardPage() {
-  const { userRow, project } = usePortal();
-  const firstName = userRow.email.split('@')[0] ?? 'Client';
+  const { email, project } = usePortal();
+  const firstName = project.client_name?.split(' ')[0] ?? email.split('@')[0] ?? 'Client';
 
   const steps      = usePortalProjectSteps();
   const invoices   = usePortalInvoices();

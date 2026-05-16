@@ -1,11 +1,11 @@
-import { UserRound, LogOut, CheckCircle2 } from 'lucide-react';
+import { UserRound, LogOut } from 'lucide-react';
 import { Hero, SectionHead } from '@/modules/EspaceClient/shared/components';
 import { Button } from '@/components/ui/button';
 import { usePortal } from '@/modules/EspaceClient/shared/context/PortalContext';
 import { useNavigate } from 'react-router-dom';
 
 export function ProfilePage() {
-  const { userRow, project, signOut } = usePortal();
+  const { email, project, signOut } = usePortal();
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -25,18 +25,12 @@ export function ProfilePage() {
         <SectionHead title="Compte" />
         <dl className="grid grid-cols-1 gap-4 px-6 py-4 sm:grid-cols-2">
           <div>
-            <dt className="text-[11px] uppercase tracking-wider text-[var(--ps-fg-muted)]">Email</dt>
-            <dd className="text-[13.5px] font-medium text-[var(--ps-fg)]">{userRow.email}</dd>
+            <dt className="text-[11px] uppercase tracking-wider text-[var(--ps-fg-muted)]">Email de connexion</dt>
+            <dd className="text-[13.5px] font-medium text-[var(--ps-fg)]">{email}</dd>
           </div>
           <div>
-            <dt className="text-[11px] uppercase tracking-wider text-[var(--ps-fg-muted)]">Onboarding</dt>
-            <dd className="inline-flex items-center gap-1 text-[13.5px] font-medium text-[var(--ps-fg)]">
-              {userRow.onboarding_completed ? (
-                <><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Terminé</>
-              ) : (
-                <span className="text-amber-700">En cours</span>
-              )}
-            </dd>
+            <dt className="text-[11px] uppercase tracking-wider text-[var(--ps-fg-muted)]">Contact projet</dt>
+            <dd className="text-[13.5px] font-medium text-[var(--ps-fg)]">{project.client_name ?? '—'}</dd>
           </div>
         </dl>
       </section>
@@ -47,10 +41,6 @@ export function ProfilePage() {
           <div>
             <dt className="text-[11px] uppercase tracking-wider text-[var(--ps-fg-muted)]">Nom</dt>
             <dd className="text-[13.5px] font-medium text-[var(--ps-fg)]">{project.name ?? '—'}</dd>
-          </div>
-          <div>
-            <dt className="text-[11px] uppercase tracking-wider text-[var(--ps-fg-muted)]">Client</dt>
-            <dd className="text-[13.5px] font-medium text-[var(--ps-fg)]">{project.client_name ?? '—'}</dd>
           </div>
           <div>
             <dt className="text-[11px] uppercase tracking-wider text-[var(--ps-fg-muted)]">Statut</dt>

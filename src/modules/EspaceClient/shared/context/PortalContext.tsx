@@ -1,8 +1,8 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { PortalUserRow, PortalProject } from '@/modules/EspaceClient/shared/hooks/usePortalAuth';
+import type { PortalProject } from '@/modules/EspaceClient/shared/hooks/usePortalAuth';
 
 interface PortalContextValue {
-  userRow: PortalUserRow;
+  email: string;
   project: PortalProject;
   signOut: () => Promise<void>;
 }
@@ -18,8 +18,8 @@ export function PortalProvider({ value, children }: PortalProviderProps) {
   return <PortalContext.Provider value={value}>{children}</PortalContext.Provider>;
 }
 
-// Hook consommateur — utilisable uniquement à l'intérieur d'un <PortalGuard
-// status="ready"> car PortalContext n'est posé que dans ce cas.
+// Hook consommateur — utilisable uniquement à l'intérieur d'un PortalGuard
+// status='ready'.
 export function usePortal(): PortalContextValue {
   const ctx = useContext(PortalContext);
   if (!ctx) {
