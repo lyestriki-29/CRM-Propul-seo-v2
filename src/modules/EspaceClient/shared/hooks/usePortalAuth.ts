@@ -52,19 +52,13 @@ export function usePortalAuth(): UsePortalAuthResult {
 
   useEffect(() => {
     let cancelled = false;
-
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (cancelled) return;
-      const next = await loadAuthState(data.session);
-      if (!cancelled) setState(next);
-    })();
-
+    // Listener enregistré AVANT getSession : l'event INITIAL_SESSION
+    // de Supabase Auth couvre le cas du premier load. Évite la race
+    // entre getSession et un SIGNED_IN provoqué par un magic link.
     const { data: sub } = supabase.auth.onAuthStateChange(async (_evt, session) => {
       const next = await loadAuthState(session);
       if (!cancelled) setState(next);
     });
-
     return () => {
       cancelled = true;
       sub.subscription.unsubscribe();

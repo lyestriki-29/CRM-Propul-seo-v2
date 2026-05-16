@@ -6,14 +6,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/modules/EspaceClient/shared/components';
 import { RecapAccordion } from '@/modules/EspaceClient/qualification/components/RecapAccordion';
-import type { QualificationLeadRow } from '../hooks/useQualificationLeads';
+import type {
+  QualificationLeadRow, LeadAdminPatch,
+} from '@/modules/EspaceClient/admin/hooks/useQualificationLeads';
 import { DisqualifyLeadDialog } from './DisqualifyLeadDialog';
 
 interface LeadDetailSheetProps {
   lead: QualificationLeadRow | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAction: (id: string, patch: Partial<QualificationLeadRow>) => Promise<{ error: string | null }>;
+  onAction: (id: string, patch: LeadAdminPatch) => Promise<{ error: string | null }>;
 }
 
 export function LeadDetailSheet({ lead, open, onOpenChange, onAction }: LeadDetailSheetProps) {

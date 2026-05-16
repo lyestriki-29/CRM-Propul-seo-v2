@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, v2 } from '@/lib/supabase';
 
 // Hooks de lecture des entités portail (tables propulspace.* exposées via
@@ -19,10 +19,18 @@ function useList<T>(table: string, orderBy: string, ascending = false): ListResu
   const [rows, setRows] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+
+  // Évite les setState après unmount (StrictMode + navigations rapides).
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     const { data, error: err } = await v2.from(table).select('*').order(orderBy, { ascending });
+    if (!mountedRef.current) return;
     if (err) { setError(err.message); setRows([]); }
     else { setError(null); setRows((data ?? []) as T[]); }
     setLoading(false);

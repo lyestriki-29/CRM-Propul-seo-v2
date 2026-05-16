@@ -39,12 +39,17 @@ export interface QualificationLeadRow {
 
 export type LeadStatusFilter = 'all' | 'submitted' | 'contacted' | 'qualified' | 'unqualified' | 'converted';
 
+// Champs explicitement mutables par l'admin via le portail. Toute autre
+// colonne (quality_score, pappers_enrichment, project_id, etc.) reste
+// hors de portée du flux UI — empêche un futur dev de patcher par erreur.
+export type LeadAdminPatch = Partial<Pick<QualificationLeadRow, 'status' | 'notes' | 'contacted_at'>>;
+
 interface UseLeadsResult {
   leads: QualificationLeadRow[];
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  updateStatus: (id: string, patch: Partial<Pick<QualificationLeadRow, 'status' | 'notes' | 'contacted_at'>>) => Promise<{ error: string | null }>;
+  updateStatus: (id: string, patch: LeadAdminPatch) => Promise<{ error: string | null }>;
 }
 
 export function useQualificationLeads(filter: LeadStatusFilter = 'all'): UseLeadsResult {

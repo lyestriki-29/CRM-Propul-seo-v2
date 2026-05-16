@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   TrendingUp, Clock, CheckCircle2, Receipt, PenLine, FileText, ArrowUpRight,
 } from 'lucide-react';
@@ -92,10 +93,10 @@ export function DashboardPage() {
         <SectionHead
           title="Activité récente"
           action={
-            <a href="/espace-client/project" className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--ps-primary-text)] hover:underline">
+            <Link to="/espace-client/project" className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--ps-primary-text)] hover:underline">
               Voir le projet
               <ArrowUpRight className="h-3 w-3" />
-            </a>
+            </Link>
           }
         />
         {activity.length === 0 ? (
