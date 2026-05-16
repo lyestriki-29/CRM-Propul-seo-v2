@@ -22,6 +22,10 @@ const QualificationThankYouPage = lazy(() =>
   import('./modules/EspaceClient/qualification/ThankYouPage').then(m => ({ default: m.ThankYouPage }))
 );
 
+const PropulspaceAdminApp = lazy(() =>
+  import('./modules/EspaceClient/admin/PropulspaceAdminApp').then(m => ({ default: m.PropulspaceAdminApp }))
+);
+
 const ClientBriefPage = lazy(() =>
   import('./modules/ClientBrief/ClientBriefPage').then(m => ({ default: m.ClientBriefPage }))
 );
@@ -132,6 +136,16 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<div className="min-h-screen bg-white" />}>
                 <QualificationThankYouPage />
+              </Suspense>
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="/admin/*"
+          element={
+            <ErrorBoundary>
+              <Suspense fallback={<div className="min-h-screen bg-white" />}>
+                <PropulspaceAdminApp />
               </Suspense>
             </ErrorBoundary>
           }
